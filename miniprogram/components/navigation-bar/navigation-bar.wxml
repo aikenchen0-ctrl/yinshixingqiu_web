@@ -54,5 +54,4 @@
       <slot name="right"></slot>
     </view>
   </view>
-  <view class="nav-line"></view>
 </view>

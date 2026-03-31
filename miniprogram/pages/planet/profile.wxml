@@ -1,0 +1,15 @@
+<navigation-bar
+  title="查看星球资料"
+  back="{{true}}"
+  color="#111111"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page planet-profile-page">
+  <view class="planet-profile-shell">
+    <image class="planet-profile-avatar" src="{{planet.avatarImageUrl}}" mode="aspectFill"></image>
+    <text class="planet-profile-name">{{planet.name}}</text>
+    <text class="planet-profile-tag">{{planet.category}}</text>
+    <text class="planet-profile-intro">{{planet.introText}}</text>
+  </view>
+</view>

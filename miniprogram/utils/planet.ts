@@ -22,6 +22,8 @@ export interface PlanetProfile {
   id: string
   name: string
   avatarClass: string
+  avatarImageUrl: string
+  coverImageUrl: string
   unread: string
   badge: string
   price: number
@@ -31,7 +33,9 @@ export interface PlanetProfile {
   requireInviteCode: boolean
   ownerName: string
   ownerTagline: string
+  category: string
   intro: string
+  embedPath: string
   memberCount: number
   postCount: number
   createdAt: string
@@ -100,6 +104,8 @@ const seedPlanets: PlanetProfile[] = [
     id: 'planet_1',
     name: 'Datawhale',
     avatarClass: 'avatar-sand',
+    avatarImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+    coverImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80',
     unread: '',
     badge: '',
     price: 0,
@@ -109,7 +115,9 @@ const seedPlanets: PlanetProfile[] = [
     requireInviteCode: false,
     ownerName: 'Datawhale 团队',
     ownerTagline: '与你同行',
+    category: '学习',
     intro: '欢迎来到 Datawhale 星球，这里聚合学习笔记、组队项目与成长交流。',
+    embedPath: 'pages/topics/topics?group_id=10001',
     memberCount: 1428,
     postCount: 186,
     createdAt: '2026/03/01',
@@ -118,6 +126,8 @@ const seedPlanets: PlanetProfile[] = [
     id: 'planet_2',
     name: '易安AI编程·出海赚钱',
     avatarClass: 'avatar-sunset',
+    avatarImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    coverImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80',
     unread: '99+',
     badge: '99+',
     price: 365,
@@ -127,7 +137,9 @@ const seedPlanets: PlanetProfile[] = [
     requireInviteCode: false,
     ownerName: '易安老师',
     ownerTagline: 'AI 编程实战',
+    category: '其他',
     intro: '聚焦 AI 编程、副业出海与项目实操，每周更新案例与方法论。',
+    embedPath: 'pages/topics/topics?group_id=88885121521552',
     memberCount: 2360,
     postCount: 512,
     createdAt: '2026/02/18',
@@ -136,6 +148,8 @@ const seedPlanets: PlanetProfile[] = [
     id: 'planet_3',
     name: '洋哥陪你终身成长',
     avatarClass: 'avatar-navy',
+    avatarImageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+    coverImageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1200&q=80',
     unread: '99+',
     badge: '99+',
     price: 199,
@@ -145,7 +159,9 @@ const seedPlanets: PlanetProfile[] = [
     requireInviteCode: false,
     ownerName: '洋哥',
     ownerTagline: '成长教练',
+    category: '成长',
     intro: '围绕认知升级、复盘方法和长期主义，持续输出陪伴式内容。',
+    embedPath: 'pages/topics/topics?group_id=20002',
     memberCount: 3012,
     postCount: 468,
     createdAt: '2026/01/25',
@@ -154,6 +170,8 @@ const seedPlanets: PlanetProfile[] = [
     id: 'planet_4',
     name: '五竹的成长笔记',
     avatarClass: 'avatar-forest',
+    avatarImageUrl: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=400&q=80',
+    coverImageUrl: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=1200&q=80',
     unread: '99+',
     badge: '99+',
     price: 129,
@@ -163,7 +181,9 @@ const seedPlanets: PlanetProfile[] = [
     requireInviteCode: false,
     ownerName: '五竹',
     ownerTagline: '真实成长记录',
+    category: '成长',
     intro: '记录成长路径、工作方法和高质量输入输出，适合长期学习者。',
+    embedPath: 'pages/topics/topics?group_id=30003',
     memberCount: 1786,
     postCount: 239,
     createdAt: '2026/03/12',
@@ -239,6 +259,8 @@ export const createPlanet = (payload: PlanetCreationPayload) => {
     id: `planet_${now}`,
     name: payload.name,
     avatarClass: getAvatarClass(planets.length),
+    avatarImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    coverImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80',
     unread: '',
     badge: '',
     price: payload.price,
@@ -248,7 +270,9 @@ export const createPlanet = (payload: PlanetCreationPayload) => {
     requireInviteCode: false,
     ownerName: `${payload.name} 主理人`,
     ownerTagline: '(*^▽^*)o 创建',
+    category: '其他',
     intro: `欢迎加入「${payload.name}」，这里会持续分享精选内容、答疑和社群互动。`,
+    embedPath: `pages/topics/topics?group_id=${now}`,
     memberCount: 1,
     postCount: 1,
     createdAt: formatDateTime(now).slice(0, 10),

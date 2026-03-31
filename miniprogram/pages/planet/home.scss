@@ -90,6 +90,10 @@
   line-height: 1;
 }
 
+.planet-home-action-label-muted {
+  color: rgba(255, 255, 255, 0.42);
+}
+
 .icon-calendar::before,
 .icon-stack::before,
 .icon-bookmark::before,
@@ -132,6 +136,10 @@
   bottom: 2rpx;
   background: #ffffff;
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+}
+
+.icon-bookmark-subscribed::before {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 .icon-gear::before {
@@ -505,6 +513,184 @@
   height: 10rpx;
   background: #ffffff;
   clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+.planet-subscribe-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+.planet-subscribe-dialog {
+  width: 100%;
+  max-width: 620rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 24rpx 60rpx rgba(70, 57, 27, 0.18);
+  padding: 52rpx 40rpx 36rpx;
+}
+
+.planet-subscribe-title {
+  display: block;
+  text-align: center;
+  color: #434343;
+  font-size: 38rpx;
+  font-weight: 500;
+}
+
+.planet-subscribe-copy {
+  display: block;
+  margin-top: 34rpx;
+  text-align: center;
+  color: #9a9a9a;
+  font-size: 32rpx;
+  line-height: 1.7;
+}
+
+.planet-subscribe-actions {
+  margin-top: 44rpx;
+  display: flex;
+  justify-content: center;
+  gap: 24rpx;
+}
+
+.planet-subscribe-button {
+  min-width: 220rpx;
+  height: 92rpx;
+  border-radius: 18rpx;
+  font-size: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-subscribe-button-muted {
+  background: #f2f2f2;
+  color: #4a4a4a;
+}
+
+.planet-subscribe-button-primary {
+  background: #f5fbfa;
+  color: #1bc7b1;
+}
+
+.planet-settings-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: rgba(0, 0, 0, 0.22);
+  display: flex;
+  align-items: flex-end;
+}
+
+.planet-settings-sheet {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 28rpx 28rpx 0 0;
+  padding-top: 34rpx;
+  padding-bottom: calc(28rpx + env(safe-area-inset-bottom));
+}
+
+.planet-settings-grid {
+  display: flex;
+  gap: 28rpx;
+  padding: 0 28rpx 30rpx;
+}
+
+.planet-settings-item {
+  width: 132rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.planet-settings-icon {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 24rpx;
+  background: #f7f7f7;
+  position: relative;
+}
+
+.planet-settings-icon::before,
+.planet-settings-icon::after {
+  content: '';
+  position: absolute;
+}
+
+.planet-settings-icon-profile::before {
+  left: 34rpx;
+  top: 26rpx;
+  width: 44rpx;
+  height: 56rpx;
+  border: 4rpx solid #69708a;
+  border-radius: 10rpx;
+  transform: rotate(45deg);
+}
+
+.planet-settings-icon-profile::after {
+  left: 48rpx;
+  top: 40rpx;
+  width: 20rpx;
+  height: 4rpx;
+  background: #69708a;
+  transform: rotate(45deg);
+}
+
+.planet-settings-icon-mp::before {
+  inset: 26rpx;
+  border: 4rpx solid #69708a;
+  border-radius: 50%;
+  clip-path: polygon(50% 0, 62% 18%, 82% 18%, 82% 38%, 100% 50%, 82% 62%, 82% 82%, 62% 82%, 50% 100%, 38% 82%, 18% 82%, 18% 62%, 0 50%, 18% 38%, 18% 18%, 38% 18%);
+}
+
+.planet-settings-icon-mp::after {
+  left: 46rpx;
+  top: 46rpx;
+  width: 20rpx;
+  height: 20rpx;
+  border: 4rpx solid #69708a;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.planet-settings-label {
+  color: #666666;
+  font-size: 26rpx;
+  line-height: 1.3;
+}
+
+.planet-settings-cancel {
+  height: 104rpx;
+  color: #8b8b8b;
+  font-size: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-invite-sheet {
+  padding-top: 0;
+}
+
+.planet-invite-action {
+  height: 112rpx;
+  background: #ffffff;
+  color: #3f3f3f;
+  font-size: 34rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-invite-action::after {
+  border: none;
 }
 
 .avatar-sand {

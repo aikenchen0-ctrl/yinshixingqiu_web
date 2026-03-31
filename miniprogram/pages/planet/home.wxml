@@ -27,15 +27,15 @@
         <view class="planet-home-action-icon icon-stack"></view>
         <text class="planet-home-action-label">专栏</text>
       </view>
-      <view class="planet-home-action">
-        <view class="planet-home-action-icon icon-bookmark"></view>
-        <text class="planet-home-action-label">订阅</text>
+      <view class="planet-home-action" data-key="subscribe" bindtap="onActionTap">
+        <view class="planet-home-action-icon icon-bookmark {{subscribed ? 'icon-bookmark-subscribed' : ''}}"></view>
+        <text class="planet-home-action-label {{subscribed ? 'planet-home-action-label-muted' : ''}}">{{subscribed ? '已订阅' : '订阅'}}</text>
       </view>
-      <view class="planet-home-action">
+      <view class="planet-home-action" data-key="settings" bindtap="onActionTap">
         <view class="planet-home-action-icon icon-gear"></view>
         <text class="planet-home-action-label">设置</text>
       </view>
-      <view class="planet-home-action">
+      <view class="planet-home-action" data-key="invite" bindtap="onActionTap">
         <view class="planet-home-action-icon icon-send"></view>
         <text class="planet-home-action-label">邀请</text>
       </view>
@@ -168,5 +168,40 @@
 
   <view class="planet-publish-button" bindtap="onPublish">
     <view class="planet-publish-pen"></view>
+  </view>
+
+  <view wx:if="{{showSubscribeDialog}}" class="planet-subscribe-mask" catchtap="onCloseSubscribeDialog">
+    <view class="planet-subscribe-dialog" catchtap="noop">
+      <text class="planet-subscribe-title">温馨提示</text>
+      <text class="planet-subscribe-copy">请允许发送相关通知，否则无法接收到内容提醒更新和订阅成功通知</text>
+      <view class="planet-subscribe-actions">
+        <view class="planet-subscribe-button planet-subscribe-button-muted" bindtap="onSubscribeSkip">不用通知</view>
+        <view class="planet-subscribe-button planet-subscribe-button-primary" bindtap="onSubscribeConfirm">允许通知</view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{showSettingsSheet}}" class="planet-settings-mask" catchtap="onCloseSettingsSheet">
+    <view class="planet-settings-sheet" catchtap="noop">
+      <view class="planet-settings-grid">
+        <view class="planet-settings-item" data-key="profile" bindtap="onSettingsItemTap">
+          <view class="planet-settings-icon planet-settings-icon-profile"></view>
+          <text class="planet-settings-label">星球资料</text>
+        </view>
+        <view class="planet-settings-item" data-key="mp" bindtap="onSettingsItemTap">
+          <view class="planet-settings-icon planet-settings-icon-mp"></view>
+          <text class="planet-settings-label">嵌入公众号</text>
+        </view>
+      </view>
+      <view class="planet-settings-cancel" bindtap="onCloseSettingsSheet">取消</view>
+    </view>
+  </view>
+
+  <view wx:if="{{showInviteSheet}}" class="planet-settings-mask" catchtap="onCloseInviteSheet">
+    <view class="planet-settings-sheet planet-invite-sheet" catchtap="noop">
+      <button class="planet-invite-action" open-type="share">分享给好友</button>
+      <view class="planet-invite-action" bindtap="onGenerateInviteCard">生成卡片保存分享</view>
+      <view class="planet-settings-cancel" bindtap="onCloseInviteSheet">取消</view>
+    </view>
   </view>
 </view>

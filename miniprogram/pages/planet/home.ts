@@ -31,6 +31,27 @@ const feedAvatarClassPool = [
 
 const getFeedAvatarClass = (index: number) => feedAvatarClassPool[index % feedAvatarClassPool.length]
 
+const SUBSCRIBE_STORAGE_KEY = 'planet_subscription_status_v1'
+const SUBSCRIBE_TEMPLATE_IDS = ['REPLACE_WITH_WECHAT_SUBSCRIBE_TEMPLATE_ID']
+
+type SubscribeStatusMap = Record<string, boolean>
+
+const loadSubscribeStatusMap = () => {
+  const stored = wx.getStorageSync(SUBSCRIBE_STORAGE_KEY)
+  if (!stored || typeof stored !== 'object') {
+    return {} as SubscribeStatusMap
+  }
+  return stored as SubscribeStatusMap
+}
+
+const saveSubscribeStatus = (planetId: string, subscribed: boolean) => {
+  const statusMap = loadSubscribeStatusMap()
+  wx.setStorageSync(SUBSCRIBE_STORAGE_KEY, {
+    ...statusMap,
+    [planetId]: subscribed,
+  })
+}
+
 const mapPostsToFeedItems = (posts: PlanetPost[]): FeedItem[] =>
   posts.map((post, index) => ({
     id: post.id,
@@ -52,6 +73,10 @@ Page({
     creatorName: '范大',
     avatarClass: 'avatar-sand',
     showNotices: true,
+    subscribed: false,
+    showSubscribeDialog: false,
+    showSettingsSheet: false,
+    showInviteSheet: false,
     activeTab: 'latest',
     tabs: [
       { key: 'latest', label: '最新' },
@@ -161,6 +186,7 @@ Page({
       planetName,
       creatorName,
       avatarClass,
+      subscribed: !!loadSubscribeStatusMap()[planetId],
       showNotices: !isNewPlanet,
       latestList: isNewPlanet
         ? [
@@ -200,7 +226,206 @@ Page({
       wx.navigateTo({
         url: '/pages/planet/columns',
       })
+      return
     }
+    if (key === 'subscribe') {
+      this.onSubscribeTap()
+      return
+    }
+    if (key === 'settings') {
+      this.onSettingsTap()
+      return
+    }
+    if (key === 'invite') {
+      this.onInviteTap()
+    }
+  },
+
+  onSettingsTap() {
+    this.setData({
+      showSettingsSheet: true,
+    })
+  },
+
+  onCloseSettingsSheet() {
+    this.setData({
+      showSettingsSheet: false,
+    })
+  },
+
+  onSettingsItemTap(e: WechatMiniprogram.TouchEvent) {
+    const key = e.currentTarget.dataset.key
+
+    this.setData({
+      showSettingsSheet: false,
+    })
+
+    if (key === 'profile') {
+      wx.navigateTo({
+        url: `/pages/planet/profile?id=${this.data.planetId}`,
+      })
+      return
+    }
+
+    if (key === 'mp') {
+      wx.navigateTo({
+        url: `/pages/planet/embed?id=${this.data.planetId}`,
+      })
+    }
+  },
+
+  onInviteTap() {
+    this.setData({
+      showInviteSheet: true,
+    })
+  },
+
+  onCloseInviteSheet() {
+    this.setData({
+      showInviteSheet: false,
+    })
+  },
+
+  onGenerateInviteCard() {
+    this.setData({
+      showInviteSheet: false,
+    })
+    wx.navigateTo({
+      url: `/pages/planet/share-card?id=${this.data.planetId}`,
+    })
+  },
+
+  onShareAppMessage() {
+    const { planetId, planetName, creatorName } = this.data
+    this.setData({
+      showInviteSheet: false,
+    })
+    return {
+      title: `邀请你加入「${planetName}」`,
+      path: `/pages/planet/home?id=${planetId}&name=${encodeURIComponent(planetName)}&creator=${encodeURIComponent(creatorName)}`,
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: `邀请你加入「${this.data.planetName}」`,
+      query: `id=${this.data.planetId}`,
+    }
+  },
+
+  onSubscribeTap() {
+    if (this.data.subscribed) {
+      wx.showToast({
+        title: '已订阅内容提醒',
+        icon: 'none',
+      })
+      return
+    }
+
+    this.setData({
+      showSubscribeDialog: true,
+    })
+  },
+
+  onCloseSubscribeDialog() {
+    this.setData({
+      showSubscribeDialog: false,
+    })
+  },
+
+  onSubscribeSkip() {
+    this.setData({
+      showSubscribeDialog: false,
+    })
+  },
+
+  noop() {},
+
+  onSubscribeConfirm() {
+    const validTemplateIds = SUBSCRIBE_TEMPLATE_IDS.filter(
+      (item) => item && !item.startsWith('REPLACE_WITH_'),
+    )
+
+    if (!validTemplateIds.length) {
+      this.setData({
+        showSubscribeDialog: false,
+      })
+      wx.showToast({
+        title: '请先配置订阅消息模板ID',
+        icon: 'none',
+      })
+      return
+    }
+
+    wx.requestSubscribeMessage({
+      tmplIds: validTemplateIds,
+      success: (res) => {
+        const accepted = validTemplateIds.some((tmplId) => res[tmplId] === 'accept')
+        const rejected = validTemplateIds.every((tmplId) => res[tmplId] === 'reject')
+        const mainSwitchOff = typeof res.errMsg === 'string' && res.errMsg.includes('20004')
+
+        this.setData({
+          showSubscribeDialog: false,
+        })
+
+        if (accepted) {
+          saveSubscribeStatus(this.data.planetId, true)
+          this.setData({
+            subscribed: true,
+          })
+          wx.showToast({
+            title: '订阅成功',
+            icon: 'success',
+          })
+          return
+        }
+
+        if (mainSwitchOff) {
+          wx.showModal({
+            title: '通知未开启',
+            content: '请在微信设置中开启订阅消息提醒后再试。',
+            confirmText: '去设置',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.openSetting({})
+              }
+            },
+          })
+          return
+        }
+
+        wx.showToast({
+          title: rejected ? '你已选择暂不订阅' : '未完成订阅授权',
+          icon: 'none',
+        })
+      },
+      fail: (error) => {
+        this.setData({
+          showSubscribeDialog: false,
+        })
+        const errMsg = typeof error.errMsg === 'string' ? error.errMsg : ''
+        const blockedBySwitch = errMsg.includes('20004')
+
+        if (blockedBySwitch) {
+          wx.showModal({
+            title: '通知未开启',
+            content: '请在微信设置中开启订阅消息提醒后再试。',
+            confirmText: '去设置',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.openSetting({})
+              }
+            },
+          })
+          return
+        }
+
+        wx.showToast({
+          title: '订阅申请未完成',
+          icon: 'none',
+        })
+      },
+    })
   },
 
   onFeedTap(e: WechatMiniprogram.TouchEvent) {

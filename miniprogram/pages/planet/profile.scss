@@ -1,0 +1,50 @@
+.planet-profile-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.planet-profile-shell {
+  padding: 72rpx 56rpx 120rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.planet-profile-avatar {
+  width: 308rpx;
+  height: 308rpx;
+  border-radius: 16rpx;
+  background: #f3f3f3;
+}
+
+.planet-profile-name {
+  margin-top: 28rpx;
+  color: #2f2f2f;
+  font-size: 52rpx;
+  line-height: 1.32;
+  text-align: center;
+}
+
+.planet-profile-tag {
+  margin-top: 24rpx;
+  min-width: 88rpx;
+  height: 48rpx;
+  padding: 0 18rpx;
+  border-radius: 10rpx;
+  background: #f3f3f3;
+  color: #7b7b7b;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-profile-intro {
+  display: block;
+  width: 100%;
+  margin-top: 62rpx;
+  color: #555555;
+  font-size: 24px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}

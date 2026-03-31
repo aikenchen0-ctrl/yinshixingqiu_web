@@ -1,0 +1,29 @@
+<navigation-bar
+  title="知识星球"
+  back="{{true}}"
+  color="#111111"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page planet-embed-page">
+  <view class="planet-embed-shell">
+    <view class="planet-embed-card">
+      <view class="planet-embed-cover-wrap">
+        <image class="planet-embed-cover" src="{{planet.coverImageUrl}}" mode="aspectFill"></image>
+        <view class="planet-embed-overlay">
+          <image class="planet-embed-avatar" src="{{planet.avatarImageUrl}}" mode="aspectFill"></image>
+          <text class="planet-embed-owner">{{planet.ownerName}}</text>
+          <view class="planet-embed-divider"></view>
+          <text class="planet-embed-name">{{planet.name}}</text>
+        </view>
+      </view>
+
+      <button class="planet-embed-button" bindtap="onSavePoster">保存图片 尺寸比例5:4</button>
+    </view>
+
+    <view class="planet-embed-card planet-embed-card-path">
+      <text class="planet-embed-path">{{planet.embedPath}}</text>
+      <button class="planet-embed-button" bindtap="onCopyPath">复制路径</button>
+    </view>
+  </view>
+</view>
