@@ -1,4 +1,4 @@
-import { getPlanetById } from '../../utils/planet'
+import { getPlanetById, loadPosts, PlanetPost } from '../../utils/planet'
 
 interface PlanetTab {
   key: string
@@ -12,12 +12,38 @@ interface FeedItem {
   time: string
   title: string
   content: string
+  images: string[]
   tag: string
   likeCount: string
   commentCount: string
   hasFile?: boolean
   fileName?: string
 }
+
+const feedAvatarClassPool = [
+  'feed-avatar-blue',
+  'feed-avatar-gray',
+  'feed-avatar-rose',
+  'feed-avatar-dark',
+  'feed-avatar-amber',
+  'feed-avatar-navy',
+]
+
+const getFeedAvatarClass = (index: number) => feedAvatarClassPool[index % feedAvatarClassPool.length]
+
+const mapPostsToFeedItems = (posts: PlanetPost[]): FeedItem[] =>
+  posts.map((post, index) => ({
+    id: post.id,
+    author: post.author,
+    avatarClass: getFeedAvatarClass(index),
+    time: post.time,
+    title: post.content,
+    content: '',
+    images: post.images || [],
+    tag: '',
+    likeCount: `${post.likeCount}`,
+    commentCount: `${post.commentCount}`,
+  }))
 
 Page({
   data: {
@@ -41,6 +67,7 @@ Page({
         time: '2026/03/18 15:47',
         title: '26年目标 :智能体开发或ai产品经理',
         content: '',
+        images: [],
         tag: '',
         likeCount: '1',
         commentCount: '0',
@@ -52,6 +79,7 @@ Page({
         time: '2026/03/13 05:11',
         title: '26年目标，智能体应用',
         content: '',
+        images: [],
         tag: '',
         likeCount: '0',
         commentCount: '0',
@@ -65,6 +93,7 @@ Page({
         time: '2025/01/09 17:21',
         title: '分享一本python游戏编程',
         content: '',
+        images: [],
         tag: '精华',
         likeCount: '6',
         commentCount: '0',
@@ -78,6 +107,7 @@ Page({
         time: '2024/11/26 21:05',
         title: '基于博弈交互可解释ML',
         content: '',
+        images: [],
         tag: '精华',
         likeCount: '1',
         commentCount: '0',
@@ -93,6 +123,7 @@ Page({
         time: '2026/01/05 09:02',
         title: '分享一个关于AI 智能体的综述',
         content: '',
+        images: [],
         tag: '',
         likeCount: '5',
         commentCount: '0',
@@ -106,6 +137,7 @@ Page({
         time: '2025/11/14 10:38',
         title: '大模型边界',
         content: '',
+        images: [],
         tag: '',
         likeCount: '0',
         commentCount: '0',
@@ -118,6 +150,7 @@ Page({
   onLoad(options: Record<string, string>) {
     const planetId = options.id || 'planet_1'
     const planet = getPlanetById(planetId)
+    const latestPosts = mapPostsToFeedItems(loadPosts())
     const planetName = planet?.name || (options.name ? decodeURIComponent(options.name) : 'Datawhale')
     const creatorName = planet?.ownerName || (options.creator ? decodeURIComponent(options.creator) : '范大')
     const avatarClass = planet?.avatarClass || 'avatar-sand'
@@ -138,12 +171,13 @@ Page({
               time: planet?.createdAt || '2026/03/31 11:23',
               title: `欢迎加入「${planetName}」，非常高兴能与大家在这里相遇。`,
               content: `${planet?.intro || `建议大家优先使用 App 深度交流，及时接收最新消息，和我一起把 ${planetName} 做起来。`}\n\n点击下方链接进行下载安装，期待在 App 里与大家深入交流。`,
+              images: [],
               tag: '',
               likeCount: '0',
               commentCount: '0',
             },
           ]
-        : this.data.latestList,
+        : latestPosts,
     })
   },
 

@@ -51,14 +51,14 @@ Page({
     const key = e.currentTarget.dataset.key
 
     if (key === 'planet') {
-      wx.navigateTo({
+      wx.redirectTo({
         url: '/pages/planet/index',
       })
       return
     }
 
     if (key === 'discover') {
-      wx.navigateTo({
+      wx.redirectTo({
         url: '/pages/planet/lobby',
       })
     }

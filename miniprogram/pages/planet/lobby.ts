@@ -186,14 +186,14 @@ Page({
     const key = e.currentTarget.dataset.key
 
     if (key === 'planet') {
-      wx.navigateTo({
+      wx.redirectTo({
         url: '/pages/planet/index',
       })
       return
     }
 
     if (key === 'mine') {
-      wx.navigateTo({
+      wx.redirectTo({
         url: '/pages/planet/mine',
       })
     }

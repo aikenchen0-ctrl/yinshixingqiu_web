@@ -81,6 +81,15 @@
         </view>
         <text class="planet-feed-title">{{item.title}}</text>
         <text wx:if="{{item.content}}" class="planet-feed-content">{{item.content}}</text>
+        <view wx:if="{{item.images.length}}" class="planet-feed-images">
+          <image
+            wx:for="{{item.images}}"
+            wx:key="*this"
+            class="planet-feed-image"
+            src="{{item}}"
+            mode="aspectFill"
+          ></image>
+        </view>
         <view class="planet-feed-bar">
           <view class="planet-feed-action">
             <view class="feed-icon-like"></view>

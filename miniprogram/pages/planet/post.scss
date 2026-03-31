@@ -45,20 +45,14 @@
   margin-top: 22rpx;
   display: flex;
   gap: 12rpx;
+  flex-wrap: wrap;
 }
 
 .planet-post-image {
   width: 240rpx;
   height: 170rpx;
+  border-radius: 8rpx;
   background: #ececec;
-}
-
-.image-dark {
-  background: linear-gradient(135deg, #0f1f34, #394c66);
-}
-
-.image-light {
-  background: linear-gradient(135deg, #f5f5f5, #dce3ee);
 }
 
 .planet-post-tools {

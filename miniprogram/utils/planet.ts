@@ -59,9 +59,12 @@ const seedPosts: PlanetPost[] = [
     author: '血饮',
     avatar: '',
     time: '今天 10:30',
-    content: '新增链上异常资金流预警规则，适配跨链桥与多签钱包。',
+    content: '官方下场，这实属是偷家了，A普要如何应对',
     tags: ['风控', '链上'],
-    images: [],
+    images: [
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80',
+    ],
     likeCount: 68,
     commentCount: 12,
     liked: false,
@@ -167,6 +170,29 @@ const seedPlanets: PlanetProfile[] = [
   },
 ]
 
+const normalizePosts = (posts: PlanetPost[]) => {
+  const seedPostMap = seedPosts.reduce<Record<string, PlanetPost>>((result, post) => {
+    result[post.id] = post
+    return result
+  }, {})
+
+  return posts.map((post) => {
+    const seedPost = seedPostMap[post.id]
+    if (!seedPost) {
+      return {
+        ...post,
+        images: Array.isArray(post.images) ? post.images : [],
+      }
+    }
+
+    return {
+      ...post,
+      content: post.content || seedPost.content,
+      images: Array.isArray(post.images) && post.images.length ? post.images : seedPost.images,
+    }
+  })
+}
+
 const formatDateTime = (time: number) => {
   const date = new Date(time)
   const year = date.getFullYear()
@@ -183,7 +209,9 @@ export const loadPosts = () => {
     wx.setStorageSync(POST_KEY, seedPosts)
     return [...seedPosts]
   }
-  return stored as PlanetPost[]
+  const normalizedPosts = normalizePosts(stored as PlanetPost[])
+  wx.setStorageSync(POST_KEY, normalizedPosts)
+  return normalizedPosts
 }
 
 export const loadPlanets = () => {
