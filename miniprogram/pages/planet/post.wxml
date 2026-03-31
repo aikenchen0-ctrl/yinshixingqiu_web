@@ -1,0 +1,42 @@
+<navigation-bar
+  title="详情"
+  back="{{true}}"
+  color="#222222"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page planet-post-page">
+  <view class="planet-post-head">
+    <view class="planet-post-avatar"></view>
+    <view class="planet-post-author">
+      <text class="planet-post-name">易安 星空</text>
+      <text class="planet-post-time">2026/03/31 10:00</text>
+    </view>
+  </view>
+
+  <text class="planet-post-title">官方下场，这实属是偷家了，A普要如何应对</text>
+
+  <view class="planet-post-images">
+    <view class="planet-post-image image-dark"></view>
+    <view class="planet-post-image image-light"></view>
+  </view>
+
+  <view class="planet-post-tools">
+    <view class="planet-post-tool">
+      <view class="tool-icon tool-icon-share"></view>
+      <text class="planet-post-tool-text">分享好友</text>
+    </view>
+    <view class="planet-post-tool">
+      <view class="tool-icon tool-icon-generate"></view>
+      <text class="planet-post-tool-text">生成长图</text>
+    </view>
+  </view>
+
+  <view class="planet-post-comment-bar">
+    <text class="planet-post-comment-placeholder">写下你的观点...</text>
+    <view class="planet-post-like">
+      <view class="feed-icon-like"></view>
+      <text>赞0</text>
+    </view>
+  </view>
+</view>

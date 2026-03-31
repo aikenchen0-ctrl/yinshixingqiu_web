@@ -1,0 +1,40 @@
+<navigation-bar
+  title=""
+  back="{{false}}"
+  color="#ffffff"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page profile-page">
+  <view class="profile-shell">
+    <view class="profile-hero">
+      <view class="profile-avatar-ring ring-outer"></view>
+      <view class="profile-avatar-ring ring-middle"></view>
+      <view class="profile-avatar-ring ring-inner"></view>
+      <image class="profile-avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+    </view>
+
+    <text class="profile-name">{{nickname}}</text>
+
+    <view class="profile-card-list">
+      <view
+        class="profile-card"
+        wx:for="{{menuItems}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onMenuTap"
+      >
+        <view class="profile-card-left">
+          <view class="profile-card-icon profile-card-icon-{{item.iconType}}"></view>
+          <text class="profile-card-title">
+            {{item.title}}<text wx:if="{{item.value}}">: {{item.value}}</text>
+          </text>
+        </view>
+        <view class="profile-card-right">
+          <text wx:if="{{item.actionText}}" class="profile-card-action">{{item.actionText}}</text>
+          <text class="profile-card-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

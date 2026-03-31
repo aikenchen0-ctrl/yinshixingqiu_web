@@ -1,0 +1,31 @@
+<navigation-bar
+  title="商城"
+  back="{{false}}"
+  color="#e6f0ff"
+  background="rgba(10, 18, 32, 0.96)"
+></navigation-bar>
+
+<view class="page grid-bg">
+    <view class="section card store-hero">
+      <text class="store-title">安全工具与课程礼包</text>
+      <text class="store-sub">精选实战工具、课程与情报包</text>
+      <button class="btn btn-primary" bindtap="goMembership">会员专享优惠</button>
+    </view>
+
+    <view class="section">
+      <view class="section-title">精选商品</view>
+      <view class="product-grid">
+        <view class="product-card" wx:for="{{products}}" wx:key="id">
+          <view class="product-badge">{{item.tag}}</view>
+          <text class="product-title">{{item.title}}</text>
+          <text class="product-desc">{{item.desc}}</text>
+          <view class="product-footer">
+            <text class="product-price">{{item.price}}</text>
+            <button class="btn btn-ghost" data-id="{{item.id}}" bindtap="onBuy">购买</button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+  <view class="section safe-bottom"></view>
+</view>

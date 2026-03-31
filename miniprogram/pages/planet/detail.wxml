@@ -1,0 +1,66 @@
+<navigation-bar
+  title="知识星球"
+  back="{{true}}"
+  color="#111111"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page planet-page">
+  <view class="planet-shell">
+    <view class="planet-search-box">
+      <text class="planet-search-icon">⌕</text>
+      <input
+        class="planet-search-input"
+        placeholder="搜索星球"
+        placeholder-class="planet-search-placeholder"
+        value="{{searchValue}}"
+        bindinput="onSearchInput"
+      />
+    </view>
+
+    <view class="planet-list">
+      <view
+        class="planet-row"
+        wx:for="{{displayPlanets}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        data-name="{{item.name}}"
+        data-creator="{{item.ownerName}}"
+        bindtap="onPlanetTap"
+      >
+        <view class="planet-row-left">
+          <view class="planet-avatar {{item.avatarClass}}">
+            <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+          </view>
+          <text class="planet-name">{{item.name}}</text>
+        </view>
+        <view class="planet-row-right">
+          <text wx:if="{{item.unread}}" class="planet-unread">{{item.unread}}</text>
+          <text class="planet-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="planet-create-card">
+      <view class="planet-create-shape planet-create-shape-left"></view>
+      <view class="planet-create-shape planet-create-shape-right"></view>
+      <text class="planet-create-text">创建你的专属星球，连接一千位铁杆粉丝</text>
+      <button class="planet-create-button" bindtap="goCreate">+创建星球</button>
+    </view>
+  </view>
+
+  <view class="planet-bottom-bar">
+    <view class="planet-bottom-item planet-bottom-item-active" data-key="planet" bindtap="onBottomNavTap">
+      <view class="planet-bottom-icon planet-bottom-icon-planet"></view>
+      <text class="planet-bottom-label">星球</text>
+    </view>
+    <view class="planet-bottom-item" data-key="discover" bindtap="onBottomNavTap">
+      <view class="planet-bottom-icon planet-bottom-icon-discover"></view>
+      <text class="planet-bottom-label">发现</text>
+    </view>
+    <view class="planet-bottom-item" data-key="mine" bindtap="onBottomNavTap">
+      <view class="planet-bottom-icon planet-bottom-icon-mine"></view>
+      <text class="planet-bottom-label">我的</text>
+    </view>
+  </view>
+</view>

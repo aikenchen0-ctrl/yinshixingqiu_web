@@ -1,0 +1,123 @@
+/**app.wxss**/
+$bg: #0a1220;
+$bg-strong: #0f1b2e;
+$bg-glass: rgba(14, 23, 38, 0.72);
+$accent: #2ff5b4;
+$accent-2: #4cc3ff;
+$warning: #f6c24a;
+$text: #e6f0ff;
+$muted: #7c8aa6;
+$line: rgba(255, 255, 255, 0.08);
+
+page {
+  background: $bg;
+  color: $text;
+  font-family: "DIN Alternate", "Montserrat", "Fira Sans", "Helvetica Neue", sans-serif;
+  letter-spacing: 0.2rpx;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll {
+  flex: 1;
+  overflow: hidden;
+}
+
+.section {
+  margin: 28rpx 24rpx 0;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-subtitle {
+  margin-top: 8rpx;
+  color: $muted;
+  font-size: 22rpx;
+}
+
+.card {
+  background: linear-gradient(140deg, rgba(23, 36, 56, 0.92), rgba(12, 20, 34, 0.92));
+  border: 1rpx solid $line;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 16rpx 36rpx rgba(0, 0, 0, 0.35);
+}
+
+.card-soft {
+  background: $bg-glass;
+  border: 1rpx solid $line;
+  border-radius: 20rpx;
+  padding: 20rpx;
+}
+
+.glow-line {
+  height: 2rpx;
+  background: linear-gradient(90deg, rgba(47, 245, 180, 0.1), rgba(76, 195, 255, 0.9), rgba(47, 245, 180, 0.1));
+  border-radius: 999rpx;
+}
+
+.chip {
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(47, 245, 180, 0.35);
+  color: $accent;
+  font-size: 20rpx;
+}
+
+.chip-warning {
+  border-color: rgba(246, 194, 74, 0.4);
+  color: $warning;
+}
+
+.btn {
+  padding: 16rpx 28rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  line-height: 1;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, $accent 0%, $accent-2 100%);
+  color: #06101a;
+  border: none;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: $text;
+  border: 1rpx solid $line;
+}
+
+.btn-warn {
+  background: linear-gradient(135deg, $warning, #ffae50);
+  color: #1a1300;
+  border: none;
+}
+
+.muted {
+  color: $muted;
+}
+
+.grid-bg {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1rpx, transparent 1rpx),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1rpx, transparent 1rpx);
+  background-size: 56rpx 56rpx;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+button::after {
+  border: none;
+}

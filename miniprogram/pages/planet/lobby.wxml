@@ -1,0 +1,88 @@
+<navigation-bar
+  title="发现"
+  back="{{false}}"
+  color="#2c1a0d"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page discover-page">
+  <view class="discover-shell">
+    <view class="discover-section">
+      <view class="section-heading">
+        <text class="section-title">你可能感兴趣</text>
+        <view class="section-action" bindtap="onRefreshInterest">
+          <text class="section-action-icon">↻</text>
+          <text class="section-action-text">换一批</text>
+        </view>
+      </view>
+
+      <view class="interest-list">
+        <view
+          class="interest-item"
+          wx:for="{{interestList}}"
+          wx:key="index"
+          data-id="{{item.id}}"
+          data-name="{{item.name}}"
+          data-creator="{{item.creator}}"
+          bindtap="onPlanetTap"
+        >
+          <image class="interest-cover" src="{{item.image}}" mode="aspectFill"></image>
+          <view class="interest-copy">
+            <text class="interest-name">{{item.name}}</text>
+            <text class="interest-meta">{{item.members}}</text>
+            <text class="interest-summary">{{item.summary}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="discover-section">
+      <view class="section-heading">
+        <text class="section-title">精华主题</text>
+        <view class="section-action" bindtap="onRefreshFeatured">
+          <text class="section-action-icon">↻</text>
+          <text class="section-action-text">换一批</text>
+        </view>
+      </view>
+
+      <view class="topic-list">
+        <view
+          class="topic-item"
+          wx:for="{{featuredList}}"
+          wx:key="id"
+          data-article-id="{{item.articleId}}"
+          bindtap="onTopicTap"
+        >
+          <view class="topic-main {{item.cover ? 'topic-main-with-cover' : ''}}">
+            <view class="topic-copy">
+              <text class="topic-title">{{item.title}}</text>
+              <text class="topic-summary">{{item.summary}}</text>
+              <text class="topic-meta">{{item.author}}｜{{item.meta}}</text>
+            </view>
+            <image
+              wx:if="{{item.cover}}"
+              class="topic-cover"
+              src="{{item.cover}}"
+              mode="aspectFill"
+            ></image>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="discover-bottom-bar">
+    <view class="discover-bottom-item" data-key="planet" bindtap="onBottomNavTap">
+      <view class="bottom-icon bottom-icon-planet"></view>
+      <text class="bottom-label">星球</text>
+    </view>
+    <view class="discover-bottom-item discover-bottom-item-active">
+      <view class="bottom-icon bottom-icon-discover"></view>
+      <text class="bottom-label">发现</text>
+    </view>
+    <view class="discover-bottom-item" data-key="mine" bindtap="onBottomNavTap">
+      <view class="bottom-icon bottom-icon-mine"></view>
+      <text class="bottom-label">我的</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,103 @@
+<navigation-bar
+  title="血饮智库-图库"
+  back="{{false}}"
+  color="#e6f0ff"
+  background="rgba(10, 18, 32, 0.96)"
+></navigation-bar>
+
+<view class="page grid-bg">
+    <view class="section hero card">
+      <view class="hero-title">金融安全智库</view>
+      <view class="hero-sub">AI驱动的情报聚合、风险洞察与资产防护</view>
+      <view class="hero-actions">
+        <button class="btn btn-primary" bindtap="goPlanet">进入知识星球</button>
+        <button class="btn btn-ghost" bindtap="goAI">AI问血饮</button>
+      </view>
+      <view class="hero-metrics">
+        <view class="metric">
+          <text class="metric-label">情报更新</text>
+          <text class="metric-value">128</text>
+        </view>
+        <view class="metric">
+          <text class="metric-label">课程排期</text>
+          <text class="metric-value">06</text>
+        </view>
+        <view class="metric">
+          <text class="metric-label">智能体会话</text>
+          <text class="metric-value">2.1k</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">核心入口</view>
+      <view class="section-subtitle">一键进入关键功能与资产安全服务</view>
+      <view class="quick-grid">
+        <view class="quick-card" data-action="calendar" bindtap="onQuickAction">
+          <text class="quick-title">课程日历</text>
+          <text class="quick-desc">最新排期与直播提醒</text>
+        </view>
+        <view class="quick-card" data-action="articles" bindtap="onQuickAction">
+          <text class="quick-title">付费文章</text>
+          <text class="quick-desc">深度研报与案例复盘</text>
+        </view>
+        <view class="quick-card" data-action="membership" bindtap="onQuickAction">
+          <text class="quick-title">会员制</text>
+          <text class="quick-desc">专属情报与权益升级</text>
+        </view>
+        <view class="quick-card" data-action="store" bindtap="onQuickAction">
+          <text class="quick-title">商城</text>
+          <text class="quick-desc">安全工具与课程礼包</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section card">
+      <view class="section-title">知识星球动态</view>
+      <view class="section-subtitle">血饮智库社区最新洞察</view>
+      <view class="planet-list">
+        <view class="planet-item" wx:for="{{planetUpdates}}" wx:key="id">
+          <view class="planet-dot"></view>
+          <view class="planet-body">
+            <text class="planet-title">{{item.title}}</text>
+            <text class="planet-meta">{{item.time}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="planet-actions">
+        <button class="btn btn-ghost" bindtap="goPlanet">查看星球</button>
+      </view>
+    </view>
+
+    <view class="section card">
+      <view class="section-title">精选付费文章</view>
+      <view class="section-subtitle">完全兼容微信文章的富文本呈现</view>
+      <view class="article-list">
+        <view class="article-card" wx:for="{{articles}}" wx:key="id" data-id="{{item.id}}" bindtap="goArticleDetail">
+          <view class="article-head">
+            <text class="article-title">{{item.title}}</text>
+            <text class="chip chip-warning">{{item.price}}</text>
+          </view>
+          <text class="article-desc">{{item.summary}}</text>
+          <view class="article-meta">
+            <text>{{item.author}}</text>
+            <text class="muted">{{item.time}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section card">
+      <view class="section-title">安全脉冲</view>
+      <view class="section-subtitle">今日资产安全态势</view>
+      <view class="pulse-grid">
+        <view class="pulse-card" wx:for="{{pulseData}}" wx:key="id">
+          <text class="pulse-label">{{item.label}}</text>
+          <text class="pulse-value">{{item.value}}</text>
+          <view class="glow-line"></view>
+        </view>
+      </view>
+    </view>
+
+  <view class="section safe-bottom"></view>
+</view>

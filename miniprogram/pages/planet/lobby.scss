@@ -1,0 +1,257 @@
+.discover-page {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #222222;
+  padding-bottom: calc(136rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.discover-shell {
+  padding: 18rpx 32rpx 32rpx;
+}
+
+.discover-section {
+  margin-bottom: 36rpx;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 40rpx;
+  line-height: 56rpx;
+  font-weight: 500;
+  color: #22160d;
+}
+
+.section-action {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 10rpx 0 10rpx 16rpx;
+}
+
+.section-action-icon,
+.section-action-text {
+  color: #19c8ac;
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
+.interest-list,
+.topic-list {
+  border-top: 1rpx solid #ececec;
+}
+
+.interest-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid #f2f2f2;
+}
+
+.interest-cover {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 10rpx;
+  background: #f5f5f5;
+  flex-shrink: 0;
+}
+
+.interest-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.interest-name {
+  font-size: 38rpx;
+  line-height: 50rpx;
+  color: #2d1f12;
+}
+
+.interest-meta {
+  font-size: 28rpx;
+  line-height: 40rpx;
+  color: #7b6f66;
+}
+
+.interest-summary {
+  font-size: 28rpx;
+  line-height: 40rpx;
+  color: #b0aaa4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topic-item {
+  padding: 28rpx 0;
+  border-bottom: 1rpx solid #f2f2f2;
+}
+
+.topic-main {
+  display: flex;
+  align-items: flex-start;
+}
+
+.topic-main-with-cover {
+  gap: 18rpx;
+}
+
+.topic-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topic-title {
+  font-size: 38rpx;
+  line-height: 52rpx;
+  font-weight: 500;
+  color: #17120d;
+  margin-bottom: 10rpx;
+}
+
+.topic-summary {
+  font-size: 28rpx;
+  line-height: 42rpx;
+  color: #2b2b2b;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  margin-bottom: 14rpx;
+}
+
+.topic-meta {
+  font-size: 24rpx;
+  line-height: 34rpx;
+  color: #b0aaa4;
+}
+
+.topic-cover {
+  width: 124rpx;
+  height: 124rpx;
+  border-radius: 8rpx;
+  background: #f5f5f5;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+}
+
+.discover-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(104rpx + env(safe-area-inset-bottom));
+  padding: 10rpx 44rpx env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1rpx solid #ececec;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.discover-bottom-item {
+  width: 160rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+  color: #c5c5c5;
+}
+
+.discover-bottom-item-active {
+  color: #19c8ac;
+}
+
+.bottom-icon {
+  width: 42rpx;
+  height: 42rpx;
+  position: relative;
+}
+
+.bottom-label {
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.bottom-icon-planet::before,
+.bottom-icon-planet::after,
+.bottom-icon-discover::before,
+.bottom-icon-discover::after,
+.bottom-icon-mine::before,
+.bottom-icon-mine::after {
+  content: '';
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.bottom-icon-planet::before {
+  left: 7rpx;
+  top: 7rpx;
+  width: 28rpx;
+  height: 28rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.bottom-icon-planet::after {
+  left: 18rpx;
+  top: 2rpx;
+  width: 6rpx;
+  height: 10rpx;
+  border-radius: 999rpx;
+  background: currentColor;
+}
+
+.bottom-icon-discover::before {
+  left: 4rpx;
+  top: 4rpx;
+  width: 34rpx;
+  height: 34rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.bottom-icon-discover::after {
+  left: 18rpx;
+  top: 8rpx;
+  width: 6rpx;
+  height: 18rpx;
+  border-radius: 999rpx;
+  background: currentColor;
+  box-shadow: 0 16rpx 0 currentColor;
+  transform: rotate(24deg);
+}
+
+.bottom-icon-mine::before {
+  left: 12rpx;
+  top: 4rpx;
+  width: 18rpx;
+  height: 18rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.bottom-icon-mine::after {
+  left: 8rpx;
+  top: 24rpx;
+  width: 26rpx;
+  height: 12rpx;
+  border: 3rpx solid currentColor;
+  border-top-left-radius: 18rpx;
+  border-top-right-radius: 18rpx;
+  border-bottom: none;
+}

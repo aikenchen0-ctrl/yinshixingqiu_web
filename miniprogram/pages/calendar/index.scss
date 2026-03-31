@@ -1,0 +1,123 @@
+.calendar-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calendar-title {
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.week-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8rpx;
+}
+
+.week-day {
+  text-align: center;
+  font-size: 20rpx;
+  color: rgba(230, 240, 255, 0.6);
+}
+
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10rpx;
+}
+
+.day-cell {
+  height: 64rpx;
+  border-radius: 14rpx;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1rpx solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.day-text {
+  font-size: 22rpx;
+}
+
+.day-dot {
+  position: absolute;
+  bottom: 8rpx;
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: #2ff5b4;
+  box-shadow: 0 0 10rpx rgba(47, 245, 180, 0.8);
+}
+
+.day-active {
+  border-color: rgba(47, 245, 180, 0.4);
+  background: rgba(47, 245, 180, 0.06);
+}
+
+.day-today {
+  border-color: rgba(76, 195, 255, 0.6);
+  box-shadow: 0 0 16rpx rgba(76, 195, 255, 0.3);
+}
+
+.session-list {
+  margin-top: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.session-card {
+  display: flex;
+  gap: 16rpx;
+  padding: 16rpx;
+  border-radius: 18rpx;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1rpx solid rgba(255, 255, 255, 0.05);
+  align-items: center;
+}
+
+.session-left {
+  width: 120rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.session-date {
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.session-time {
+  font-size: 20rpx;
+  color: rgba(230, 240, 255, 0.6);
+}
+
+.session-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.session-title {
+  font-size: 24rpx;
+}
+
+.session-meta {
+  font-size: 20rpx;
+  color: rgba(230, 240, 255, 0.6);
+}
+
+.session-action {
+  flex-shrink: 0;
+}

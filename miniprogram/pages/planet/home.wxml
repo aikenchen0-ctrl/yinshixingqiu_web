@@ -1,0 +1,163 @@
+<navigation-bar
+  title=""
+  back="{{true}}"
+  color="#ffffff"
+  background="linear-gradient(135deg, #6f8692 0%, #7d8f97 35%, #8f8a74 100%)"
+></navigation-bar>
+
+<view class="page planet-home-page">
+  <view class="planet-home-hero">
+    <view class="planet-home-hero-mask"></view>
+    <view class="planet-home-header">
+      <view class="planet-home-avatar {{avatarClass}}">
+        <text class="planet-home-avatar-letter">{{planetName.slice(0, 1)}}</text>
+      </view>
+      <view class="planet-home-copy">
+        <text class="planet-home-name">{{planetName}}</text>
+        <text class="planet-home-meta">{{creatorName}} 创建</text>
+      </view>
+    </view>
+
+    <view class="planet-home-actions">
+      <view class="planet-home-action" data-key="checkin" bindtap="onActionTap">
+        <view class="planet-home-action-icon icon-calendar"></view>
+        <text class="planet-home-action-label">打卡</text>
+      </view>
+      <view class="planet-home-action" data-key="columns" bindtap="onActionTap">
+        <view class="planet-home-action-icon icon-stack"></view>
+        <text class="planet-home-action-label">专栏</text>
+      </view>
+      <view class="planet-home-action">
+        <view class="planet-home-action-icon icon-bookmark"></view>
+        <text class="planet-home-action-label">订阅</text>
+      </view>
+      <view class="planet-home-action">
+        <view class="planet-home-action-icon icon-gear"></view>
+        <text class="planet-home-action-label">设置</text>
+      </view>
+      <view class="planet-home-action">
+        <view class="planet-home-action-icon icon-send"></view>
+        <text class="planet-home-action-label">邀请</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="planet-home-body">
+    <view class="planet-home-tab-row">
+      <view
+        class="planet-home-tab {{activeTab === item.key ? 'planet-home-tab-active' : ''}}"
+        wx:for="{{tabs}}"
+        wx:key="key"
+        data-key="{{item.key}}"
+        bindtap="onTabChange"
+      >
+        {{item.label}}
+      </view>
+      <view class="planet-home-list-switch">
+        <view class="switch-line"></view>
+        <view class="switch-line switch-line-short"></view>
+        <view class="switch-dot"></view>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'latest'}}" class="planet-feed-list">
+      <block wx:if="{{showNotices}}">
+      <view class="planet-notice-row">
+        <text class="planet-notice-tag">置顶</text>
+        <text class="planet-notice-text">【清退规定】 为了促使大家更好地学习和见证...</text>
+      </view>
+      <view class="planet-notice-row">
+        <text class="planet-notice-tag">置顶</text>
+        <text class="planet-notice-text">【星球介绍】 本星球主要提供机器学习、深度...</text>
+      </view>
+      </block>
+      <view class="planet-feed-card" wx:for="{{latestList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
+        <view class="planet-feed-head">
+          <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+          <view class="planet-feed-author">
+            <text class="planet-feed-name">{{item.author}}</text>
+            <text class="planet-feed-time">{{item.time}}</text>
+          </view>
+        </view>
+        <text class="planet-feed-title">{{item.title}}</text>
+        <text wx:if="{{item.content}}" class="planet-feed-content">{{item.content}}</text>
+        <view class="planet-feed-bar">
+          <view class="planet-feed-action">
+            <view class="feed-icon-like"></view>
+            <text>{{item.likeCount}}</text>
+          </view>
+          <view class="planet-feed-action">
+            <view class="feed-icon-comment"></view>
+            <text>{{item.commentCount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'featured'}}" class="planet-feed-list">
+      <view class="planet-feed-card" wx:for="{{featuredList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
+        <view class="planet-feed-head">
+          <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+          <view class="planet-feed-author">
+            <text class="planet-feed-name">{{item.author}}</text>
+            <text class="planet-feed-time">{{item.time}}</text>
+          </view>
+          <text class="planet-featured-mark">◌ 精华</text>
+        </view>
+        <text class="planet-feed-title">{{item.title}}</text>
+        <view class="planet-file-box" wx:if="{{item.hasFile}}">
+          <view class="planet-file-icon">PDF</view>
+          <text class="planet-file-name">{{item.fileName}}</text>
+        </view>
+        <view class="planet-feed-bar">
+          <view class="planet-feed-action">
+            <view class="feed-icon-like"></view>
+            <text>{{item.likeCount}}</text>
+          </view>
+          <view class="planet-feed-action">
+            <view class="feed-icon-comment"></view>
+            <text>{{item.commentCount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'files'}}" class="planet-feed-list">
+      <view class="planet-feed-card" wx:for="{{fileList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
+        <view class="planet-feed-head">
+          <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+          <view class="planet-feed-author">
+            <text class="planet-feed-name">{{item.author}}</text>
+            <text class="planet-feed-time">{{item.time}}</text>
+          </view>
+        </view>
+        <text class="planet-feed-title">{{item.title}}</text>
+        <view class="planet-file-box">
+          <view class="planet-file-icon">PDF</view>
+          <text class="planet-file-name">{{item.fileName}}</text>
+        </view>
+        <view class="planet-feed-bar">
+          <view class="planet-feed-action">
+            <view class="feed-icon-like"></view>
+            <text>{{item.likeCount}}</text>
+          </view>
+          <view class="planet-feed-action">
+            <view class="feed-icon-comment"></view>
+            <text>{{item.commentCount}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{activeTab === 'answer'}}" class="planet-empty-answer">
+      <view class="planet-empty-icon">
+        <view class="planet-empty-slot"></view>
+      </view>
+      <text class="planet-empty-text">这里空空如也</text>
+    </view>
+  </view>
+
+  <view class="planet-publish-button" bindtap="onPublish">
+    <view class="planet-publish-pen"></view>
+  </view>
+</view>

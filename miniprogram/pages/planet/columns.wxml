@@ -1,0 +1,30 @@
+<navigation-bar
+  title=""
+  back="{{true}}"
+  color="#222222"
+  background="#ffffff"
+></navigation-bar>
+
+<scroll-view class="page columns-page" scroll-y="{{true}}">
+  <view class="columns-head-card">
+    <view class="columns-head-icon"></view>
+    <view class="columns-head-copy">
+      <view class="columns-title-row">
+        <text class="columns-title">程序员创业之路</text>
+        <text class="columns-title-suffix">✚ 20133213</text>
+      </view>
+      <text class="columns-subtitle">共 20 个专栏</text>
+    </view>
+  </view>
+
+  <view class="columns-list">
+    <view class="columns-row" wx:for="{{columns}}" wx:key="id">
+      <view class="columns-row-left">
+        <view class="columns-row-icon"></view>
+        <text class="columns-row-title">{{item.title}}</text>
+        <text class="columns-row-count">({{item.count}})</text>
+      </view>
+      <text class="columns-row-arrow">⌄</text>
+    </view>
+  </view>
+</scroll-view>

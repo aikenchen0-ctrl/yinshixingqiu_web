@@ -1,0 +1,49 @@
+<navigation-bar
+  title="付费文章"
+  back="{{false}}"
+  color="#e6f0ff"
+  background="rgba(10, 18, 32, 0.96)"
+></navigation-bar>
+
+<view class="page grid-bg">
+    <view class="section">
+      <view class="section-title">文章目录</view>
+      <view class="section-subtitle">完全兼容微信文章的富文本排版</view>
+      <scroll-view class="tab-scroll" scroll-x>
+        <view class="tab-row">
+          <view
+            class="tab-item {{activeCategory === item.id ? 'tab-active' : ''}}"
+            wx:for="{{categories}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onCategoryChange"
+          >
+            <text>{{item.label}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="section card">
+      <view class="article-list">
+        <view class="article-card" wx:for="{{filteredArticles}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
+          <view class="article-header">
+            <text class="article-title">{{item.title}}</text>
+            <view class="article-price">
+              <text class="chip chip-warning">{{item.price}}</text>
+            </view>
+          </view>
+          <text class="article-summary">{{item.summary}}</text>
+          <view class="article-footer">
+            <text class="muted">{{item.author}}</text>
+            <text class="muted">{{item.time}}</text>
+            <text class="article-lock {{item.locked ? 'locked' : 'unlocked'}}">
+              {{item.locked ? '需解锁' : '已解锁'}}
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+  <view class="section safe-bottom"></view>
+</view>

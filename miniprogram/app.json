@@ -1,0 +1,69 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/calendar/index",
+    "pages/articles/index",
+    "pages/store/index",
+    "pages/profile/index",
+    "pages/planet/index",
+    "pages/planet/lobby",
+    "pages/planet/mine",
+    "pages/planet/detail",
+    "pages/planet/home",
+    "pages/planet/checkin",
+    "pages/planet/columns",
+    "pages/planet/post",
+    "pages/planet/create",
+    "pages/articles/detail",
+    "pages/membership/index",
+    "pages/ai/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationStyle": "custom",
+    "backgroundColor": "#0a1220",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#7c8aa6",
+    "selectedColor": "#2ff5b4",
+    "backgroundColor": "#0b1423",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/calendar/index",
+        "text": "课程"
+      },
+      {
+        "pagePath": "pages/articles/index",
+        "text": "文章"
+      },
+      {
+        "pagePath": "pages/store/index",
+        "text": "商城"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "tagNameStyleIsolation": "legacy",
+      "disableABTest": true,
+      "sdkVersionBegin": "3.0.0",
+      "sdkVersionEnd": "15.255.255"
+    }
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

@@ -1,0 +1,55 @@
+<navigation-bar
+  title=""
+  back="{{false}}"
+  color="#ffffff"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page planet-mine-page">
+  <view class="planet-mine-shell">
+    <view class="planet-mine-hero">
+      <view class="planet-mine-ring ring-outer"></view>
+      <view class="planet-mine-ring ring-middle"></view>
+      <view class="planet-mine-ring ring-inner"></view>
+      <image class="planet-mine-avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+    </view>
+
+    <text class="planet-mine-name">{{nickname}}</text>
+
+    <view class="planet-mine-card-list">
+      <view
+        class="planet-mine-card"
+        wx:for="{{menuItems}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onMenuTap"
+      >
+        <view class="planet-mine-card-left">
+          <view class="planet-mine-icon planet-mine-icon-{{item.iconType}}"></view>
+          <text class="planet-mine-card-title">
+            {{item.title}}<text wx:if="{{item.value}}">: {{item.value}}</text>
+          </text>
+        </view>
+        <view class="planet-mine-card-right">
+          <text wx:if="{{item.actionText}}" class="planet-mine-card-action">{{item.actionText}}</text>
+          <text class="planet-mine-card-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="planet-mine-bottom-bar">
+    <view class="planet-mine-bottom-item" data-key="planet" bindtap="onBottomNavTap">
+      <view class="planet-mine-bottom-icon planet-mine-bottom-icon-planet"></view>
+      <text class="planet-mine-bottom-label">星球</text>
+    </view>
+    <view class="planet-mine-bottom-item" data-key="discover" bindtap="onBottomNavTap">
+      <view class="planet-mine-bottom-icon planet-mine-bottom-icon-discover"></view>
+      <text class="planet-mine-bottom-label">发现</text>
+    </view>
+    <view class="planet-mine-bottom-item planet-mine-bottom-item-active">
+      <view class="planet-mine-bottom-icon planet-mine-bottom-icon-mine"></view>
+      <text class="planet-mine-bottom-label">我的</text>
+    </view>
+  </view>
+</view>

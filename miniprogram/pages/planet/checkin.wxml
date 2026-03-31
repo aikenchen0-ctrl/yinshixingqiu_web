@@ -1,0 +1,32 @@
+<navigation-bar
+  title="全部打卡挑战"
+  back="{{true}}"
+  color="#222222"
+  background="#ffffff"
+></navigation-bar>
+
+<scroll-view class="page checkin-page" scroll-y="{{true}}">
+  <view class="checkin-tip">
+    <view class="checkin-tip-avatar"></view>
+    <text class="checkin-tip-text">只有知识星球 App 才能打卡哦~</text>
+  </view>
+
+  <view class="checkin-list">
+    <view class="checkin-card" wx:for="{{items}}" wx:key="id">
+      <text class="checkin-title">{{item.title}}</text>
+      <view class="checkin-meta">
+        <text>{{item.days}}</text>
+        <text>|</text>
+        <text>{{item.status}}</text>
+      </view>
+      <view class="checkin-members">
+        <view wx:if="{{item.showAvatars}}" class="checkin-avatars">
+          <view class="checkin-avatar avatar-a"></view>
+          <view class="checkin-avatar avatar-b"></view>
+          <view class="checkin-avatar avatar-c"></view>
+        </view>
+        <text class="checkin-members-text">{{item.members}}</text>
+      </view>
+    </view>
+  </view>
+</scroll-view>

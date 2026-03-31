@@ -1,0 +1,127 @@
+$nav-text: #e6f0ff;
+$nav-line: rgba(76, 195, 255, 0.5);
+$nav-glow: rgba(47, 245, 180, 0.2);
+
+.nav {
+  --height: 44px;
+  --left: 16px;
+  color: $nav-text;
+}
+
+.nav .android {
+  --height: 48px;
+}
+
+.nav-inner {
+  position: relative;
+  top: 0;
+  left: 0;
+  height: calc(var(--height) + env(safe-area-inset-top));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding-top: env(safe-area-inset-top);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.nav-left {
+  position: relative;
+  padding-left: var(--left);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.nav-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.nav-btn-back-wrapper,
+.nav-btn-home-wrapper {
+  padding: 11px 18px 11px 16px;
+  margin: -11px -18px -11px -16px;
+}
+
+.nav-btn-back-wrapper.nav-active,
+.nav-btn-home-wrapper.nav-active {
+  opacity: 0.6;
+}
+
+.nav-btn-back {
+  font-size: 12px;
+  width: 12px;
+  height: 24px;
+  -webkit-mask: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24' viewBox='0 0 12 24'%3E%3Cpath fill-opacity='.9' fill-rule='evenodd' d='M10 19.438L8.955 20.5l-7.666-7.79a1.02 1.02 0 0 1 0-1.42L8.955 3.5 10 4.563 2.682 12 10 19.438z'/%3E%3C/svg%3E") no-repeat 50% 50%;
+  mask: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='24' viewBox='0 0 12 24'%3E%3Cpath fill-opacity='.9' fill-rule='evenodd' d='M10 19.438L8.955 20.5l-7.666-7.79a1.02 1.02 0 0 1 0-1.42L8.955 3.5 10 4.563 2.682 12 10 19.438z'/%3E%3C/svg%3E") no-repeat 50% 50%;
+  -webkit-mask-size: cover;
+  mask-size: cover;
+  background-color: $nav-text;
+}
+
+.nav-btn-home {
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at 50% 50%, $nav-text 0 3px, transparent 3px),
+    radial-gradient(circle at 50% 50%, transparent 0 6px, $nav-text 6px);
+  border-radius: 4px;
+}
+
+.nav-center {
+  font-size: 17px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex: 1;
+  height: 100%;
+}
+
+.nav-title {
+  letter-spacing: 1rpx;
+}
+
+.nav-loading {
+  margin-right: 8rpx;
+  align-items: center;
+}
+
+.nav-spinner {
+  width: 16px;
+  height: 16px;
+  display: block;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: $nav-text;
+  border-radius: 50%;
+  animation: nav-spin 1s linear infinite;
+}
+
+.nav-right {
+  width: var(--left);
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  box-sizing: border-box;
+}
+
+.nav-line {
+  height: 2rpx;
+  background: linear-gradient(90deg, transparent, $nav-line, $nav-glow, $nav-line, transparent);
+}
+
+@keyframes nav-spin {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,151 @@
+.planet-post-page {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 24rpx 22rpx 120rpx;
+}
+
+.planet-post-head {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.planet-post-avatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f09b39, #ffd16e);
+}
+
+.planet-post-author {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.planet-post-name {
+  color: #ff9d4e;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.planet-post-time {
+  color: #a2a2a2;
+  font-size: 24rpx;
+}
+
+.planet-post-title {
+  margin-top: 28rpx;
+  color: #262626;
+  font-size: 42rpx;
+  line-height: 1.55;
+}
+
+.planet-post-images {
+  margin-top: 22rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.planet-post-image {
+  width: 240rpx;
+  height: 170rpx;
+  background: #ececec;
+}
+
+.image-dark {
+  background: linear-gradient(135deg, #0f1f34, #394c66);
+}
+
+.image-light {
+  background: linear-gradient(135deg, #f5f5f5, #dce3ee);
+}
+
+.planet-post-tools {
+  margin-top: 54rpx;
+  display: flex;
+  justify-content: center;
+  gap: 20rpx;
+}
+
+.planet-post-tool {
+  width: 208rpx;
+  height: 72rpx;
+  border-radius: 999rpx;
+  background: #f5f6f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  color: #90a18f;
+  font-size: 28rpx;
+}
+
+.tool-icon {
+  width: 28rpx;
+  height: 28rpx;
+  position: relative;
+}
+
+.tool-icon-share::before,
+.tool-icon-generate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #57c9a8;
+}
+
+.tool-icon-share::after {
+  content: '';
+  position: absolute;
+  left: 8rpx;
+  top: 6rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border-left: 3rpx solid #ffffff;
+  border-bottom: 3rpx solid #ffffff;
+  transform: rotate(45deg);
+}
+
+.tool-icon-generate::after {
+  content: '';
+  position: absolute;
+  left: 9rpx;
+  top: 5rpx;
+  width: 10rpx;
+  height: 16rpx;
+  border: 3rpx solid #ffffff;
+  border-radius: 3rpx;
+}
+
+.planet-post-tool-text {
+  color: #8b9892;
+}
+
+.planet-post-comment-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(82rpx + env(safe-area-inset-bottom));
+  padding: 0 24rpx env(safe-area-inset-bottom);
+  background: #ffffff;
+  border-top: 1rpx solid #efefef;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.planet-post-comment-placeholder {
+  color: #b0b0b0;
+  font-size: 30rpx;
+}
+
+.planet-post-like {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #8e8e8e;
+  font-size: 26rpx;
+}

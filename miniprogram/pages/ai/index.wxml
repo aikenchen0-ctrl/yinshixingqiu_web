@@ -1,0 +1,35 @@
+<navigation-bar
+  title="AI问血饮"
+  back="{{true}}"
+  color="#e6f0ff"
+  background="rgba(10, 18, 32, 0.96)"
+></navigation-bar>
+
+<view class="page grid-bg">
+  <view class="section card ai-hero">
+    <text class="ai-hero-title">血饮本人训练 AI智能体</text>
+    <text class="ai-hero-sub">为金融安全场景提供咨询与策略建议</text>
+  </view>
+
+  <scroll-view class="message-scroll" scroll-y>
+    <view class="message-list">
+      <view class="message-item {{item.role}}" wx:for="{{messages}}" wx:key="id">
+        <view class="message-bubble">
+          <text>{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="chat-input safe-bottom">
+    <input
+      class="chat-field"
+      placeholder="输入你的问题"
+      value="{{inputValue}}"
+      confirm-type="send"
+      bindinput="onInput"
+      bindconfirm="onSend"
+    />
+    <button class="btn btn-primary" bindtap="onSend">发送</button>
+  </view>
+</view>

@@ -1,0 +1,73 @@
+<navigation-bar
+  title="文章详情"
+  back="{{true}}"
+  color="#e6f0ff"
+  background="rgba(10, 18, 32, 0.96)"
+></navigation-bar>
+
+<view class="page">
+    <view class="section card">
+      <text class="detail-title">{{article.title}}</text>
+      <view class="detail-meta">
+        <text class="muted">{{article.author}}</text>
+        <text class="muted">{{article.time}}</text>
+        <text class="chip chip-warning">{{article.price}}</text>
+      </view>
+      <view class="tag-row">
+        <view class="chip">金融安全</view>
+        <view class="chip">AI风控</view>
+        <view class="chip">深度研报</view>
+      </view>
+    </view>
+
+    <view class="section card listen-card">
+      <view class="section-title">智能听读模式</view>
+      <view class="listen-row">
+        <text class="listen-status">{{listenMode ? '听读中' : '已关闭'}}</text>
+        <switch checked="{{listenMode}}" color="#2ff5b4" bindchange="onListenToggle"></switch>
+      </view>
+      <view class="listen-controls">
+        <text class="muted">语速</text>
+        <slider
+          min="0.8"
+          max="1.4"
+          step="0.1"
+          value="{{listenSpeed}}"
+          activeColor="#2ff5b4"
+          backgroundColor="rgba(255,255,255,0.1)"
+          bindchange="onSpeedChange"
+        ></slider>
+      </view>
+      <view class="listen-actions">
+        <button class="btn btn-primary" bindtap="onListenAction">
+          {{listenMode ? '暂停听读' : '开始听读'}}
+        </button>
+        <button class="btn btn-ghost" bindtap="onListenSample">试听片段</button>
+      </view>
+    </view>
+
+    <view class="section card article-content">
+      <rich-text nodes="{{displayNodes}}"></rich-text>
+    </view>
+
+    <view wx:if="{{showPaywall}}" class="section card paywall">
+      <text class="paywall-title">解锁全文</text>
+      <text class="paywall-sub">会员制可阅读全部章节并启用AI听读。</text>
+      <view class="paywall-actions">
+        <button class="btn btn-warn" bindtap="goMembership">开通会员</button>
+        <button class="btn btn-ghost" bindtap="onPayOnce">单篇购买</button>
+      </view>
+    </view>
+
+  <view class="section safe-bottom content-pad"></view>
+</view>
+
+<view class="ai-bar safe-bottom">
+  <view class="ai-bar-inner">
+    <view class="ai-bar-text">
+      <text class="ai-title">AI问血饮</text>
+      <text class="ai-sub">语音交互·半透明助手条</text>
+    </view>
+    <button class="btn btn-primary ai-button" bindtap="goAI">立即咨询</button>
+  </view>
+</view>

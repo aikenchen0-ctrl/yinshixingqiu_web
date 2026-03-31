@@ -1,0 +1,392 @@
+{
+  "meta": {
+    "caseId": "581d55b0-4d6e-4c56-a2f0-88d077854dc7",
+    "caseName": "minitest-1",
+    "remarks": "",
+    "version": "0.0.1",
+    "startTime": 1773152336612,
+    "endTime": 1773152356736,
+    "appid": "wx0e0830bfef6128e7",
+    "casePath": "",
+    "caseType": "normal",
+    "commonParams": [
+      {
+        "key": "1773152356754",
+        "name": "",
+        "value": ""
+      }
+    ]
+  },
+  "env": {
+    "wxapplibVersion": "2.32.3",
+    "devtoolsVersion": "2.01.2510260",
+    "openid": "o6zAJswZUEfvzXtDD-iJ4bQh5xWo",
+    "entry": {
+      "path": "pages/index/index",
+      "query": "",
+      "scene": 1001
+    },
+    "mock": [
+      "none"
+    ],
+    "maxWaitFor": 10000,
+    "ignoreSelectors": [],
+    "mockAPIs": [],
+    "cleanCache": [
+      "none"
+    ],
+    "groupTouch": false,
+    "replaySetting": {
+      "screenshot": "none"
+    },
+    "simulatorType": "wechat",
+    "device": "iPhone 12/13 (Pro)",
+    "recordAPIs": []
+  },
+  "commands": [
+    {
+      "layer": "tool",
+      "commandType": "operate",
+      "command": "startRecord",
+      "waitfor": 0,
+      "timeStamp": 1773152336612,
+      "desc": ""
+    },
+    {
+      "tagName": "button",
+      "command": "touchstart",
+      "target": "button.btn.btn-primary",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "进入知识星球",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 106.41357421875,
+            "clientY": 194.37171936035156,
+            "force": 1,
+            "pageX": 106.41357421875,
+            "pageY": 194.37171936035156,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1305.7591552734375,
+            "screenY": 371.2041931152344
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 106.41357421875,
+            "clientY": 194.37171936035156,
+            "force": 1,
+            "pageX": 106.41357421875,
+            "pageY": 194.37171936035156,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1305.7591552734375,
+            "screenY": 371.2041931152344
+          }
+        ]
+      },
+      "targetCandidates": [
+        "button.btn.btn-primary",
+        ".btn.btn-primary",
+        "/view/view[1]/view[3]/button[1]"
+      ],
+      "timeStamp": 5259,
+      "waitfor": 5259,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "touchend",
+      "target": "button.btn.btn-primary",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "进入知识星球",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 106.41357421875,
+            "clientY": 194.37171936035156,
+            "pageX": 106.41357421875,
+            "pageY": 194.37171936035156,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1305.7591552734375,
+            "screenY": 371.2041931152344
+          }
+        ],
+        "touches": []
+      },
+      "targetCandidates": [
+        "button.btn.btn-primary",
+        ".btn.btn-primary",
+        "/view/view[1]/view[3]/button[1]"
+      ],
+      "timeStamp": 5361,
+      "waitfor": 102,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "tap",
+      "target": "button.btn.btn-primary",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "进入知识星球",
+      "eventData": {
+        "detail": {
+          "x": 106.41357421875,
+          "y": 194.37171936035156
+        },
+        "changedTouches": [
+          {
+            "clientX": 106.41357421875,
+            "clientY": 194.37171936035156,
+            "force": 1,
+            "pageX": 106.41357421875,
+            "pageY": 194.37171936035156,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1305.7591552734375,
+            "screenY": 371.2041931152344
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 106.41357421875,
+            "clientY": 194.37171936035156,
+            "force": 1,
+            "pageX": 106.41357421875,
+            "pageY": 194.37171936035156,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1305.7591552734375,
+            "screenY": 371.2041931152344
+          }
+        ]
+      },
+      "targetCandidates": [
+        "button.btn.btn-primary",
+        ".btn.btn-primary",
+        "/view/view[1]/view[3]/button[1]"
+      ],
+      "timeStamp": 5361,
+      "waitfor": 0,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "touchstart",
+      "target": "button.btn.btn-primary",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "进入知识星球",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 117.367431640625,
+            "clientY": 199.8527374267578,
+            "force": 1,
+            "pageX": 117.367431640625,
+            "pageY": 199.8527374267578,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1315.1832275390625,
+            "screenY": 375.9162292480469
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 117.367431640625,
+            "clientY": 199.8527374267578,
+            "force": 1,
+            "pageX": 117.367431640625,
+            "pageY": 199.8527374267578,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1315.1832275390625,
+            "screenY": 375.9162292480469
+          }
+        ]
+      },
+      "targetCandidates": [
+        "button.btn.btn-primary",
+        ".btn.btn-primary",
+        "/view/view[1]/view[3]/button[1]"
+      ],
+      "timeStamp": 8248,
+      "waitfor": 2887,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "touchend",
+      "target": "button.btn.btn-primary",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "进入知识星球",
+      "eventData": {
+        "detail": {},
+        "changedTouches": [
+          {
+            "clientX": 117.367431640625,
+            "clientY": 199.8527374267578,
+            "pageX": 117.367431640625,
+            "pageY": 199.8527374267578,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1315.1832275390625,
+            "screenY": 375.9162292480469
+          }
+        ],
+        "touches": []
+      },
+      "targetCandidates": [
+        "button.btn.btn-primary",
+        ".btn.btn-primary",
+        "/view/view[1]/view[3]/button[1]"
+      ],
+      "timeStamp": 8354,
+      "waitfor": 106,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "button",
+      "command": "tap",
+      "target": "button.btn.btn-primary",
+      "value": null,
+      "path": "pages/index/index",
+      "text": "进入知识星球",
+      "eventData": {
+        "detail": {
+          "x": 117.367431640625,
+          "y": 199.8527374267578
+        },
+        "changedTouches": [
+          {
+            "clientX": 117.367431640625,
+            "clientY": 199.8527374267578,
+            "force": 1,
+            "pageX": 117.367431640625,
+            "pageY": 199.8527374267578,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1315.1832275390625,
+            "screenY": 375.9162292480469
+          }
+        ],
+        "touches": [
+          {
+            "clientX": 117.367431640625,
+            "clientY": 199.8527374267578,
+            "force": 1,
+            "pageX": 117.367431640625,
+            "pageY": 199.8527374267578,
+            "radiusX": 11.5,
+            "radiusY": 11.5,
+            "screenX": 1315.1832275390625,
+            "screenY": 375.9162292480469
+          }
+        ]
+      },
+      "targetCandidates": [
+        "button.btn.btn-primary",
+        ".btn.btn-primary",
+        "/view/view[1]/view[3]/button[1]"
+      ],
+      "timeStamp": 8354,
+      "waitfor": 0,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/index/index",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 385.34033203125,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 10796,
+      "waitfor": 2442,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/index/index",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 0,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 11812,
+      "waitfor": 1016,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "tagName": "",
+      "command": "scroll",
+      "target": "/",
+      "path": "pages/index/index",
+      "eventData": {
+        "scrollDetail": {
+          "scrollTop": 385.34033203125,
+          "scrollLeft": 0
+        }
+      },
+      "targetCandidates": [],
+      "timeStamp": 12661,
+      "waitfor": 849,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "pageframe"
+    },
+    {
+      "timeStamp": 13703,
+      "waitfor": 1042,
+      "desc": "",
+      "commandType": "operate",
+      "layer": "native",
+      "command": "switchTab",
+      "text": "文章",
+      "data": {
+        "url": "pages/articles/index"
+      }
+    },
+    {
+      "timeStamp": 20124,
+      "waitfor": 6421,
+      "desc": "",
+      "layer": "tool",
+      "commandType": "operate",
+      "command": "stopRecord"
+    }
+  ]
+}
