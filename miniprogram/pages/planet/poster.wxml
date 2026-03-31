@@ -1,0 +1,31 @@
+<navigation-bar
+  title="长图预览"
+  back="{{true}}"
+  color="#222222"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page planet-poster-page">
+  <scroll-view class="planet-poster-scroll" scroll-y="{{true}}">
+    <view class="planet-poster-shell">
+      <image
+        wx:if="{{posterTempFilePath}}"
+        class="planet-poster-image"
+        src="{{posterTempFilePath}}"
+        mode="widthFix"
+      ></image>
+      <view wx:else class="planet-poster-loading">长图生成中...</view>
+    </view>
+  </scroll-view>
+
+  <view class="planet-poster-footer">
+    <button class="planet-poster-save-button" bindtap="onSavePoster">保存图片</button>
+  </view>
+
+  <canvas
+    class="planet-poster-canvas"
+    canvas-id="planetPosterCanvas"
+    id="planetPosterCanvas"
+    style="width: {{canvasWidth}}px; height: {{canvasHeight}}px;"
+  ></canvas>
+</view>

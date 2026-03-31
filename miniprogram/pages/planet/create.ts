@@ -96,6 +96,7 @@ Page({
     const planetName = this.data.planetName.trim()
     const price = Number(this.data.priceValue || '0')
     const selectedJoinType = this.data.joinTypes.find((item) => item.checked)
+    const joinType = selectedJoinType ? selectedJoinType.key : 'rolling'
 
     if (!planetName) {
       wx.showToast({
@@ -124,7 +125,7 @@ Page({
     const planet = createPlanet({
       name: planetName,
       price,
-      joinType: selectedJoinType?.key || 'rolling',
+      joinType,
     })
 
     wx.redirectTo({

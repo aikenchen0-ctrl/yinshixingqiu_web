@@ -1,4 +1,39 @@
-import { getPlanetById, loadPosts, PlanetPost } from '../../utils/planet'
+import { getPlanetById, loadPinnedPosts, loadPosts, PlanetPinnedPost, PlanetPost, PlanetProfile } from '../../utils/planet'
+
+interface PlanetMetricItem {
+  label: string
+  value: string
+}
+
+interface PlanetPreviewItem {
+  id: string
+  author: string
+  authorAvatar: string
+  time: string
+  title: string
+  summary: string
+  image: string
+}
+
+interface PlanetDetailConfig {
+  planetNo: string
+  verifiedLabel: string
+  reportLabel: string
+  categoryLabel?: string
+  ownerNameOverride?: string
+  avatarImageUrl?: string
+  ownerActiveText: string
+  description: string[]
+  feeNotices: string[]
+  previewList: PlanetPreviewItem[]
+  metricOverrides?: {
+    topics?: string
+    members?: string
+    featured?: string
+    questions?: string
+  }
+  priceText?: string
+}
 
 interface PlanetTab {
   key: string
@@ -13,11 +48,16 @@ interface FeedItem {
   title: string
   content: string
   images: string[]
-  tag: string
   likeCount: string
   commentCount: string
   hasFile?: boolean
   fileName?: string
+}
+
+interface PinnedArticleItem {
+  id: string
+  prefix: string
+  title: string
 }
 
 const feedAvatarClassPool = [
@@ -31,25 +71,138 @@ const feedAvatarClassPool = [
 
 const getFeedAvatarClass = (index: number) => feedAvatarClassPool[index % feedAvatarClassPool.length]
 
-const SUBSCRIBE_STORAGE_KEY = 'planet_subscription_status_v1'
-const SUBSCRIBE_TEMPLATE_IDS = ['REPLACE_WITH_WECHAT_SUBSCRIBE_TEMPLATE_ID']
+const defaultPreviewList: PlanetPreviewItem[] = [
+  {
+    id: 'preview_default_1',
+    author: '星主',
+    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+    time: '2026/03/31 13:36',
+    title: '欢迎来到这里，一起把长期有价值的内容沉淀下来',
+    summary: '这里会持续更新主题内容、实战经验和阶段性复盘，方便大家按主题回看。',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+  },
+]
 
-type SubscribeStatusMap = Record<string, boolean>
-
-const loadSubscribeStatusMap = () => {
-  const stored = wx.getStorageSync(SUBSCRIBE_STORAGE_KEY)
-  if (!stored || typeof stored !== 'object') {
-    return {} as SubscribeStatusMap
-  }
-  return stored as SubscribeStatusMap
-}
-
-const saveSubscribeStatus = (planetId: string, subscribed: boolean) => {
-  const statusMap = loadSubscribeStatusMap()
-  wx.setStorageSync(SUBSCRIBE_STORAGE_KEY, {
-    ...statusMap,
-    [planetId]: subscribed,
-  })
+const detailConfigMap: Record<string, PlanetDetailConfig> = {
+  CEO管理笔记: {
+    planetNo: '40468939',
+    verifiedLabel: '已认证',
+    reportLabel: '投诉',
+    categoryLabel: '教育',
+    ownerNameOverride: '李李舟安',
+    avatarImageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
+    ownerActiveText: '创建1159天，今天活跃过',
+    description: [
+      '这里聊你书上看不到、学校不会教、父母也不懂的：社会规则｜职场关系｜管理难题｜人际关系｜复杂局面。',
+      '舟安去过南极、亚马逊雨林、远东无人区探险，也把这些经历沉淀成关于管理和复杂关系的长期笔记。',
+    ],
+    feeNotices: [
+      '付费后，你可以使用当前付款的微信帐号在有效期内通过「知识星球」公众号、小程序、App 端、Web 端阅读内容、参与互动，向星主、合伙人或嘉宾提问。',
+      '加入星球后，72 小时内可申请退款。超过 72 小时后如果产生退款，手续费不予退还。',
+      '本星球由星主自行创建，加入前请确认风险，平台不提供相关保证。若发现违法星球，请勿加入，并及时投诉。',
+    ],
+    previewList: [
+      {
+        id: 'ceo_preview_1',
+        author: '李李舟安',
+        authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80',
+        time: '2026/03/31 13:36',
+        title: '【 第 1218 期 关系中的爱与恨 】',
+        summary: '这篇本来要在局间星球聊的，但问的人实在太多，打算写在这里。我写这个知识星...',
+        image: 'https://images.unsplash.com/photo-1474511320723-9a56873867b5?auto=format&fit=crop&w=600&q=80',
+      },
+      {
+        id: 'ceo_preview_2',
+        author: '李李舟安',
+        authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80',
+        time: '2026/03/15 21:04',
+        title: '【 第 1205 期 10-20人团队的配置和分工 】',
+        summary: '刚接了一位朋友咨询的电话。我们一起讨论一下，10-20人团队在不同阶段怎么配人。',
+        image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=80',
+      },
+      {
+        id: 'ceo_preview_3',
+        author: '李李舟安',
+        authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80',
+        time: '2026/03/12 11:39',
+        title: '【 第 1203 期 大多数人忽略的管理真相 】',
+        summary: '这几天我在做《逆向管理课》的 PPT，发现很多人都在忽略一个管理的真问题。',
+        image: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=600&q=80',
+      },
+    ],
+    metricOverrides: {
+      topics: '1.7k+',
+      members: '1800+',
+      featured: '81',
+      questions: '691',
+    },
+    priceText: '¥499',
+  },
+  planet_1: {
+    planetNo: '40468939',
+    verifiedLabel: '已认证',
+    reportLabel: '投诉',
+    ownerActiveText: '创建1159天，今天活跃过',
+    description: [
+      '这里聊你书上看不到、学校不会教、父母也不懂的：社会规则｜职场关系｜管理难题｜人际关系｜复杂局面。',
+      '把经历过的管理现场、组织磨合、关键决策和沟通方法，沉淀成可以反复翻看的经验笔记。',
+    ],
+    feeNotices: [
+      '付费后，你可以使用当前付款的微信帐号在有效期内通过「知识星球」公众号、小程序、App 端、Web 端阅读内容、参与互动，向星主、合伙人或嘉宾提问。',
+      '加入星球后，72 小时内可申请退款。超过 72 小时后如果产生退款，手续费不予退还。',
+      '本星球由星主自行创建，加入前请确认风险，平台不提供相关保证。若发现违法星球，请勿加入，并及时投诉。',
+    ],
+    previewList: defaultPreviewList,
+    metricOverrides: {
+      topics: '1.7k+',
+      members: '1800+',
+      featured: '81',
+      questions: '691',
+    },
+    priceText: '¥499',
+  },
+  planet_2: {
+    planetNo: '88885121',
+    verifiedLabel: '已认证',
+    reportLabel: '投诉',
+    ownerActiveText: '创建803天，今天活跃过',
+    description: [
+      '聚焦 AI 编程、副业出海和项目实操，分享从选题、验证到上线变现的一整套方法。',
+      '每周会补充项目复盘、工具链清单和案例拆解，帮助大家更快做出自己的可售卖产品。',
+    ],
+    feeNotices: [
+      '会员有效期内可在微信小程序、App 和 Web 端浏览主题、精华和专栏内容。',
+      '付费加入后 72 小时内支持申请退款；超时后如发生退款，手续费不予退回。',
+      '请确认星球定位与更新节奏后再加入，适合想把 AI 项目尽快落地并持续复盘的同学。',
+    ],
+    previewList: [
+      {
+        id: 'ai_preview_1',
+        author: '易安',
+        authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+        time: '2026/03/31 09:30',
+        title: '新来的朋友，大家好，欢迎来到我的知识星球。',
+        summary: '这里会持续记录 AI 副业路径、产品验证方式和真实踩坑经验，先把项目做出来，再慢慢打磨。',
+        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+      },
+      {
+        id: 'ai_preview_2',
+        author: '易安',
+        authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+        time: '2026/03/29 20:16',
+        title: '如何用 7 天做出一个能卖的 AI 小工具',
+        summary: '从需求来源、MVP 范围到收款闭环，把最小验证路径拆成可以直接执行的清单。',
+        image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
+      },
+    ],
+    metricOverrides: {
+      topics: '2.3k+',
+      members: '2360+',
+      featured: '126',
+      questions: '918',
+    },
+    priceText: '¥365',
+  },
 }
 
 const mapPostsToFeedItems = (posts: PlanetPost[]): FeedItem[] =>
@@ -61,22 +214,69 @@ const mapPostsToFeedItems = (posts: PlanetPost[]): FeedItem[] =>
     title: post.content,
     content: '',
     images: post.images || [],
-    tag: '',
     likeCount: `${post.likeCount}`,
     commentCount: `${post.commentCount}`,
   }))
 
+const mapPinnedPostsToItems = (posts: PlanetPinnedPost[]): PinnedArticleItem[] =>
+  posts.map((post) => ({
+    id: post.id,
+    prefix: post.prefix,
+    title: post.title,
+  }))
+
+const formatMetricCount = (count: number) => {
+  if (count >= 1000) {
+    return `${(count / 1000).toFixed(1)}k+`
+  }
+  return `${count}`
+}
+
+const buildMetricList = (planet: PlanetProfile, detail: PlanetDetailConfig): PlanetMetricItem[] => {
+  const metricOverrides = detail.metricOverrides || {}
+  const topics = metricOverrides.topics || formatMetricCount(planet.postCount)
+  const members = metricOverrides.members || `${planet.memberCount}+`
+  const featured = metricOverrides.featured || `${Math.max(12, Math.floor(planet.postCount / 5))}`
+  const questions = metricOverrides.questions || `${Math.max(36, Math.floor(planet.memberCount / 3))}`
+
+  return [
+    { label: '主题', value: topics },
+    { label: '成员', value: members },
+    { label: '精华', value: featured },
+    { label: '问答', value: questions },
+  ]
+}
+
+const buildTags = (planet: PlanetProfile, detail: PlanetDetailConfig) => {
+  const tags = [detail.verifiedLabel, detail.categoryLabel || planet.category]
+  if (planet.isFree) {
+    tags.push('免费')
+  }
+  return tags
+}
+
 Page({
   data: {
+    isJoined: false,
     planetId: 'planet_1',
-    planetName: 'Datawhale',
-    creatorName: '范大',
+    planetName: '知识星球',
+    creatorName: '',
     avatarClass: 'avatar-sand',
+    avatarImageUrl: '',
+    planetNo: '',
+    ownerName: '',
+    ownerActiveText: '',
+    tags: [] as string[],
+    metrics: [] as PlanetMetricItem[],
+    descriptionList: [] as string[],
+    previewDescriptionList: [] as string[],
+    introExpanded: false,
+    feeNotices: [] as string[],
+    previewList: [] as PlanetPreviewItem[],
+    priceText: '¥199',
+    joinButtonText: '立即加入',
+    reportLabel: '投诉',
     showNotices: true,
-    subscribed: false,
-    showSubscribeDialog: false,
-    showSettingsSheet: false,
-    showInviteSheet: false,
     activeTab: 'latest',
     tabs: [
       { key: 'latest', label: '最新' },
@@ -84,90 +284,45 @@ Page({
       { key: 'files', label: '文件' },
       { key: 'answer', label: '等我回答' },
     ] as PlanetTab[],
-    latestList: [
+    pinnedList: [] as PinnedArticleItem[],
+    latestList: [] as FeedItem[],
+    featuredList: [
       {
-        id: 'l1',
+        id: 'f1',
         author: '程序员996号',
         avatarClass: 'feed-avatar-blue',
         time: '2026/03/18 15:47',
-        title: '26年目标 :智能体开发或ai产品经理',
+        title: '26年目标 ai智能体开发或ai产品经理',
         content: '',
         images: [],
-        tag: '',
         likeCount: '1',
         commentCount: '0',
       },
       {
-        id: 'l2',
+        id: 'f2',
         author: 'WROC',
         avatarClass: 'feed-avatar-gray',
         time: '2026/03/13 05:11',
         title: '26年目标，智能体应用',
         content: '',
         images: [],
-        tag: '',
         likeCount: '0',
         commentCount: '0',
-      },
-    ] as FeedItem[],
-    featuredList: [
-      {
-        id: 'f1',
-        author: '二小',
-        avatarClass: 'feed-avatar-rose',
-        time: '2025/01/09 17:21',
-        title: '分享一本python游戏编程',
-        content: '',
-        images: [],
-        tag: '精华',
-        likeCount: '6',
-        commentCount: '0',
-        hasFile: true,
-        fileName: 'Python游戏编程快速上手.pdf',
-      },
-      {
-        id: 'f2',
-        author: 'BDAI_Skywa*',
-        avatarClass: 'feed-avatar-dark',
-        time: '2024/11/26 21:05',
-        title: '基于博弈交互可解释ML',
-        content: '',
-        images: [],
-        tag: '精华',
-        likeCount: '1',
-        commentCount: '0',
-        hasFile: true,
-        fileName: 'f27a0e2139a305a35426438ee7ca77ad.pdf',
       },
     ] as FeedItem[],
     fileList: [
       {
         id: 'file1',
-        author: '云梦 &&玄龙',
+        author: '云梦&&玄龙',
         avatarClass: 'feed-avatar-amber',
         time: '2026/01/05 09:02',
         title: '分享一个关于AI 智能体的综述',
         content: '',
         images: [],
-        tag: '',
-        likeCount: '5',
+        likeCount: '6',
         commentCount: '0',
         hasFile: true,
         fileName: 'ai agent综述 李飞飞.pdf',
-      },
-      {
-        id: 'file2',
-        author: '曹文杰',
-        avatarClass: 'feed-avatar-navy',
-        time: '2025/11/14 10:38',
-        title: '大模型边界',
-        content: '',
-        images: [],
-        tag: '',
-        likeCount: '0',
-        commentCount: '0',
-        hasFile: true,
-        fileName: '大模型能力边界与发展思考-专业研究版本-v1...',
       },
     ] as FeedItem[],
   },
@@ -175,36 +330,135 @@ Page({
   onLoad(options: Record<string, string>) {
     const planetId = options.id || 'planet_1'
     const planet = getPlanetById(planetId)
+    const optionName = options.name ? decodeURIComponent(options.name) : ''
+    const optionCreator = options.creator ? decodeURIComponent(options.creator) : ''
+    const source = options.source || ''
+
+    if (!planet) {
+      return
+    }
+
+    const detail = detailConfigMap[optionName] || detailConfigMap[planetId] || {
+      planetNo: planet.embedPath.replace(/\D/g, '').slice(0, 8) || '10000001',
+      verifiedLabel: '已认证',
+      reportLabel: '投诉',
+      ownerActiveText: `创建${Math.max(30, planet.memberCount)}天，今天活跃过`,
+      description: [planet.intro],
+      feeNotices: [
+        '付费后可在有效期内查看星球内容、参与互动并接收更新提醒。',
+        '加入星球后 72 小时内可申请退款，超时后手续费不予退回。',
+        '加入前请确认内容方向与更新节奏，平台不对第三方内容承担保证责任。',
+      ],
+      previewList: defaultPreviewList,
+      priceText: planet.isFree ? '免费' : `¥${planet.price}`,
+    }
+
+    const isJoined = source === 'discover' ? false : source === 'joined' ? true : !!planet.joined
     const latestPosts = mapPostsToFeedItems(loadPosts())
-    const planetName = planet?.name || (options.name ? decodeURIComponent(options.name) : 'Datawhale')
-    const creatorName = planet?.ownerName || (options.creator ? decodeURIComponent(options.creator) : '范大')
-    const avatarClass = planet?.avatarClass || 'avatar-sand'
-    const isNewPlanet = !!planet && planet.memberCount <= 1
+    const pinnedList = mapPinnedPostsToItems(loadPinnedPosts())
+    const creatorName = optionCreator || planet.ownerName
+    const joinButtonText = isJoined ? '进入星球' : `立即加入：${detail.priceText || (planet.isFree ? '免费' : `¥${planet.price}`)}`
 
     this.setData({
+      isJoined,
       planetId,
-      planetName,
+      planetName: optionName || planet.name,
       creatorName,
-      avatarClass,
-      subscribed: !!loadSubscribeStatusMap()[planetId],
-      showNotices: !isNewPlanet,
-      latestList: isNewPlanet
-        ? [
-            {
-              id: 'welcome_1',
-              author: creatorName,
-              avatarClass,
-              time: planet?.createdAt || '2026/03/31 11:23',
-              title: `欢迎加入「${planetName}」，非常高兴能与大家在这里相遇。`,
-              content: `${planet?.intro || `建议大家优先使用 App 深度交流，及时接收最新消息，和我一起把 ${planetName} 做起来。`}\n\n点击下方链接进行下载安装，期待在 App 里与大家深入交流。`,
-              images: [],
-              tag: '',
-              likeCount: '0',
-              commentCount: '0',
-            },
-          ]
-        : latestPosts,
+      avatarClass: planet.avatarClass,
+      avatarImageUrl: detail.avatarImageUrl || planet.avatarImageUrl,
+      planetNo: detail.planetNo,
+      ownerName: (detail.ownerNameOverride || creatorName).replace(/^(主理人\s*)/, '').replace(/老师$/, ''),
+      ownerActiveText: detail.ownerActiveText,
+      tags: buildTags(planet, detail),
+      metrics: buildMetricList(planet, detail),
+      descriptionList: detail.description,
+      previewDescriptionList: detail.description.slice(0, 1),
+      introExpanded: false,
+      feeNotices: detail.feeNotices,
+      previewList: detail.previewList,
+      priceText: detail.priceText || (planet.isFree ? '免费' : `¥${planet.price}`),
+      joinButtonText,
+      reportLabel: detail.reportLabel,
+      showNotices: !!pinnedList.length,
+      pinnedList,
+      latestList: latestPosts,
     })
+  },
+
+  onToggleIntro() {
+    const introExpanded = !this.data.introExpanded
+
+    this.setData({
+      introExpanded,
+      previewDescriptionList: introExpanded ? this.data.descriptionList : this.data.descriptionList.slice(0, 1),
+    })
+  },
+
+  onOwnerTap() {
+    wx.navigateTo({
+      url: `/pages/planet/profile?id=${this.data.planetId}`,
+    })
+  },
+
+  onPreviewTap() {
+    wx.showToast({
+      title: '主题详情下一步补齐',
+      icon: 'none',
+    })
+  },
+
+  onJoinTap() {
+    if (this.data.isJoined) {
+      wx.showToast({
+        title: '进入星球内容流',
+        icon: 'none',
+      })
+      return
+    }
+
+    wx.showToast({
+      title: this.data.priceText === '免费' ? '准备加入星球' : `准备加入 ${this.data.priceText}`,
+      icon: 'none',
+    })
+  },
+
+  onActionTap(e: WechatMiniprogram.TouchEvent) {
+    const key = e.currentTarget.dataset.key
+
+    if (key === 'checkin') {
+      wx.navigateTo({
+        url: '/pages/planet/checkin',
+      })
+      return
+    }
+
+    if (key === 'columns') {
+      wx.navigateTo({
+        url: '/pages/planet/columns',
+      })
+      return
+    }
+
+    if (key === 'subscribe') {
+      wx.showToast({
+        title: '订阅提醒功能下一步补齐',
+        icon: 'none',
+      })
+      return
+    }
+
+    if (key === 'settings') {
+      wx.navigateTo({
+        url: `/pages/planet/profile?id=${this.data.planetId}`,
+      })
+      return
+    }
+
+    if (key === 'invite') {
+      wx.navigateTo({
+        url: `/pages/planet/share-card?id=${this.data.planetId}`,
+      })
+    }
   },
 
   onTabChange(e: WechatMiniprogram.TouchEvent) {
@@ -214,224 +468,17 @@ Page({
     })
   },
 
-  onActionTap(e: WechatMiniprogram.TouchEvent) {
-    const key = e.currentTarget.dataset.key
-    if (key === 'checkin') {
-      wx.navigateTo({
-        url: '/pages/planet/checkin',
-      })
-      return
-    }
-    if (key === 'columns') {
-      wx.navigateTo({
-        url: '/pages/planet/columns',
-      })
-      return
-    }
-    if (key === 'subscribe') {
-      this.onSubscribeTap()
-      return
-    }
-    if (key === 'settings') {
-      this.onSettingsTap()
-      return
-    }
-    if (key === 'invite') {
-      this.onInviteTap()
-    }
-  },
-
-  onSettingsTap() {
-    this.setData({
-      showSettingsSheet: true,
-    })
-  },
-
-  onCloseSettingsSheet() {
-    this.setData({
-      showSettingsSheet: false,
-    })
-  },
-
-  onSettingsItemTap(e: WechatMiniprogram.TouchEvent) {
-    const key = e.currentTarget.dataset.key
-
-    this.setData({
-      showSettingsSheet: false,
-    })
-
-    if (key === 'profile') {
-      wx.navigateTo({
-        url: `/pages/planet/profile?id=${this.data.planetId}`,
-      })
-      return
-    }
-
-    if (key === 'mp') {
-      wx.navigateTo({
-        url: `/pages/planet/embed?id=${this.data.planetId}`,
-      })
-    }
-  },
-
-  onInviteTap() {
-    this.setData({
-      showInviteSheet: true,
-    })
-  },
-
-  onCloseInviteSheet() {
-    this.setData({
-      showInviteSheet: false,
-    })
-  },
-
-  onGenerateInviteCard() {
-    this.setData({
-      showInviteSheet: false,
-    })
-    wx.navigateTo({
-      url: `/pages/planet/share-card?id=${this.data.planetId}`,
-    })
-  },
-
-  onShareAppMessage() {
-    const { planetId, planetName, creatorName } = this.data
-    this.setData({
-      showInviteSheet: false,
-    })
-    return {
-      title: `邀请你加入「${planetName}」`,
-      path: `/pages/planet/home?id=${planetId}&name=${encodeURIComponent(planetName)}&creator=${encodeURIComponent(creatorName)}`,
-    }
-  },
-
-  onShareTimeline() {
-    return {
-      title: `邀请你加入「${this.data.planetName}」`,
-      query: `id=${this.data.planetId}`,
-    }
-  },
-
-  onSubscribeTap() {
-    if (this.data.subscribed) {
-      wx.showToast({
-        title: '已订阅内容提醒',
-        icon: 'none',
-      })
-      return
-    }
-
-    this.setData({
-      showSubscribeDialog: true,
-    })
-  },
-
-  onCloseSubscribeDialog() {
-    this.setData({
-      showSubscribeDialog: false,
-    })
-  },
-
-  onSubscribeSkip() {
-    this.setData({
-      showSubscribeDialog: false,
-    })
-  },
-
-  noop() {},
-
-  onSubscribeConfirm() {
-    const validTemplateIds = SUBSCRIBE_TEMPLATE_IDS.filter(
-      (item) => item && !item.startsWith('REPLACE_WITH_'),
-    )
-
-    if (!validTemplateIds.length) {
-      this.setData({
-        showSubscribeDialog: false,
-      })
-      wx.showToast({
-        title: '请先配置订阅消息模板ID',
-        icon: 'none',
-      })
-      return
-    }
-
-    wx.requestSubscribeMessage({
-      tmplIds: validTemplateIds,
-      success: (res) => {
-        const accepted = validTemplateIds.some((tmplId) => res[tmplId] === 'accept')
-        const rejected = validTemplateIds.every((tmplId) => res[tmplId] === 'reject')
-        const mainSwitchOff = typeof res.errMsg === 'string' && res.errMsg.includes('20004')
-
-        this.setData({
-          showSubscribeDialog: false,
-        })
-
-        if (accepted) {
-          saveSubscribeStatus(this.data.planetId, true)
-          this.setData({
-            subscribed: true,
-          })
-          wx.showToast({
-            title: '订阅成功',
-            icon: 'success',
-          })
-          return
-        }
-
-        if (mainSwitchOff) {
-          wx.showModal({
-            title: '通知未开启',
-            content: '请在微信设置中开启订阅消息提醒后再试。',
-            confirmText: '去设置',
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                wx.openSetting({})
-              }
-            },
-          })
-          return
-        }
-
-        wx.showToast({
-          title: rejected ? '你已选择暂不订阅' : '未完成订阅授权',
-          icon: 'none',
-        })
-      },
-      fail: (error) => {
-        this.setData({
-          showSubscribeDialog: false,
-        })
-        const errMsg = typeof error.errMsg === 'string' ? error.errMsg : ''
-        const blockedBySwitch = errMsg.includes('20004')
-
-        if (blockedBySwitch) {
-          wx.showModal({
-            title: '通知未开启',
-            content: '请在微信设置中开启订阅消息提醒后再试。',
-            confirmText: '去设置',
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                wx.openSetting({})
-              }
-            },
-          })
-          return
-        }
-
-        wx.showToast({
-          title: '订阅申请未完成',
-          icon: 'none',
-        })
-      },
-    })
-  },
-
   onFeedTap(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id || 'l1'
+    const id = e.currentTarget.dataset.id || 'seed_1'
     wx.navigateTo({
-      url: `/pages/planet/post?id=${id}`,
+      url: `/pages/planet/post?id=${id}&planetId=${this.data.planetId}`,
+    })
+  },
+
+  onPinnedTap(e: WechatMiniprogram.TouchEvent) {
+    const id = e.currentTarget.dataset.id || 'pinned_1'
+    wx.navigateTo({
+      url: `/pages/planet/post?id=${id}&planetId=${this.data.planetId}`,
     })
   },
 
@@ -440,5 +487,19 @@ Page({
       title: '发帖能力下一步补齐',
       icon: 'none',
     })
+  },
+
+  onShareAppMessage() {
+    return {
+      title: `邀请你加入「${this.data.planetName}」`,
+      path: `/pages/planet/home?id=${this.data.planetId}`,
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: `邀请你加入「${this.data.planetName}」`,
+      query: `id=${this.data.planetId}`,
+    }
   },
 })

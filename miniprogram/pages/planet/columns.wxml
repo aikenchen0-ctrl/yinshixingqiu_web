@@ -18,13 +18,22 @@
   </view>
 
   <view class="columns-list">
-    <view class="columns-row" wx:for="{{columns}}" wx:key="id">
-      <view class="columns-row-left">
-        <view class="columns-row-icon"></view>
-        <text class="columns-row-title">{{item.title}}</text>
-        <text class="columns-row-count">({{item.count}})</text>
+    <view class="columns-group" wx:for="{{columns}}" wx:for-item="column" wx:key="id">
+      <view class="columns-row" data-id="{{column.id}}" bindtap="onToggleColumn">
+        <view class="columns-row-left">
+          <view class="columns-row-icon"></view>
+          <text class="columns-row-title">{{column.title}}</text>
+          <text class="columns-row-count">({{column.count}})</text>
+        </view>
+        <text class="columns-row-arrow {{column.expanded ? 'columns-row-arrow-expanded' : ''}}">⌃</text>
       </view>
-      <text class="columns-row-arrow">⌄</text>
+
+      <view wx:if="{{column.expanded && column.items.length}}" class="columns-panel">
+        <view wx:for="{{column.items}}" wx:for-item="entry" wx:key="*this" class="columns-panel-item">
+          <text class="columns-panel-dot">•</text>
+          <text class="columns-panel-text">{{entry}}</text>
+        </view>
+      </view>
     </view>
   </view>
 </scroll-view>

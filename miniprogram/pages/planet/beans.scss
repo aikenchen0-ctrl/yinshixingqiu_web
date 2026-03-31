@@ -1,0 +1,18 @@
+.beans-page {
+  min-height: 100vh;
+  background: #f7f7f7;
+}
+
+.beans-empty-wrap {
+  height: 360rpx;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.beans-empty-text {
+  color: #c5ccd3;
+  font-size: 34rpx;
+  line-height: 48rpx;
+}

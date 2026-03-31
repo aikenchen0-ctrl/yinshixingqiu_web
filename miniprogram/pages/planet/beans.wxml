@@ -1,0 +1,12 @@
+<navigation-bar
+  title="星球豆明细"
+  back="{{true}}"
+  color="#22160d"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="beans-page">
+  <view class="beans-empty-wrap">
+    <text class="beans-empty-text">暂无收支记录</text>
+  </view>
+</view>

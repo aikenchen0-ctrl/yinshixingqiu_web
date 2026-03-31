@@ -32,9 +32,8 @@ Page({
     const id = e.currentTarget.dataset.id
 
     if (id === 'balance') {
-      wx.showToast({
-        title: '暂无星球豆明细',
-        icon: 'none',
+      wx.navigateTo({
+        url: '/pages/planet/beans',
       })
       return
     }

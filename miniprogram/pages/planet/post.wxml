@@ -27,19 +27,47 @@
   </view>
 
   <view class="planet-post-tools">
-    <view class="planet-post-tool">
+    <button class="planet-post-tool planet-post-tool-button" open-type="share">
       <view class="tool-icon tool-icon-share"></view>
       <text class="planet-post-tool-text">分享好友</text>
-    </view>
-    <view class="planet-post-tool">
+    </button>
+    <view class="planet-post-tool" bindtap="onGeneratePoster">
       <view class="tool-icon tool-icon-generate"></view>
       <text class="planet-post-tool-text">生成长图</text>
     </view>
   </view>
 
+  <view class="planet-post-comment-list">
+    <view wx:if="{{comments.length}}" class="planet-post-comment-section">
+      <text class="planet-post-comment-title">全部观点 {{comments.length}}</text>
+      <view wx:for="{{comments}}" wx:key="id" class="planet-post-comment-item">
+        <view class="planet-post-comment-head">
+          <text class="planet-post-comment-author">{{item.author}}</text>
+          <text class="planet-post-comment-time">{{item.time}}</text>
+        </view>
+        <text class="planet-post-comment-content">{{item.content}}</text>
+      </view>
+    </view>
+  </view>
+
   <view class="planet-post-comment-bar">
-    <text class="planet-post-comment-placeholder">写下你的观点...</text>
-    <view class="planet-post-like">
+    <input
+      class="planet-post-comment-input"
+      type="text"
+      confirm-type="send"
+      placeholder="写下你的观点..."
+      placeholder-class="planet-post-comment-placeholder"
+      value="{{commentInput}}"
+      bindinput="onCommentInput"
+      bindconfirm="onCommentConfirm"
+      cursor-spacing="24"
+      adjust-position="{{false}}"
+    />
+    <view class="planet-post-comment-submit" bindtap="onCommentConfirm">发送</view>
+    <view
+      class="planet-post-like {{post.liked ? 'planet-post-like-active' : ''}} {{!canLike ? 'planet-post-like-disabled' : ''}}"
+      bindtap="onLikeTap"
+    >
       <view class="feed-icon-like"></view>
       <text>赞{{post.likeCount}}</text>
     </view>

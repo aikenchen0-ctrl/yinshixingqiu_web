@@ -11,6 +11,20 @@ export interface PlanetPost {
   liked: boolean
 }
 
+export interface PlanetPinnedPost {
+  id: string
+  author: string
+  time: string
+  title: string
+  content: string
+  prefix: string
+  avatarClass: string
+  images: string[]
+  likeCount: number
+  commentCount: number
+  liked?: boolean
+}
+
 export interface PlanetComment {
   id: string
   author: string
@@ -21,6 +35,7 @@ export interface PlanetComment {
 export interface PlanetProfile {
   id: string
   name: string
+  joined?: boolean
   avatarClass: string
   avatarImageUrl: string
   coverImageUrl: string
@@ -48,6 +63,7 @@ export interface PlanetCreationPayload {
 }
 
 const POST_KEY = 'planet_posts_v1'
+const PINNED_POST_KEY = 'planet_pinned_posts_v1'
 const COMMENT_PREFIX = 'planet_comments_'
 const PLANET_KEY = 'planet_profiles_v1'
 
@@ -99,10 +115,30 @@ const seedPosts: PlanetPost[] = [
   },
 ]
 
+const seedPinnedPosts: PlanetPinnedPost[] = [
+  {
+    id: 'pinned_1',
+    author: '易安',
+    time: '2026/03/31 09:30',
+    title: '新来的朋友，大家好，欢迎来到我的知识星球。',
+    content:
+      '新来的朋友，大家好，欢迎来到我的知识星球。\n\n正如其名，这里是记录AI副业的一个地方，大家可以下载一下「知识星球」APP，使用体验会更加好！\n\n易安最新产品清单：\nhttps://ziby0nwxodov.feishu.cn/sheets/DoWEs1UmohKiw...\n\n这是我创建的免费星球，但是我也会认真的去对待，为大家提供物超所值的干货，希望有机会一起探索第二曲线，一起搞事情。\n\n星球主要记录我在职场中探索副业的经历，以及我不断成长、付费超6位数学习，所获取到的一些商业洞察，信息差，认知差和好的项目机会。\n\n为了保证分享的信息足够价值，减少无效信息，这个星球仅我和我的合伙人，以及嘉宾可以发起提问，不影响提问、参与打卡、和提交作业，当然大家也可以点赞评论。',
+    prefix: '[图片]',
+    avatarClass: 'feed-avatar-amber',
+    images: [
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=80',
+    ],
+    likeCount: 95,
+    commentCount: 1,
+  },
+]
+
 const seedPlanets: PlanetProfile[] = [
   {
     id: 'planet_1',
     name: 'Datawhale',
+    joined: true,
     avatarClass: 'avatar-sand',
     avatarImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
     coverImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1200&q=80',
@@ -125,6 +161,7 @@ const seedPlanets: PlanetProfile[] = [
   {
     id: 'planet_2',
     name: '易安AI编程·出海赚钱',
+    joined: true,
     avatarClass: 'avatar-sunset',
     avatarImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
     coverImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80',
@@ -147,6 +184,7 @@ const seedPlanets: PlanetProfile[] = [
   {
     id: 'planet_3',
     name: '洋哥陪你终身成长',
+    joined: false,
     avatarClass: 'avatar-navy',
     avatarImageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
     coverImageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1200&q=80',
@@ -169,6 +207,7 @@ const seedPlanets: PlanetProfile[] = [
   {
     id: 'planet_4',
     name: '五竹的成长笔记',
+    joined: false,
     avatarClass: 'avatar-forest',
     avatarImageUrl: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=400&q=80',
     coverImageUrl: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=1200&q=80',
@@ -234,13 +273,39 @@ export const loadPosts = () => {
   return normalizedPosts
 }
 
+export const loadPinnedPosts = () => {
+  const stored = wx.getStorageSync(PINNED_POST_KEY)
+  if (!stored || !Array.isArray(stored) || stored.length === 0) {
+    wx.setStorageSync(PINNED_POST_KEY, seedPinnedPosts)
+    return [...seedPinnedPosts]
+  }
+  return (stored as PlanetPinnedPost[]).map((post) => ({
+    ...post,
+    liked: !!post.liked,
+  }))
+}
+
+export const getPinnedPostById = (postId: string) => {
+  const pinnedPosts = loadPinnedPosts()
+  return pinnedPosts.find((post) => post.id === postId)
+}
+
+export const savePinnedPosts = (posts: PlanetPinnedPost[]) => {
+  wx.setStorageSync(PINNED_POST_KEY, posts)
+}
+
 export const loadPlanets = () => {
   const stored = wx.getStorageSync(PLANET_KEY)
   if (!stored || !Array.isArray(stored) || stored.length === 0) {
     wx.setStorageSync(PLANET_KEY, seedPlanets)
     return [...seedPlanets]
   }
-  return stored as PlanetProfile[]
+  const normalizedPlanets = (stored as PlanetProfile[]).map((planet) => ({
+    ...planet,
+    joined: typeof planet.joined === 'boolean' ? planet.joined : true,
+  }))
+  wx.setStorageSync(PLANET_KEY, normalizedPlanets)
+  return normalizedPlanets
 }
 
 export const savePlanets = (planets: PlanetProfile[]) => {
@@ -258,6 +323,7 @@ export const createPlanet = (payload: PlanetCreationPayload) => {
   const createdPlanet: PlanetProfile = {
     id: `planet_${now}`,
     name: payload.name,
+    joined: true,
     avatarClass: getAvatarClass(planets.length),
     avatarImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
     coverImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80',
@@ -312,8 +378,38 @@ export const toggleLike = (postId: string) => {
     const likeCount = liked ? post.likeCount + 1 : Math.max(0, post.likeCount - 1)
     return { ...post, liked, likeCount }
   })
-  savePosts(nextPosts)
-  return nextPosts
+  const targetPost = nextPosts.find((post) => post.id === postId)
+
+  if (targetPost) {
+    savePosts(nextPosts)
+    return {
+      type: 'post' as const,
+      post: targetPost,
+    }
+  }
+
+  const pinnedPosts = loadPinnedPosts()
+  const targetPinnedPost = pinnedPosts.find((post) => post.id === postId)
+  if (!targetPinnedPost) {
+    return null
+  }
+
+  const nextPinnedPosts = pinnedPosts.map((post) => {
+    if (post.id !== postId) return post
+    const liked = !post.liked
+    return {
+      ...post,
+      liked,
+      likeCount: liked ? post.likeCount + 1 : Math.max(0, post.likeCount - 1),
+    }
+  })
+  const updatedPinnedPost = nextPinnedPosts.find((post) => post.id === postId) || targetPinnedPost
+  savePinnedPosts(nextPinnedPosts)
+
+  return {
+    type: 'pinned' as const,
+    post: updatedPinnedPost,
+  }
 }
 
 export const getPostById = (postId: string) => {
@@ -349,6 +445,24 @@ export const addComment = (postId: string, content: string) => {
     if (post.id !== postId) return post
     return { ...post, commentCount: post.commentCount + 1 }
   })
-  savePosts(nextPosts)
+  const updatedPost = nextPosts.find((post) => post.id === postId)
+  if (updatedPost) {
+    savePosts(nextPosts)
+    return newComment
+  }
+
+  const pinnedPosts = loadPinnedPosts()
+  const hasPinnedPost = pinnedPosts.some((post) => post.id === postId)
+  if (hasPinnedPost) {
+    const nextPinnedPosts = pinnedPosts.map((post) => {
+      if (post.id !== postId) return post
+      return {
+        ...post,
+        commentCount: post.commentCount + 1,
+      }
+    })
+    savePinnedPosts(nextPinnedPosts)
+  }
+
   return newComment
 }

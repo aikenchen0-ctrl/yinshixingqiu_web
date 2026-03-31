@@ -66,9 +66,12 @@
   padding: 0 24rpx 28rpx;
 }
 
+.columns-group {
+  border-bottom: 1rpx solid #ececec;
+}
+
 .columns-row {
   min-height: 98rpx;
-  border-bottom: 1rpx solid #ececec;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -114,4 +117,36 @@
 .columns-row-arrow {
   color: #888888;
   font-size: 28rpx;
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.columns-row-arrow-expanded {
+  transform: rotate(0deg);
+}
+
+.columns-panel {
+  padding-bottom: 16rpx;
+}
+
+.columns-panel-item {
+  padding: 24rpx 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  border-top: 1rpx solid #f2f2f2;
+}
+
+.columns-panel-dot {
+  flex-shrink: 0;
+  color: #6e6e6e;
+  font-size: 32rpx;
+  line-height: 1.5;
+}
+
+.columns-panel-text {
+  flex: 1;
+  color: #3b3b3b;
+  font-size: 34rpx;
+  line-height: 1.6;
 }

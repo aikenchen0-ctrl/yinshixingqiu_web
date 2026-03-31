@@ -1,207 +1,260 @@
 <navigation-bar
-  title=""
+  title="{{isJoined ? '' : '知识星球'}}"
   back="{{true}}"
-  color="#ffffff"
-  background="linear-gradient(135deg, #6f8692 0%, #7d8f97 35%, #8f8a74 100%)"
+  color="{{isJoined ? '#ffffff' : '#22160d'}}"
+  background="{{isJoined ? 'linear-gradient(135deg, #6f8692 0%, #7d8f97 35%, #8f8a74 100%)' : '#ffffff'}}"
 ></navigation-bar>
 
-<view class="page planet-home-page">
-  <view class="planet-home-hero">
-    <view class="planet-home-hero-mask"></view>
-    <view class="planet-home-header">
-      <view class="planet-home-avatar {{avatarClass}}">
-        <text class="planet-home-avatar-letter">{{planetName.slice(0, 1)}}</text>
-      </view>
-      <view class="planet-home-copy">
-        <text class="planet-home-name">{{planetName}}</text>
-        <text class="planet-home-meta">{{creatorName}} 创建</text>
-      </view>
-    </view>
-
-    <view class="planet-home-actions">
-      <view class="planet-home-action" data-key="checkin" bindtap="onActionTap">
-        <view class="planet-home-action-icon icon-calendar"></view>
-        <text class="planet-home-action-label">打卡</text>
-      </view>
-      <view class="planet-home-action" data-key="columns" bindtap="onActionTap">
-        <view class="planet-home-action-icon icon-stack"></view>
-        <text class="planet-home-action-label">专栏</text>
-      </view>
-      <view class="planet-home-action" data-key="subscribe" bindtap="onActionTap">
-        <view class="planet-home-action-icon icon-bookmark {{subscribed ? 'icon-bookmark-subscribed' : ''}}"></view>
-        <text class="planet-home-action-label {{subscribed ? 'planet-home-action-label-muted' : ''}}">{{subscribed ? '已订阅' : '订阅'}}</text>
-      </view>
-      <view class="planet-home-action" data-key="settings" bindtap="onActionTap">
-        <view class="planet-home-action-icon icon-gear"></view>
-        <text class="planet-home-action-label">设置</text>
-      </view>
-      <view class="planet-home-action" data-key="invite" bindtap="onActionTap">
-        <view class="planet-home-action-icon icon-send"></view>
-        <text class="planet-home-action-label">邀请</text>
-      </view>
-    </view>
-  </view>
-
-  <view class="planet-home-body">
-    <view class="planet-home-tab-row">
-      <view
-        class="planet-home-tab {{activeTab === item.key ? 'planet-home-tab-active' : ''}}"
-        wx:for="{{tabs}}"
-        wx:key="key"
-        data-key="{{item.key}}"
-        bindtap="onTabChange"
-      >
-        {{item.label}}
-      </view>
-      <view class="planet-home-list-switch">
-        <view class="switch-line"></view>
-        <view class="switch-line switch-line-short"></view>
-        <view class="switch-dot"></view>
-      </view>
-    </view>
-
-    <view wx:if="{{activeTab === 'latest'}}" class="planet-feed-list">
-      <block wx:if="{{showNotices}}">
-      <view class="planet-notice-row">
-        <text class="planet-notice-tag">置顶</text>
-        <text class="planet-notice-text">【清退规定】 为了促使大家更好地学习和见证...</text>
-      </view>
-      <view class="planet-notice-row">
-        <text class="planet-notice-tag">置顶</text>
-        <text class="planet-notice-text">【星球介绍】 本星球主要提供机器学习、深度...</text>
-      </view>
-      </block>
-      <view class="planet-feed-card" wx:for="{{latestList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
-        <view class="planet-feed-head">
-          <view class="planet-feed-avatar {{item.avatarClass}}"></view>
-          <view class="planet-feed-author">
-            <text class="planet-feed-name">{{item.author}}</text>
-            <text class="planet-feed-time">{{item.time}}</text>
-          </view>
+<block wx:if="{{isJoined}}">
+  <scroll-view class="planet-joined-page" scroll-y="{{true}}">
+    <view class="planet-home-hero">
+      <view class="planet-home-hero-mask"></view>
+      <view class="planet-home-header">
+        <image class="planet-home-avatar-image" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+        <view class="planet-home-copy">
+          <text class="planet-home-name">{{planetName}}</text>
+          <text class="planet-home-meta">{{ownerName}} 创建</text>
         </view>
-        <text class="planet-feed-title">{{item.title}}</text>
-        <text wx:if="{{item.content}}" class="planet-feed-content">{{item.content}}</text>
-        <view wx:if="{{item.images.length}}" class="planet-feed-images">
-          <image
-            wx:for="{{item.images}}"
-            wx:key="*this"
-            class="planet-feed-image"
-            src="{{item}}"
-            mode="aspectFill"
-          ></image>
+      </view>
+
+      <view class="planet-home-actions">
+        <view class="planet-home-action" data-key="checkin" bindtap="onActionTap">
+          <view class="planet-home-action-icon icon-calendar"></view>
+          <text class="planet-home-action-label">打卡</text>
         </view>
-        <view class="planet-feed-bar">
-          <view class="planet-feed-action">
-            <view class="feed-icon-like"></view>
-            <text>{{item.likeCount}}</text>
-          </view>
-          <view class="planet-feed-action">
-            <view class="feed-icon-comment"></view>
-            <text>{{item.commentCount}}</text>
-          </view>
+        <view class="planet-home-action" data-key="columns" bindtap="onActionTap">
+          <view class="planet-home-action-icon icon-stack"></view>
+          <text class="planet-home-action-label">专栏</text>
+        </view>
+        <view class="planet-home-action" data-key="subscribe" bindtap="onActionTap">
+          <view class="planet-home-action-icon icon-bookmark"></view>
+          <text class="planet-home-action-label">订阅</text>
+        </view>
+        <view class="planet-home-action" data-key="settings" bindtap="onActionTap">
+          <view class="planet-home-action-icon icon-gear"></view>
+          <text class="planet-home-action-label">设置</text>
+        </view>
+        <view class="planet-home-action" data-key="invite" bindtap="onActionTap">
+          <view class="planet-home-action-icon icon-send"></view>
+          <text class="planet-home-action-label">邀请</text>
         </view>
       </view>
     </view>
 
-    <view wx:if="{{activeTab === 'featured'}}" class="planet-feed-list">
-      <view class="planet-feed-card" wx:for="{{featuredList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
-        <view class="planet-feed-head">
-          <view class="planet-feed-avatar {{item.avatarClass}}"></view>
-          <view class="planet-feed-author">
-            <text class="planet-feed-name">{{item.author}}</text>
-            <text class="planet-feed-time">{{item.time}}</text>
-          </view>
-          <text class="planet-featured-mark">◌ 精华</text>
+    <view class="planet-home-body">
+      <view class="planet-home-tab-row">
+        <view
+          class="planet-home-tab {{activeTab === item.key ? 'planet-home-tab-active' : ''}}"
+          wx:for="{{tabs}}"
+          wx:key="key"
+          data-key="{{item.key}}"
+          bindtap="onTabChange"
+        >
+          {{item.label}}
         </view>
-        <text class="planet-feed-title">{{item.title}}</text>
-        <view class="planet-file-box" wx:if="{{item.hasFile}}">
-          <view class="planet-file-icon">PDF</view>
-          <text class="planet-file-name">{{item.fileName}}</text>
-        </view>
-        <view class="planet-feed-bar">
-          <view class="planet-feed-action">
-            <view class="feed-icon-like"></view>
-            <text>{{item.likeCount}}</text>
-          </view>
-          <view class="planet-feed-action">
-            <view class="feed-icon-comment"></view>
-            <text>{{item.commentCount}}</text>
-          </view>
+        <view class="planet-home-list-switch">
+          <view class="switch-line"></view>
+          <view class="switch-line switch-line-short"></view>
+          <view class="switch-dot"></view>
         </view>
       </view>
-    </view>
 
-    <view wx:if="{{activeTab === 'files'}}" class="planet-feed-list">
-      <view class="planet-feed-card" wx:for="{{fileList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
-        <view class="planet-feed-head">
-          <view class="planet-feed-avatar {{item.avatarClass}}"></view>
-          <view class="planet-feed-author">
-            <text class="planet-feed-name">{{item.author}}</text>
-            <text class="planet-feed-time">{{item.time}}</text>
+      <view wx:if="{{activeTab === 'latest'}}" class="planet-feed-list">
+        <block wx:if="{{showNotices}}">
+          <view
+            class="planet-pinned-row"
+            wx:for="{{pinnedList}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            bindtap="onPinnedTap"
+          >
+            <view class="planet-pinned-badge">
+              <text class="planet-notice-tag">置顶</text>
+              <text wx:if="{{item.prefix}}" class="planet-pinned-prefix">{{item.prefix}}</text>
+            </view>
+            <text class="planet-notice-text">{{item.title}}</text>
+            <text class="planet-pinned-arrow">›</text>
           </view>
-        </view>
-        <text class="planet-feed-title">{{item.title}}</text>
-        <view class="planet-file-box">
-          <view class="planet-file-icon">PDF</view>
-          <text class="planet-file-name">{{item.fileName}}</text>
-        </view>
-        <view class="planet-feed-bar">
-          <view class="planet-feed-action">
-            <view class="feed-icon-like"></view>
-            <text>{{item.likeCount}}</text>
-          </view>
-          <view class="planet-feed-action">
-            <view class="feed-icon-comment"></view>
-            <text>{{item.commentCount}}</text>
-          </view>
-        </view>
-      </view>
-    </view>
+        </block>
 
-    <view wx:if="{{activeTab === 'answer'}}" class="planet-empty-answer">
-      <view class="planet-empty-icon">
-        <view class="planet-empty-slot"></view>
+        <view class="planet-feed-card" wx:for="{{latestList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
+          <view class="planet-feed-head">
+            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-author">
+              <text class="planet-feed-name">{{item.author}}</text>
+              <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+          </view>
+          <text class="planet-feed-title">{{item.title}}</text>
+          <view wx:if="{{item.images.length}}" class="planet-feed-images">
+            <image wx:for="{{item.images}}" wx:key="*this" class="planet-feed-image" src="{{item}}" mode="aspectFill"></image>
+          </view>
+          <view class="planet-feed-bar">
+            <view class="planet-feed-action">
+              <view class="feed-icon-like"></view>
+              <text>{{item.likeCount}}</text>
+            </view>
+            <view class="planet-feed-action">
+              <view class="feed-icon-comment"></view>
+              <text>{{item.commentCount}}</text>
+            </view>
+          </view>
+        </view>
       </view>
-      <text class="planet-empty-text">这里空空如也</text>
+
+      <view wx:if="{{activeTab === 'featured'}}" class="planet-feed-list">
+        <view class="planet-feed-card" wx:for="{{featuredList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
+          <view class="planet-feed-head">
+            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-author">
+              <text class="planet-feed-name">{{item.author}}</text>
+              <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+          </view>
+          <text class="planet-feed-title">{{item.title}}</text>
+          <view class="planet-feed-bar">
+            <view class="planet-feed-action">
+              <view class="feed-icon-like"></view>
+              <text>{{item.likeCount}}</text>
+            </view>
+            <view class="planet-feed-action">
+              <view class="feed-icon-comment"></view>
+              <text>{{item.commentCount}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{activeTab === 'files'}}" class="planet-feed-list">
+        <view class="planet-feed-card" wx:for="{{fileList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
+          <view class="planet-feed-head">
+            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-author">
+              <text class="planet-feed-name">{{item.author}}</text>
+              <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+          </view>
+          <text class="planet-feed-title">{{item.title}}</text>
+          <view class="planet-file-box">
+            <view class="planet-file-icon">PDF</view>
+            <text class="planet-file-name">{{item.fileName}}</text>
+          </view>
+          <view class="planet-feed-bar">
+            <view class="planet-feed-action">
+              <view class="feed-icon-like"></view>
+              <text>{{item.likeCount}}</text>
+            </view>
+            <view class="planet-feed-action">
+              <view class="feed-icon-comment"></view>
+              <text>{{item.commentCount}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{activeTab === 'answer'}}" class="planet-empty-answer">
+        <text class="planet-empty-text">这里空空如也</text>
+      </view>
     </view>
-  </view>
+  </scroll-view>
 
   <view class="planet-publish-button" bindtap="onPublish">
     <view class="planet-publish-pen"></view>
   </view>
+</block>
 
-  <view wx:if="{{showSubscribeDialog}}" class="planet-subscribe-mask" catchtap="onCloseSubscribeDialog">
-    <view class="planet-subscribe-dialog" catchtap="noop">
-      <text class="planet-subscribe-title">温馨提示</text>
-      <text class="planet-subscribe-copy">请允许发送相关通知，否则无法接收到内容提醒更新和订阅成功通知</text>
-      <view class="planet-subscribe-actions">
-        <view class="planet-subscribe-button planet-subscribe-button-muted" bindtap="onSubscribeSkip">不用通知</view>
-        <view class="planet-subscribe-button planet-subscribe-button-primary" bindtap="onSubscribeConfirm">允许通知</view>
+<block wx:else>
+  <scroll-view class="planet-detail-page" scroll-y="{{true}}">
+    <view class="planet-detail-shell">
+      <view class="planet-summary-card">
+        <view class="planet-summary-head">
+          <view class="planet-summary-copy">
+            <text class="planet-summary-name">{{planetName}}</text>
+            <text class="planet-summary-no">星球号：{{planetNo}}</text>
+            <view class="planet-summary-tags">
+              <view
+                class="planet-summary-tag {{index === 0 ? 'planet-summary-tag-verified' : ''}}"
+                wx:for="{{tags}}"
+                wx:key="index"
+              >
+                {{item}}
+              </view>
+            </view>
+          </view>
+          <image class="planet-summary-avatar" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+        </view>
+
+        <view class="planet-summary-metrics">
+          <view class="planet-summary-metric" wx:for="{{metrics}}" wx:key="label">
+            <text class="planet-summary-metric-value">{{item.value}}</text>
+            <text class="planet-summary-metric-label">{{item.label}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="planet-section">
+        <view class="planet-section-head">
+          <text class="planet-section-title">星球介绍</text>
+          <text class="planet-section-side">{{reportLabel}}</text>
+        </view>
+
+        <view class="planet-owner-card" bindtap="onOwnerTap">
+          <image class="planet-owner-avatar" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+          <view class="planet-owner-copy">
+            <text class="planet-owner-name">星主：#{{ownerName}}</text>
+            <text class="planet-owner-active">{{ownerActiveText}}</text>
+          </view>
+        </view>
+
+        <view class="planet-description">
+          <text class="planet-description-text" wx:for="{{previewDescriptionList}}" wx:key="index">
+            {{item}}
+          </text>
+        </view>
+
+        <text class="planet-expand-link" bindtap="onToggleIntro">
+          {{introExpanded ? '收起' : '点击展开'}}
+        </text>
+      </view>
+
+      <view class="planet-section">
+        <view class="planet-section-head">
+          <text class="planet-section-title">付费须知</text>
+        </view>
+
+        <view class="planet-rules">
+          <view class="planet-rule-item" wx:for="{{feeNotices}}" wx:key="index">
+            <text class="planet-rule-index">{{index + 1}}.</text>
+            <text class="planet-rule-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="planet-section">
+        <view class="planet-section-head">
+          <text class="planet-section-title">部分主题预览</text>
+        </view>
+
+        <view class="planet-preview-list">
+          <view class="planet-preview-item" wx:for="{{previewList}}" wx:key="id" bindtap="onPreviewTap">
+            <view class="planet-preview-author">
+              <image class="planet-preview-author-avatar" src="{{item.authorAvatar}}" mode="aspectFill"></image>
+              <view class="planet-preview-author-copy">
+                <text class="planet-preview-author-name">{{item.author}}</text>
+                <text class="planet-preview-author-time">{{item.time}}</text>
+              </view>
+            </view>
+
+            <text class="planet-preview-title">{{item.title}}</text>
+            <text class="planet-preview-summary">{{item.summary}}</text>
+            <image class="planet-preview-image" src="{{item.image}}" mode="aspectFill"></image>
+          </view>
+        </view>
       </view>
     </view>
-  </view>
+  </scroll-view>
 
-  <view wx:if="{{showSettingsSheet}}" class="planet-settings-mask" catchtap="onCloseSettingsSheet">
-    <view class="planet-settings-sheet" catchtap="noop">
-      <view class="planet-settings-grid">
-        <view class="planet-settings-item" data-key="profile" bindtap="onSettingsItemTap">
-          <view class="planet-settings-icon planet-settings-icon-profile"></view>
-          <text class="planet-settings-label">星球资料</text>
-        </view>
-        <view class="planet-settings-item" data-key="mp" bindtap="onSettingsItemTap">
-          <view class="planet-settings-icon planet-settings-icon-mp"></view>
-          <text class="planet-settings-label">嵌入公众号</text>
-        </view>
-      </view>
-      <view class="planet-settings-cancel" bindtap="onCloseSettingsSheet">取消</view>
-    </view>
+  <view class="planet-join-bar">
+    <button class="planet-join-button" bindtap="onJoinTap">{{joinButtonText}}</button>
   </view>
-
-  <view wx:if="{{showInviteSheet}}" class="planet-settings-mask" catchtap="onCloseInviteSheet">
-    <view class="planet-settings-sheet planet-invite-sheet" catchtap="noop">
-      <button class="planet-invite-action" open-type="share">分享给好友</button>
-      <view class="planet-invite-action" bindtap="onGenerateInviteCard">生成卡片保存分享</view>
-      <view class="planet-settings-cancel" bindtap="onCloseInviteSheet">取消</view>
-    </view>
-  </view>
-</view>
+</block>

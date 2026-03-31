@@ -16,7 +16,7 @@ Page({
   },
 
   refreshPlanets() {
-    const planets = loadPlanets()
+    const planets = loadPlanets().filter((planet) => planet.joined)
     this.setData({
       planets,
       displayPlanets: planets,
@@ -43,7 +43,7 @@ Page({
     const creator = e.currentTarget.dataset.creator || 'Datawhale 团队'
 
     wx.navigateTo({
-      url: `/pages/planet/home?id=${id}&name=${encodeURIComponent(name)}&creator=${encodeURIComponent(creator)}`,
+      url: `/pages/planet/home?id=${id}&name=${encodeURIComponent(name)}&creator=${encodeURIComponent(creator)}&source=joined`,
     })
   },
 

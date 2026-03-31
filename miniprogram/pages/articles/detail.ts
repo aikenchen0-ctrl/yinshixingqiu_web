@@ -1,158 +1,154 @@
-import { normalizeWxArticleHtml } from '../../utils/richtext'
+interface ArticlePlanetCard {
+  id: string
+  name: string
+  creator?: string
+  avatar: string
+  intro: string
+  meta: string
+}
 
 interface ArticleDetail {
   id: string
   title: string
   author: string
+  authorTag?: string
+  authorAvatar: string
   time: string
-  price: string
-  locked: boolean
-  previewHtml: string
-  fullHtml: string
+  summary: string
+  coverImage: string
+  likeCount: number
+  commentCount: number
+  hiddenHint: string
+  actionText: string
+  recommendTitle: string
+  planetCard: ArticlePlanetCard
 }
 
 const articleMap: Record<string, ArticleDetail> = {
   a1: {
     id: 'a1',
-    title: '高净值资产防护的六层结构',
-    author: '血饮',
-    time: '今天',
-    price: '¥49',
-    locked: true,
-    previewHtml: `
-      <p>本文以攻防视角拆解资产安全的六层结构，帮助你快速定位防护薄弱环节。</p>
-      <p>我们从资产边界、身份控制、交易监测、资产隔离、合规审计、危机响应六个方面展开。</p>
-      <p>本节为预览内容，完整章节需解锁。</p>
-    `,
-    fullHtml: `
-      <p>本文以攻防视角拆解资产安全的六层结构，帮助你快速定位防护薄弱环节。</p>
-      <p><strong>第一层：资产边界</strong>，明确资产形态、链上链下入口、业务流转路径。</p>
-      <p><strong>第二层：身份控制</strong>，从KYC到多因子认证、密钥管理建立可信身份。</p>
-      <p><strong>第三层：交易监测</strong>，引入行为画像、异常阈值、实时风控策略。</p>
-      <p><strong>第四层：资产隔离</strong>，建立冷热分离、多签审批与分级权限。</p>
-      <p><strong>第五层：合规审计</strong>，持续评估链上风险、资金流转合规性。</p>
-      <p><strong>第六层：危机响应</strong>，建立预案、应急演练与舆情协同机制。</p>
-      <p>完整内容包含实践清单、监测指标与攻防对照表。</p>
-    `,
+    title: '【2026年全球网络安全展望报告】',
+    author: '丁利',
+    authorTag: '星主',
+    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80',
+    time: '2026/03/25 09:12',
+    summary:
+      '94%的受访者认为人工智能是未来一年最关键的变革驱动力，较之2025年显著提升。同时，组织对AI安全的评估能力正在提升，相关流程覆盖率由37...',
+    coverImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80',
+    likeCount: 0,
+    commentCount: 0,
+    hiddenHint: '部分内容已隐藏',
+    actionText: '查看更多内容',
+    recommendTitle: '喜欢TA就加入TA的星球',
+    planetCard: {
+      id: 'planet_199it',
+      name: '199IT数据交流群',
+      creator: '丁利',
+      avatar: 'https://images.unsplash.com/photo-1611095973763-414019e72400?auto=format&fit=crop&w=240&q=80',
+      intro:
+        '“数据驱动未来”是199IT的核心理念，作为投资、研究、产业、传播价值兼具的综合性平台，199IT已成为新经济生态圈投资者、经营者及数据...',
+      meta: '丁利创建，已有18664名成员',
+    },
   },
   a2: {
     id: 'a2',
-    title: '链上洗钱路径的识别与阻断',
-    author: '血饮',
-    time: '昨天',
-    price: '¥79',
-    locked: true,
-    previewHtml: `
-      <p>本文从链上路径分析切入，介绍洗钱行为的常见结构与识别信号。</p>
-      <p>预览包含路径特征与核心指标。</p>
-    `,
-    fullHtml: `
-      <p>本文从链上路径分析切入，介绍洗钱行为的常见结构与识别信号。</p>
-      <p><strong>路径特征</strong>：分层转移、跳转聚合、跨链掩护。</p>
-      <p><strong>识别指标</strong>：异常高频、同源资金聚合、短周期拆分。</p>
-      <p><strong>阻断策略</strong>：冻结策略、链上标记、跨平台协同。</p>
-      <p>完整内容包含案例与工具链清单。</p>
-    `,
+    title: '《AI Agent 场景应用 - ai draw.io》第4-0节：ai + draw.io 产品设计',
+    author: '小馒哥',
+    authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=240&q=80',
+    time: '2026/03/24 21:18',
+    summary:
+      '从画图到需求梳理，拆解 AI Agent 在产品设计链路中的真实落地方式，本文节选了产品框架与几个关键设计片段。',
+    coverImage: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
+    likeCount: 3,
+    commentCount: 1,
+    hiddenHint: '部分内容已隐藏',
+    actionText: '查看更多内容',
+    recommendTitle: '喜欢TA就加入TA的星球',
+    planetCard: {
+      id: 'planet_2',
+      name: '码农会馆',
+      creator: '小馒哥',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80',
+      intro: '专注 AI 编程、独立开发与工具链实践，持续更新落地案例和实战方法。',
+      meta: '小馒哥创建，已有2680名成员',
+    },
   },
   a3: {
     id: 'a3',
-    title: '多维风控指标体系设计',
-    author: '血饮',
-    time: '03/08',
-    price: '¥39',
-    locked: false,
-    previewHtml: `
-      <p>本文聚焦多维风控指标体系的设计方法。</p>
-    `,
-    fullHtml: `
-      <p>本文聚焦多维风控指标体系的设计方法。</p>
-      <p>内容包括风险维度拆解、评分模型、策略联动与指标看板。</p>
-      <p>适用于交易安全、资金监测与平台风控。</p>
-    `,
+    title: '把私域内容做成可持续复利系统',
+    author: '顾城',
+    authorAvatar: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=240&q=80',
+    time: '2026/03/22 11:20',
+    summary:
+      '如何设计一套能长期更新的主题栏目、社群分层和转化节奏。这里展示的是公开预览内容，完整版本在星球中继续展开。',
+    coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80',
+    likeCount: 6,
+    commentCount: 2,
+    hiddenHint: '部分内容已隐藏',
+    actionText: '查看更多内容',
+    recommendTitle: '喜欢TA就加入TA的星球',
+    planetCard: {
+      id: 'planet_growth',
+      name: '增长笔记',
+      creator: '顾城',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=80',
+      intro: '围绕增长、转化、私域设计和可持续内容系统，沉淀可复用的方法和模板。',
+      meta: '顾城创建，已有6241名成员',
+    },
   },
   a4: {
     id: 'a4',
-    title: 'AI风控模型的对抗评测',
-    author: '血饮',
-    time: '03/06',
-    price: '¥59',
-    locked: true,
-    previewHtml: `
-      <p>本文展示如何用红队思维评估AI风控模型的鲁棒性。</p>
-    `,
-    fullHtml: `
-      <p>本文展示如何用红队思维评估AI风控模型的鲁棒性。</p>
-      <p>覆盖对抗样本、模型漂移、异常检测与策略回滚。</p>
-    `,
+    title: '一人公司如何搭建自己的知识产品矩阵',
+    author: '启明',
+    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80',
+    time: '2026/03/20 18:08',
+    summary:
+      '从选题、交付到会员体系，拆最小可行的内容产品组合方式。文章提供了公开摘要和图示预览。',
+    coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+    likeCount: 2,
+    commentCount: 0,
+    hiddenHint: '部分内容已隐藏',
+    actionText: '查看更多内容',
+    recommendTitle: '喜欢TA就加入TA的星球',
+    planetCard: {
+      id: 'planet_long',
+      name: '长期主义实验室',
+      creator: '启明',
+      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=240&q=80',
+      intro: '聚焦长期主义、知识产品设计与个体品牌建设，适合想慢慢做成体系的人。',
+      meta: '启明创建，已有3190名成员',
+    },
   },
 }
 
 Page({
   data: {
-    article: {
-      id: '',
-      title: '',
-      author: '',
-      time: '',
-      price: '',
-      locked: false,
-    } as ArticleDetail,
-    displayNodes: '',
-    listenMode: false,
-    listenSpeed: 1.0,
-    showPaywall: false,
+    article: articleMap.a1 as ArticleDetail,
   },
+
   onLoad(options: Record<string, string>) {
-    // 加载文章详情与富文本
     const id = options.id || 'a1'
     const article = articleMap[id] || articleMap.a1
-    const app = getApp<IAppOption>()
-    const isMember = Boolean(app.globalData.isMember)
-    const showPaywall = article.locked && !isMember
-    const rawHtml = showPaywall ? article.previewHtml : article.fullHtml
-    const displayNodes = normalizeWxArticleHtml(rawHtml)
+
     this.setData({
       article,
-      showPaywall,
-      displayNodes,
     })
   },
-  onListenToggle(e: WechatMiniprogram.SwitchChange) {
-    const listenMode = e.detail.value
-    this.setData({ listenMode })
-  },
-  onSpeedChange(e: WechatMiniprogram.SliderChange) {
-    const listenSpeed = e.detail.value
-    this.setData({ listenSpeed })
-  },
-  onListenAction() {
-    const nextMode = !this.data.listenMode
-    this.setData({ listenMode: nextMode })
+
+  onOpenMoreContent() {
     wx.showToast({
-      title: nextMode ? '开始听读' : '已暂停',
+      title: '跳转星球详情查看',
       icon: 'none',
     })
   },
-  onListenSample() {
-    wx.showToast({
-      title: '正在加载试听',
-      icon: 'none',
-    })
-  },
-  onPayOnce() {
-    wx.showToast({
-      title: '待接入支付',
-      icon: 'none',
-    })
-  },
-  goMembership() {
+
+  onPlanetCardTap(e: WechatMiniprogram.TouchEvent) {
+    const id = e.currentTarget.dataset.id || 'planet_1'
+    const name = e.currentTarget.dataset.name || 'CEO管理笔记'
+    const creator = e.currentTarget.dataset.creator || ''
+
     wx.navigateTo({
-      url: '/pages/membership/index',
-    })
-  },
-  goAI() {
-    wx.navigateTo({
-      url: '/pages/ai/index',
+      url: `/pages/planet/home?id=${id}&name=${encodeURIComponent(name)}&creator=${encodeURIComponent(creator)}`,
     })
   },
 })

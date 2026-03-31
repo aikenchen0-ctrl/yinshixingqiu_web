@@ -1,0 +1,61 @@
+.planet-poster-page {
+  min-height: 100vh;
+  background: #f7f7f7;
+}
+
+.planet-poster-scroll {
+  height: calc(100vh - 112rpx);
+}
+
+.planet-poster-shell {
+  padding: 24rpx 20rpx 160rpx;
+}
+
+.planet-poster-image {
+  width: 100%;
+  display: block;
+  border-radius: 28rpx;
+  background: #ffffff;
+}
+
+.planet-poster-loading {
+  height: 520rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  color: #999999;
+  font-size: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-poster-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16rpx 20rpx calc(16rpx + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1rpx solid #ededed;
+}
+
+.planet-poster-save-button {
+  height: 88rpx;
+  border-radius: 999rpx;
+  background: #20c2a5;
+  color: #ffffff;
+  font-size: 34rpx;
+  line-height: 88rpx;
+}
+
+.planet-poster-save-button::after {
+  border: none;
+}
+
+.planet-poster-canvas {
+  position: fixed;
+  left: -9999px;
+  top: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
