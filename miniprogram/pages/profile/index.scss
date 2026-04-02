@@ -59,6 +59,35 @@
   font-weight: 600;
 }
 
+.profile-mobile {
+  display: block;
+  margin-top: 12rpx;
+  text-align: center;
+  color: #7d8ba3;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}
+
+.profile-login-button,
+.profile-logout-button {
+  height: 88rpx;
+  margin-top: 30rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.profile-login-button {
+  background: linear-gradient(135deg, #21d39a 0%, #12b878 100%);
+  color: #071e17;
+}
+
+.profile-logout-button {
+  background: #ffffff;
+  color: #49566b;
+  border: 1rpx solid #e3e8f0;
+}
+
 .profile-card-list {
   margin-top: 72rpx;
   display: flex;

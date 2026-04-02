@@ -1,3 +1,6 @@
+import { clearSession, getStoredSession, type UserSession } from '../../utils/auth'
+import { fetchSessionProfile, logoutSession } from '../../utils/auth-api'
+
 interface ProfileMenuItem {
   id: string
   title: string
@@ -8,7 +11,9 @@ interface ProfileMenuItem {
 
 Page({
   data: {
-    nickname: '(*´∀`)σ',
+    isLoggedIn: false,
+    nickname: '立即登录',
+    mobile: '登录后查看你的会员与星球权益',
     avatarUrl: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?auto=format&fit=crop&w=240&q=80',
     menuItems: [
       {
@@ -28,7 +33,83 @@ Page({
     ] as ProfileMenuItem[],
   },
 
+  onShow() {
+    const session = getStoredSession()
+    this.applySession(session)
+
+    if (session && session.sessionToken) {
+      void this.refreshSession(session.sessionToken)
+    }
+  },
+
+  async refreshSession(sessionToken: string) {
+    try {
+      const response = await fetchSessionProfile(sessionToken)
+      const session = response.data
+      wx.setStorageSync('xueyin_user_session', session)
+
+      const app = getApp<IAppOption>()
+      app.globalData.userSession = session
+
+      this.applySession(session)
+    } catch {
+      clearSession()
+      this.applySession(null)
+    }
+  },
+
+  applySession(session: UserSession | null) {
+    this.setData({
+      isLoggedIn: Boolean(session),
+      nickname: session ? session.nickname : '立即登录',
+      mobile: session ? session.mobile : '登录后查看你的会员与星球权益',
+      avatarUrl:
+        session && session.avatarUrl
+          ? session.avatarUrl
+          : 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?auto=format&fit=crop&w=240&q=80',
+    })
+  },
+
+  onLoginTap() {
+    if (this.data.isLoggedIn) {
+      return
+    }
+
+    wx.navigateTo({
+      url: '/pages/auth/login',
+    })
+  },
+
+  async onLogout() {
+    const session = getStoredSession()
+
+    if (session && session.sessionToken) {
+      try {
+        await logoutSession(session.sessionToken)
+      } catch {
+        // 退出失败时仍然清本地，避免卡死
+      }
+    }
+
+    clearSession()
+    const app = getApp<IAppOption>()
+    app.globalData.userSession = null
+
+    this.applySession(null)
+    wx.showToast({
+      title: '已退出登录',
+      icon: 'success',
+    })
+  },
+
   onMenuTap(e: WechatMiniprogram.TouchEvent) {
+    if (!this.data.isLoggedIn) {
+      wx.navigateTo({
+        url: '/pages/auth/login',
+      })
+      return
+    }
+
     const id = e.currentTarget.dataset.id
 
     if (id === 'balance') {

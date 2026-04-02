@@ -1,0 +1,41 @@
+<navigation-bar
+  title=""
+  back="{{true}}"
+  color="#e6f0ff"
+  background="rgba(10, 18, 32, 0.96)"
+></navigation-bar>
+
+<view class="page auth-page">
+  <view class="auth-hero">
+    <text class="auth-badge">知识星球登录</text>
+    <text class="auth-title">手机号一键登录</text>
+    <text class="auth-subtitle">进入知识星球会先静默建立微信身份，这里用于一键补充手机号完成登录。</text>
+  </view>
+
+  <view class="auth-card">
+    <view class="auth-intro">
+      <text class="auth-intro-title">这一步会做什么</text>
+      <text class="auth-intro-item">先用微信身份建立登录态</text>
+      <text class="auth-intro-item">点击按钮后一键授权手机号</text>
+      <text class="auth-intro-item">登录成功后回到知识星球里的我的页</text>
+    </view>
+
+    <view class="auth-agreement" bindtap="onToggleAgree">
+      <view class="auth-checkbox {{agreeProtocol ? 'is-checked' : ''}}"></view>
+      <text class="auth-agreement-text">我已阅读并同意《用户协议》与《隐私政策》</text>
+    </view>
+
+    <button
+      class="auth-submit"
+      loading="{{loading}}"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onGetPhoneNumber"
+    >
+      手机号一键登录
+    </button>
+
+    <button class="auth-submit auth-submit-ghost" loading="{{loading}}" bindtap="onSubmit">
+      仅刷新微信登录态
+    </button>
+  </view>
+</view>

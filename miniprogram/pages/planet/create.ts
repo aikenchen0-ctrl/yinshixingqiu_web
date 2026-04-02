@@ -1,10 +1,23 @@
 import { createPlanet } from '../../utils/planet'
+import { request } from '../../utils/request'
+import { getStoredSession } from '../../utils/auth'
+import { ensureWechatSession } from '../../utils/wechat-login'
 
 interface JoinTypeOption {
   key: 'rolling' | 'calendar'
   title: string
   desc: string
   checked: boolean
+}
+
+interface CreateResponse {
+  ok: boolean
+  message?: string
+  data: {
+    id: string
+    name: string
+    ownerName: string
+  }
 }
 
 Page({
@@ -29,6 +42,58 @@ Page({
         checked: false,
       },
     ] as JoinTypeOption[],
+    submitting: false,
+  },
+
+  async onLoad() {
+    let session = getStoredSession()
+    if (!session || !session.sessionToken) {
+      try {
+        wx.showLoading({
+          title: '登录中',
+          mask: true,
+        })
+        await ensureWechatSession()
+        wx.hideLoading()
+        session = getStoredSession()
+      } catch {
+        wx.hideLoading()
+        wx.showModal({
+          title: '提示',
+          content: '创建星球需要先登录，是否前往登录？',
+          confirmText: '去登录',
+          cancelText: '取消',
+          success: (res) => {
+            if (res.confirm) {
+              wx.redirectTo({
+                url: '/pages/planet/mine',
+              })
+            } else {
+              wx.navigateBack()
+            }
+          },
+        })
+        return
+      }
+    }
+
+    if (!session || !session.mobile) {
+      wx.showModal({
+        title: '提示',
+        content: '创建星球前需要先完成手机号一键登录，是否前往我的页完成？',
+        confirmText: '去完成',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            wx.redirectTo({
+              url: '/pages/planet/mine',
+            })
+          } else {
+            wx.navigateBack()
+          }
+        },
+      })
+    }
   },
 
   onNameInput(e: WechatMiniprogram.Input) {
@@ -122,14 +187,84 @@ Page({
       return
     }
 
-    const planet = createPlanet({
-      name: planetName,
-      price,
-      joinType,
-    })
+    const session = getStoredSession()
+    if (!session || !session.sessionToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+      })
+      wx.redirectTo({
+        url: '/pages/planet/mine',
+      })
+      return
+    }
 
-    wx.redirectTo({
-      url: `/pages/planet/home?id=${planet.id}&name=${encodeURIComponent(planet.name)}&creator=${encodeURIComponent(planet.ownerName)}`,
+    if (!session.mobile) {
+      wx.showToast({
+        title: '请先完成手机号一键登录',
+        icon: 'none',
+      })
+      wx.redirectTo({
+        url: '/pages/planet/mine',
+      })
+      return
+    }
+
+    this.setData({ submitting: true })
+
+    wx.showLoading({ title: '创建中...' })
+
+    request<CreateResponse>({
+      url: '/api/planets/create',
+      method: 'POST',
+      sessionToken: session.sessionToken,
+      data: {
+        name: planetName,
+        price,
+        joinType,
+      },
     })
+      .then((res) => {
+        wx.hideLoading()
+        if (res.ok && res.data) {
+          createPlanet(
+            {
+              name: planetName,
+              price,
+              joinType,
+            },
+            {
+              id: res.data.id,
+              ownerName: res.data.ownerName,
+            }
+          )
+          wx.showToast({
+            title: '创建成功',
+            icon: 'success',
+          })
+          this.setData({
+            submitting: false,
+          })
+          setTimeout(() => {
+            wx.redirectTo({
+              url: `/pages/planet/home?id=${res.data.id}&name=${encodeURIComponent(res.data.name)}&creator=${encodeURIComponent(res.data.ownerName)}`,
+            })
+          }, 1500)
+        } else {
+          this.setData({ submitting: false })
+          wx.showToast({
+            title: res.message || '创建失败',
+            icon: 'none',
+          })
+        }
+      })
+      .catch((err: Error) => {
+        wx.hideLoading()
+        this.setData({ submitting: false })
+        wx.showToast({
+          title: err.message || '创建失败',
+          icon: 'none',
+        })
+      })
   },
 })

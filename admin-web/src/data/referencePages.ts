@@ -1,0 +1,27 @@
+export const referencePageMap: Record<string, string> = {
+  '/income': '/reference-admin/income.html',
+  '/promotion/data': '/reference-admin/promotion-data.html',
+  '/promotion/new-user-coupons': '/reference-admin/promotion-new-user-coupons.html',
+  '/promotion/channel-qrcodes': '/reference-admin/promotion-channel-qrcodes.html',
+  '/promotion/paywall-optimization': '/reference-admin/promotion-paywall-optimization.html',
+  '/activity/members': '/reference-admin/activity-members.html',
+  '/activity/content': '/reference-admin/activity-content.html',
+  '/activity/scoreboard': '/reference-admin/activity-scoreboard.html',
+  '/activity/tools': '/reference-admin/activity-tools.html',
+  '/renewal/data': '/reference-admin/renewal-data.html',
+  '/renewal/coupons': '/reference-admin/renewal-coupons.html',
+  '/renewal/group-notices': '/reference-admin/renewal-group-notices.html',
+  '/renewal/page-optimization': '/reference-admin/renewal-page-optimization.html',
+  '/renewal/discounts': '/reference-admin/renewal-discounts.html',
+  '/tools/coupons': '/reference-admin/tools-coupons.html',
+  '/tools/group-notices': '/reference-admin/tools-group-notices.html',
+  '/tools/channel-qrcodes': '/reference-admin/tools-channel-qrcodes.html',
+  '/tools/paywall-optimization': '/reference-admin/tools-paywall-optimization.html',
+  '/tools/scoreboard': '/reference-admin/tools-scoreboard.html',
+  '/tools/idea-lab': '/reference-admin/tools-idea-lab.html',
+  '/tools/channel-live': '/reference-admin/tools-channel-live.html',
+  '/tools/member-verification': '/reference-admin/tools-member-verification.html',
+  '/permissions': '/reference-admin/permissions.html',
+}
+
+export const defaultReferencePath = '/income'

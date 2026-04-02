@@ -1,9 +1,12 @@
-import { PlanetProfile, loadPlanets } from '../../utils/planet'
+import { getStoredSession } from '../../utils/auth'
+import { fetchDiscoverPlanets } from '../../utils/planet-api'
+import { PlanetRemoteProfile, upsertRemotePlanets } from '../../utils/planet'
+import { ensureWechatSession } from '../../utils/wechat-login'
 
 interface InterestPlanetItem {
   id: string
   name: string
-  members: string
+  meta: string
   summary: string
   image: string
   creator: string
@@ -19,56 +22,7 @@ interface FeaturedTopicItem {
   cover: string
 }
 
-const interestPool: InterestPlanetItem[] = [
-  {
-    id: 'planet_2',
-    name: 'CEO管理笔记',
-    members: '成员1800+',
-    summary: '这里聊你书上看不到、学校不会教、父母也没讲透的管理经验。',
-    image: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=240&q=80',
-    creator: '主理人 老王',
-  },
-  {
-    id: 'planet_3',
-    name: 'AI资料圈-付费版',
-    members: '成员300+',
-    summary: '聚合 AI 工具、提示词、案例拆解与产品灵感，持续更新实战资料。',
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=240&q=80',
-    creator: '主理人 阿沐',
-  },
-  {
-    id: 'planet_4',
-    name: '赛博回忆录',
-    members: '成员1800+',
-    summary: '本星球汇聚了安全行业各领域精英，分享有效方法与真实案例。',
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=240&q=80',
-    creator: '主理人 夏木',
-  },
-  {
-    id: 'planet_1',
-    name: '产品增长实验室',
-    members: '成员2200+',
-    summary: '围绕增长策略、转化路径和内容运营，输出可直接复用的方法模板。',
-    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=240&q=80',
-    creator: '主理人 林舟',
-  },
-  {
-    id: 'planet_2',
-    name: '独立开发情报局',
-    members: '成员950+',
-    summary: '关注 AI 出海、MVP 验证和变现路径，适合想快速落地副业的人。',
-    image: 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=240&q=80',
-    creator: '主理人 Echo',
-  },
-  {
-    id: 'planet_3',
-    name: '职业跃迁手册',
-    members: '成员1600+',
-    summary: '拆职业升级、岗位转型和简历作品集，偏长期成长与实战复盘。',
-    image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=240&q=80',
-    creator: '主理人 Amber',
-  },
-]
+const INTEREST_BATCH_SIZE = 3
 
 const featuredTopicPool: FeaturedTopicItem[] = [
   {
@@ -124,13 +78,23 @@ const rotateBatch = <T>(list: T[], batchIndex: number, batchSize: number) => {
   return result
 }
 
-const matchPlanetCreator = (planetId: string, planets: PlanetProfile[], fallback: string) => {
-  const matched = planets.find((planet) => planet.id === planetId)
-  return matched ? matched.ownerName : fallback
-}
+const normalizeSummary = (summary: string, planetName: string) =>
+  summary || `欢迎加入「${planetName}」，这里会持续分享精选内容、答疑和社群互动。`
+
+const mapPlanetToInterestItem = (planet: PlanetRemoteProfile): InterestPlanetItem => ({
+  id: planet.id,
+  name: planet.name,
+  meta: `主理人 ${planet.ownerName}`,
+  summary: normalizeSummary(planet.intro || '', planet.name),
+  image: planet.avatarImageUrl || planet.coverImageUrl,
+  creator: planet.ownerName,
+})
 
 Page({
   data: {
+    loadingInterest: false,
+    interestStatusText: '',
+    interestSource: [] as InterestPlanetItem[],
     interestList: [] as InterestPlanetItem[],
     featuredList: [] as FeaturedTopicItem[],
     interestBatchIndex: 0,
@@ -138,31 +102,110 @@ Page({
   },
 
   onLoad() {
-    this.refreshContent(0, 0)
+    void this.refreshContent(0, 0)
   },
 
-  refreshContent(nextInterestBatchIndex: number, nextFeaturedBatchIndex: number) {
-    const planets = loadPlanets()
-    const interestList = rotateBatch(interestPool, nextInterestBatchIndex, 3).map((item) => ({
-      ...item,
-      creator: matchPlanetCreator(item.id, planets, item.creator),
-    }))
-    const featuredList = rotateBatch(featuredTopicPool, nextFeaturedBatchIndex, 2)
+  onShow() {
+    void this.refreshContent(this.data.interestBatchIndex, this.data.featuredBatchIndex)
+  },
 
-    this.setData({
-      interestList,
-      featuredList,
-      interestBatchIndex: nextInterestBatchIndex,
-      featuredBatchIndex: nextFeaturedBatchIndex,
+  async ensurePlanetSession() {
+    const session = getStoredSession()
+    if (session && session.sessionToken) {
+      return session
+    }
+
+    try {
+      return await ensureWechatSession()
+    } catch {
+      return null
+    }
+  },
+
+  async resolveInterestSource() {
+    const session = await this.ensurePlanetSession()
+    const response = await fetchDiscoverPlanets(session ? session.sessionToken : '', 12)
+
+    if (!response.ok || !Array.isArray(response.data)) {
+      return [] as InterestPlanetItem[]
+    }
+
+    const remotePlanets = response.data
+      .filter((planet) => planet && planet.id && !planet.joined)
+      .map((planet) => ({
+        ...planet,
+        joined: false,
+      }))
+
+    upsertRemotePlanets(remotePlanets, {
+      defaultJoined: false,
     })
+
+    return remotePlanets.map(mapPlanetToInterestItem)
+  },
+
+  async refreshContent(nextInterestBatchIndex: number, nextFeaturedBatchIndex: number) {
+    this.setData({
+      loadingInterest: true,
+      interestStatusText: '',
+    })
+
+    try {
+      const interestSource = await this.resolveInterestSource()
+      const interestList = rotateBatch(interestSource, nextInterestBatchIndex, INTEREST_BATCH_SIZE)
+      const featuredList = rotateBatch(featuredTopicPool, nextFeaturedBatchIndex, 2)
+
+      this.setData({
+        loadingInterest: false,
+        interestStatusText: interestSource.length ? '' : '还没有其他用户创建可推荐的真实星球',
+        interestSource,
+        interestList,
+        featuredList,
+        interestBatchIndex: nextInterestBatchIndex,
+        featuredBatchIndex: nextFeaturedBatchIndex,
+      })
+    } catch {
+      const featuredList = rotateBatch(featuredTopicPool, nextFeaturedBatchIndex, 2)
+
+      this.setData({
+        loadingInterest: false,
+        interestStatusText: '真实星球数据拉取失败，请稍后重试',
+        interestSource: [],
+        interestList: [],
+        featuredList,
+        interestBatchIndex: nextInterestBatchIndex,
+        featuredBatchIndex: nextFeaturedBatchIndex,
+      })
+    }
   },
 
   onRefreshInterest() {
-    this.refreshContent(this.data.interestBatchIndex + 1, this.data.featuredBatchIndex)
+    if (!this.data.interestSource.length) {
+      void this.refreshContent(0, this.data.featuredBatchIndex)
+      return
+    }
+
+    const nextInterestBatchIndex = this.data.interestBatchIndex + 1
+    const interestList = rotateBatch(
+      this.data.interestSource,
+      nextInterestBatchIndex,
+      INTEREST_BATCH_SIZE
+    )
+
+    this.setData({
+      interestList,
+      interestBatchIndex: nextInterestBatchIndex,
+    })
   },
 
   onRefreshFeatured() {
-    this.refreshContent(this.data.interestBatchIndex, this.data.featuredBatchIndex + 1)
+    const nextFeaturedBatchIndex = this.data.featuredBatchIndex + 1
+    const featuredList = rotateBatch(featuredTopicPool, nextFeaturedBatchIndex, 2)
+
+    this.setData({
+      featuredList,
+      featuredBatchIndex: nextFeaturedBatchIndex,
+    })
   },
 
   onPlanetTap(e: WechatMiniprogram.TouchEvent) {
@@ -182,8 +225,12 @@ Page({
     })
   },
 
-  onBottomNavTap(e: WechatMiniprogram.TouchEvent) {
-    const key = e.currentTarget.dataset.key
+  onPlanetTabChange(e: WechatMiniprogram.CustomEvent<{ key: string }>) {
+    const key = String((e.detail && e.detail.key) || '')
+
+    if (!key || key === 'discover') {
+      return
+    }
 
     if (key === 'planet') {
       wx.redirectTo({
@@ -195,6 +242,13 @@ Page({
     if (key === 'mine') {
       wx.redirectTo({
         url: '/pages/planet/mine',
+      })
+      return
+    }
+
+    if (key === 'debug') {
+      wx.redirectTo({
+        url: '/pages/planet/debug',
       })
     }
   },

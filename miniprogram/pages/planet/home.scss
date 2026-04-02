@@ -145,7 +145,7 @@
 .planet-home-body {
   background: #ffffff;
   min-height: calc(100vh - 360rpx);
-  padding: 16rpx 0 140rpx;
+  padding: 16rpx 0 calc(220rpx + env(safe-area-inset-bottom));
 }
 
 .planet-home-tab-row {
@@ -424,18 +424,33 @@
   font-size: 28rpx;
 }
 
-.planet-publish-button {
+.planet-publish-fab {
   position: fixed;
-  right: 30rpx;
-  bottom: calc(46rpx + env(safe-area-inset-bottom));
-  width: 104rpx;
-  height: 104rpx;
-  border-radius: 50%;
-  background: #1fc8ae;
-  box-shadow: 0 16rpx 30rpx rgba(31, 200, 174, 0.28);
+  right: 28rpx;
+  bottom: calc(44rpx + env(safe-area-inset-bottom));
+  width: 124rpx;
+  height: 124rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 20;
+}
+
+.planet-publish-fab-active {
+  transform: scale(0.96);
+}
+
+.planet-publish-button {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #2cd2bf 0%, #22c7b4 56%, #1ab9ab 100%);
+  border: 6rpx solid rgba(255, 255, 255, 0.96);
+  box-shadow: 0 18rpx 34rpx rgba(31, 200, 174, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
 .planet-publish-pen {

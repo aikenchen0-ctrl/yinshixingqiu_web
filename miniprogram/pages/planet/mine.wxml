@@ -1,20 +1,53 @@
 <navigation-bar
   title=""
   back="{{false}}"
+  back-url="/pages/planet/index"
   color="#ffffff"
   background="#ffffff"
 ></navigation-bar>
 
 <view class="page planet-mine-page">
   <view class="planet-mine-shell">
-    <view class="planet-mine-hero">
-      <view class="planet-mine-ring ring-outer"></view>
-      <view class="planet-mine-ring ring-middle"></view>
-      <view class="planet-mine-ring ring-inner"></view>
-      <image class="planet-mine-avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
-    </view>
+    <view class="planet-mine-profile-card">
+      <view class="planet-mine-hero" bindtap="onLoginTap">
+        <view class="planet-mine-ring ring-outer"></view>
+        <view class="planet-mine-ring ring-middle"></view>
+        <view class="planet-mine-ring ring-inner"></view>
+        <image class="planet-mine-avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
+      </view>
 
-    <text class="planet-mine-name">{{nickname}}</text>
+      <text class="planet-mine-name">{{nickname}}</text>
+      <text class="planet-mine-subtitle">{{subtitle}}</text>
+
+      <view wx:if="{{!isLoggedIn}}" class="planet-mine-login-panel">
+        <text class="planet-mine-login-title">先连接微信身份</text>
+        <text class="planet-mine-login-desc">进入知识星球会先自动登录，失败时可点击按钮手动重试。</text>
+        <button class="planet-mine-auth-button" loading="{{loginLoading}}" bindtap="onLoginTap">
+          微信快速登录
+        </button>
+      </view>
+
+      <view wx:elif="{{!mobile}}" class="planet-mine-login-panel planet-mine-login-panel-compact">
+        <text class="planet-mine-login-title">补充手机号完成一键登录</text>
+        <text class="planet-mine-login-desc">手机号将用于关键操作校验，点一次即可完成，不需要手动输入。</text>
+        <button
+          class="planet-mine-auth-button"
+          loading="{{loginLoading}}"
+          open-type="getPhoneNumber"
+          bindgetphonenumber="onGetPhoneNumber"
+        >
+          手机号一键登录
+        </button>
+      </view>
+
+      <view wx:else class="planet-mine-login-panel planet-mine-login-panel-compact">
+        <text class="planet-mine-login-title">已连接微信账号</text>
+        <text class="planet-mine-login-desc">现在可以继续创建星球、查看余额和使用你的知识星球功能。</text>
+        <button class="planet-mine-auth-button planet-mine-auth-button-ghost" bindtap="onLogoutTap">
+          退出登录
+        </button>
+      </view>
+    </view>
 
     <view class="planet-mine-card-list">
       <view
@@ -35,21 +68,13 @@
           <text class="planet-mine-card-arrow">›</text>
         </view>
       </view>
+
+      <view wx:if="{{!isLoggedIn}}" class="planet-mine-tip-card">
+        <text class="planet-mine-tip-title">为什么这里还保留“我的”</text>
+        <text class="planet-mine-tip-desc">知识星球是子模块，登录入口放在这里，避免你被带去外层页面来回跳。</text>
+      </view>
     </view>
   </view>
 
-  <view class="planet-mine-bottom-bar">
-    <view class="planet-mine-bottom-item" data-key="planet" bindtap="onBottomNavTap">
-      <view class="planet-mine-bottom-icon planet-mine-bottom-icon-planet"></view>
-      <text class="planet-mine-bottom-label">星球</text>
-    </view>
-    <view class="planet-mine-bottom-item" data-key="discover" bindtap="onBottomNavTap">
-      <view class="planet-mine-bottom-icon planet-mine-bottom-icon-discover"></view>
-      <text class="planet-mine-bottom-label">发现</text>
-    </view>
-    <view class="planet-mine-bottom-item planet-mine-bottom-item-active">
-      <view class="planet-mine-bottom-icon planet-mine-bottom-icon-mine"></view>
-      <text class="planet-mine-bottom-label">我的</text>
-    </view>
-  </view>
+  <planet-bottom-nav active-key="mine" bindchange="onPlanetTabChange"></planet-bottom-nav>
 </view>

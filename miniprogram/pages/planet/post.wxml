@@ -14,7 +14,9 @@
     </view>
   </view>
 
-  <text class="planet-post-title">{{post.content}}</text>
+  <rich-text wx:if="{{post.isRichContent}}" class="planet-post-rich-text" nodes="{{post.richContent}}"></rich-text>
+
+  <text wx:else class="planet-post-title">{{post.content}}</text>
 
   <view wx:if="{{post.images.length}}" class="planet-post-images">
     <image

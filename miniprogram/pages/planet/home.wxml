@@ -158,8 +158,10 @@
     </view>
   </scroll-view>
 
-  <view class="planet-publish-button" bindtap="onPublish">
-    <view class="planet-publish-pen"></view>
+  <view class="planet-publish-fab" hover-class="planet-publish-fab-active" bindtap="onPublish">
+    <view class="planet-publish-button">
+      <view class="planet-publish-pen"></view>
+    </view>
   </view>
 </block>
 
@@ -236,7 +238,13 @@
         </view>
 
         <view class="planet-preview-list">
-          <view class="planet-preview-item" wx:for="{{previewList}}" wx:key="id" bindtap="onPreviewTap">
+          <view
+            class="planet-preview-item"
+            wx:for="{{previewList}}"
+            wx:key="id"
+            data-post-id="{{item.targetPostId}}"
+            bindtap="onPreviewTap"
+          >
             <view class="planet-preview-author">
               <image class="planet-preview-author-avatar" src="{{item.authorAvatar}}" mode="aspectFill"></image>
               <view class="planet-preview-author-copy">
@@ -255,6 +263,6 @@
   </scroll-view>
 
   <view class="planet-join-bar">
-    <button class="planet-join-button" bindtap="onJoinTap">{{joinButtonText}}</button>
+    <button class="planet-join-button" loading="{{joinLoading}}" bindtap="onJoinTap">{{joinButtonText}}</button>
   </view>
 </block>

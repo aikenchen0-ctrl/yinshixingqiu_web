@@ -1,0 +1,124 @@
+<navigation-bar title="发表主题" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
+
+<view class="page planet-publish-page">
+  <scroll-view class="planet-publish-scroll" scroll-y="{{true}}">
+    <view class="planet-publish-shell">
+      <view class="planet-publish-head">
+        <view class="planet-publish-head-copy">
+          <text class="planet-publish-label">发布到</text>
+          <text class="planet-publish-name">{{planetName}}</text>
+        </view>
+        <text class="planet-publish-tip">原生富文本编辑</text>
+      </view>
+
+      <view class="planet-publish-card">
+        <input
+          class="planet-publish-title-input"
+          maxlength="40"
+          placeholder="给主题起个标题，更容易被成员看到"
+          placeholder-class="planet-publish-input-placeholder"
+          value="{{title}}"
+          bindinput="onTitleInput"
+        />
+
+        <view class="planet-publish-toolbar">
+          <view
+            class="planet-publish-tool {{toolbarStatus.bold ? 'planet-publish-tool-active' : ''}}"
+            data-command="bold"
+            bindtap="onToolbarTap"
+          >
+            B
+          </view>
+          <view
+            class="planet-publish-tool {{toolbarStatus.italic ? 'planet-publish-tool-active' : ''}}"
+            data-command="italic"
+            bindtap="onToolbarTap"
+          >
+            I
+          </view>
+          <view
+            class="planet-publish-tool {{toolbarStatus.underline ? 'planet-publish-tool-active' : ''}}"
+            data-command="underline"
+            bindtap="onToolbarTap"
+          >
+            U
+          </view>
+          <view
+            class="planet-publish-tool {{toolbarStatus.heading ? 'planet-publish-tool-active' : ''}}"
+            data-command="header"
+            data-value="H2"
+            bindtap="onToolbarTap"
+          >
+            标题
+          </view>
+          <view
+            class="planet-publish-tool {{toolbarStatus.bulletList ? 'planet-publish-tool-active' : ''}}"
+            data-command="list"
+            data-value="bullet"
+            bindtap="onToolbarTap"
+          >
+            列表
+          </view>
+          <view class="planet-publish-tool" data-command="insertDivider" bindtap="onToolbarTap">分隔</view>
+          <view class="planet-publish-tool" data-command="removeFormat" bindtap="onToolbarTap">去样式</view>
+          <view class="planet-publish-tool" data-command="clear" bindtap="onToolbarTap">清空</view>
+        </view>
+
+        <editor
+          id="planet-editor"
+          class="planet-publish-editor"
+          placeholder="分享你的主题、观点或近况，支持标题、列表和正文插图"
+          show-img-size="{{false}}"
+          show-img-toolbar="{{false}}"
+          show-img-resize="{{false}}"
+          bindready="onEditorReady"
+          bindinput="onEditorInput"
+          bindstatuschange="onEditorStatusChange"
+        ></editor>
+
+        <view class="planet-publish-counter">
+          <text>标题 {{title.length}}/40</text>
+          <text>正文 {{editorText.length}}/5000</text>
+        </view>
+      </view>
+
+      <view class="planet-publish-section">
+        <view class="planet-publish-section-head">
+          <text class="planet-publish-section-title">网络图片</text>
+          <text class="planet-publish-section-action" bindtap="onInsertImages">插入到正文</text>
+        </view>
+        <textarea
+          class="planet-publish-textarea"
+          placeholder="粘贴网络图片地址，多个地址用英文逗号或换行分隔"
+          placeholder-class="planet-publish-input-placeholder"
+          value="{{imageInput}}"
+          bindinput="onImageInput"
+        ></textarea>
+        <view wx:if="{{imagePreviewList.length}}" class="planet-publish-preview-list">
+          <image
+            wx:for="{{imagePreviewList}}"
+            wx:key="*this"
+            class="planet-publish-preview-image"
+            src="{{item}}"
+            mode="aspectFill"
+          ></image>
+        </view>
+      </view>
+
+      <view class="planet-publish-section">
+        <text class="planet-publish-section-title">标签</text>
+        <input
+          class="planet-publish-inline-input"
+          placeholder="例如 AI副业, 运营, 复盘"
+          placeholder-class="planet-publish-input-placeholder"
+          value="{{tagInput}}"
+          bindinput="onTagInput"
+        />
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="planet-publish-footer">
+    <button class="planet-publish-submit" loading="{{submitting}}" bindtap="onSubmit">发布主题</button>
+  </view>
+</view>

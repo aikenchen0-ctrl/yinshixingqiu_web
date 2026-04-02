@@ -8,6 +8,7 @@
     "pages/planet/index",
     "pages/planet/lobby",
     "pages/planet/mine",
+    "pages/planet/debug",
     "pages/planet/detail",
     "pages/planet/home",
     "pages/planet/checkin",
@@ -17,11 +18,13 @@
     "pages/planet/embed",
     "pages/planet/share-card",
     "pages/planet/post",
+    "pages/planet-publish/index",
     "pages/planet/poster",
     "pages/planet/create",
     "pages/articles/detail",
     "pages/membership/index",
-    "pages/ai/index"
+    "pages/ai/index",
+    "pages/auth/login"
   ],
   "window": {
     "navigationBarTextStyle": "white",

@@ -1,4 +1,15 @@
-import { getPlanetById, loadPinnedPosts, loadPosts, PlanetPinnedPost, PlanetPost, PlanetProfile } from '../../utils/planet'
+import {
+  getPlanetById,
+  joinPlanet,
+  loadPinnedPosts,
+  loadPostsByPlanet,
+  PlanetPinnedPost,
+  PlanetPost,
+  PlanetProfile,
+} from '../../utils/planet'
+import { getStoredSession } from '../../utils/auth'
+import { createJoinOrder, fetchMembershipStatus, mockJoinPayment } from '../../utils/planet-api'
+import { ensureWechatSession } from '../../utils/wechat-login'
 
 interface PlanetMetricItem {
   label: string
@@ -13,6 +24,7 @@ interface PlanetPreviewItem {
   title: string
   summary: string
   image: string
+  targetPostId?: string
 }
 
 interface PlanetDetailConfig {
@@ -70,6 +82,7 @@ const feedAvatarClassPool = [
 ]
 
 const getFeedAvatarClass = (index: number) => feedAvatarClassPool[index % feedAvatarClassPool.length]
+const PLANET_PUBLISH_REFRESH_KEY = 'planet_publish_refresh_v1'
 
 const defaultPreviewList: PlanetPreviewItem[] = [
   {
@@ -80,6 +93,7 @@ const defaultPreviewList: PlanetPreviewItem[] = [
     title: '欢迎来到这里，一起把长期有价值的内容沉淀下来',
     summary: '这里会持续更新主题内容、实战经验和阶段性复盘，方便大家按主题回看。',
     image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+    targetPostId: 'pinned_1',
   },
 ]
 
@@ -110,6 +124,7 @@ const detailConfigMap: Record<string, PlanetDetailConfig> = {
         title: '【 第 1218 期 关系中的爱与恨 】',
         summary: '这篇本来要在局间星球聊的，但问的人实在太多，打算写在这里。我写这个知识星...',
         image: 'https://images.unsplash.com/photo-1474511320723-9a56873867b5?auto=format&fit=crop&w=600&q=80',
+        targetPostId: 'pinned_1',
       },
       {
         id: 'ceo_preview_2',
@@ -119,6 +134,7 @@ const detailConfigMap: Record<string, PlanetDetailConfig> = {
         title: '【 第 1205 期 10-20人团队的配置和分工 】',
         summary: '刚接了一位朋友咨询的电话。我们一起讨论一下，10-20人团队在不同阶段怎么配人。',
         image: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=600&q=80',
+        targetPostId: 'seed_2',
       },
       {
         id: 'ceo_preview_3',
@@ -128,6 +144,7 @@ const detailConfigMap: Record<string, PlanetDetailConfig> = {
         title: '【 第 1203 期 大多数人忽略的管理真相 】',
         summary: '这几天我在做《逆向管理课》的 PPT，发现很多人都在忽略一个管理的真问题。',
         image: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=600&q=80',
+        targetPostId: 'seed_3',
       },
     ],
     metricOverrides: {
@@ -184,6 +201,7 @@ const detailConfigMap: Record<string, PlanetDetailConfig> = {
         title: '新来的朋友，大家好，欢迎来到我的知识星球。',
         summary: '这里会持续记录 AI 副业路径、产品验证方式和真实踩坑经验，先把项目做出来，再慢慢打磨。',
         image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+        targetPostId: 'pinned_1',
       },
       {
         id: 'ai_preview_2',
@@ -193,6 +211,7 @@ const detailConfigMap: Record<string, PlanetDetailConfig> = {
         title: '如何用 7 天做出一个能卖的 AI 小工具',
         summary: '从需求来源、MVP 范围到收款闭环，把最小验证路径拆成可以直接执行的清单。',
         image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
+        targetPostId: 'seed_2',
       },
     ],
     metricOverrides: {
@@ -258,6 +277,7 @@ const buildTags = (planet: PlanetProfile, detail: PlanetDetailConfig) => {
 Page({
   data: {
     isJoined: false,
+    joinLoading: false,
     planetId: 'planet_1',
     planetName: '知识星球',
     creatorName: '',
@@ -277,6 +297,7 @@ Page({
     joinButtonText: '立即加入',
     reportLabel: '投诉',
     showNotices: true,
+    source: '',
     activeTab: 'latest',
     tabs: [
       { key: 'latest', label: '最新' },
@@ -354,13 +375,14 @@ Page({
     }
 
     const isJoined = source === 'discover' ? false : source === 'joined' ? true : !!planet.joined
-    const latestPosts = mapPostsToFeedItems(loadPosts())
+    const latestPosts = mapPostsToFeedItems(loadPostsByPlanet(planetId))
     const pinnedList = mapPinnedPostsToItems(loadPinnedPosts())
     const creatorName = optionCreator || planet.ownerName
     const joinButtonText = isJoined ? '进入星球' : `立即加入：${detail.priceText || (planet.isFree ? '免费' : `¥${planet.price}`)}`
 
     this.setData({
       isJoined,
+      joinLoading: false,
       planetId,
       planetName: optionName || planet.name,
       creatorName,
@@ -382,7 +404,78 @@ Page({
       showNotices: !!pinnedList.length,
       pinnedList,
       latestList: latestPosts,
+      source,
     })
+
+    void this.syncMembershipState(planetId, isJoined)
+  },
+
+  onShow() {
+    if (!this.data.planetId) {
+      return
+    }
+
+    const refreshPlanetId = wx.getStorageSync(PLANET_PUBLISH_REFRESH_KEY)
+    if (refreshPlanetId && refreshPlanetId === this.data.planetId) {
+      wx.removeStorageSync(PLANET_PUBLISH_REFRESH_KEY)
+      this.setData({
+        activeTab: 'latest',
+      })
+    }
+
+    this.refreshFeedContent(this.data.planetId)
+  },
+
+  refreshFeedContent(planetId: string) {
+    const latestPosts = mapPostsToFeedItems(loadPostsByPlanet(planetId))
+    const pinnedList = mapPinnedPostsToItems(loadPinnedPosts())
+    const showNotices = !!pinnedList.length
+
+    this.setData({
+      latestList: latestPosts,
+      pinnedList,
+      showNotices,
+    })
+  },
+
+  async ensurePlanetSession() {
+    const session = getStoredSession()
+
+    if (session && session.sessionToken) {
+      return session
+    }
+
+    try {
+      return await ensureWechatSession()
+    } catch {
+      return null
+    }
+  },
+
+  updateJoinState(isJoined: boolean) {
+    this.setData({
+      isJoined,
+      joinButtonText: isJoined
+        ? '进入星球'
+        : `立即加入：${this.data.priceText === '免费' ? '免费' : this.data.priceText}`,
+    })
+  },
+
+  async syncMembershipState(planetId: string, fallbackJoined: boolean) {
+    const session = await this.ensurePlanetSession()
+
+    if (!session || !session.id) {
+      this.updateJoinState(fallbackJoined)
+      return
+    }
+
+    try {
+      const response = await fetchMembershipStatus(planetId, session.id)
+      const isJoined = Boolean(response.ok && response.data && response.data.isActive)
+      this.updateJoinState(isJoined || fallbackJoined)
+    } catch {
+      this.updateJoinState(fallbackJoined)
+    }
   },
 
   onToggleIntro() {
@@ -400,25 +493,122 @@ Page({
     })
   },
 
-  onPreviewTap() {
-    wx.showToast({
-      title: '主题详情下一步补齐',
-      icon: 'none',
+  onPreviewTap(e: WechatMiniprogram.TouchEvent) {
+    const targetPostId = e.currentTarget.dataset.postId || 'pinned_1'
+    wx.navigateTo({
+      url: `/pages/planet/post?id=${targetPostId}&planetId=${this.data.planetId}`,
     })
   },
 
   onJoinTap() {
+    if (this.data.joinLoading) {
+      return
+    }
+
     if (this.data.isJoined) {
-      wx.showToast({
-        title: '进入星球内容流',
-        icon: 'none',
+      wx.redirectTo({
+        url: `/pages/planet/home?id=${this.data.planetId}&name=${encodeURIComponent(this.data.planetName)}&creator=${encodeURIComponent(this.data.creatorName)}&source=joined`,
       })
       return
     }
 
-    wx.showToast({
-      title: this.data.priceText === '免费' ? '准备加入星球' : `准备加入 ${this.data.priceText}`,
-      icon: 'none',
+    wx.showModal({
+      title: this.data.priceText === '免费' ? '确认加入星球' : '确认支付加入',
+      content:
+        this.data.priceText === '免费'
+          ? `加入后将进入「${this.data.planetName}」内容流。`
+          : `将按 ${this.data.priceText} 支付并加入「${this.data.planetName}」。`,
+      confirmText: this.data.priceText === '免费' ? '立即加入' : '确认支付',
+      success: async (result) => {
+        if (!result.confirm) {
+          return
+        }
+
+        this.setData({
+          joinLoading: true,
+        })
+
+        wx.showLoading({
+          title: this.data.priceText === '免费' ? '加入中' : '支付中',
+          mask: true,
+        })
+
+        try {
+          const session = await this.ensurePlanetSession()
+
+          if (!session || !session.id) {
+            throw new Error('请先完成登录后再加入星球')
+          }
+
+          const orderResponse = await createJoinOrder({
+            groupId: this.data.planetId,
+            userId: session.id,
+            paymentChannel: 'WECHAT',
+          })
+
+          if (!orderResponse.ok || !orderResponse.data || !orderResponse.data.order) {
+            throw new Error('创建加入订单失败')
+          }
+
+          const orderNo = orderResponse.data.order.orderNo
+          const paymentResponse = await mockJoinPayment({
+            orderNo,
+            transactionNo: `mock_${Date.now()}`,
+            success: true,
+          })
+
+          if (!paymentResponse.ok || !paymentResponse.data || !paymentResponse.data.membership) {
+            throw new Error('支付成功，但成员激活失败')
+          }
+
+          const joinedPlanet = joinPlanet(this.data.planetId)
+          if (!joinedPlanet) {
+            throw new Error('加入成功，但本地星球状态更新失败')
+          }
+
+          wx.hideLoading()
+          this.setData({
+            joinLoading: false,
+          })
+          this.updateJoinState(true)
+
+          wx.showToast({
+            title: this.data.priceText === '免费' ? '加入成功' : '支付成功',
+            icon: 'success',
+          })
+
+          wx.redirectTo({
+            url: `/pages/planet/home?id=${joinedPlanet.id}&name=${encodeURIComponent(joinedPlanet.name)}&creator=${encodeURIComponent(joinedPlanet.ownerName)}&source=joined`,
+          })
+        } catch (error) {
+          wx.hideLoading()
+          this.setData({
+            joinLoading: false,
+          })
+          const message = error instanceof Error ? error.message : '加入失败，请稍后重试'
+
+          if (message.indexOf('已是有效成员') >= 0) {
+            const joinedPlanet = joinPlanet(this.data.planetId)
+            this.updateJoinState(true)
+            wx.showToast({
+              title: '你已经加入过了',
+              icon: 'none',
+            })
+
+            if (joinedPlanet) {
+              wx.redirectTo({
+                url: `/pages/planet/home?id=${joinedPlanet.id}&name=${encodeURIComponent(joinedPlanet.name)}&creator=${encodeURIComponent(joinedPlanet.ownerName)}&source=joined`,
+              })
+            }
+            return
+          }
+
+          wx.showToast({
+            title: message,
+            icon: 'none',
+          })
+        }
+      },
     })
   },
 
@@ -483,9 +673,8 @@ Page({
   },
 
   onPublish() {
-    wx.showToast({
-      title: '发帖能力下一步补齐',
-      icon: 'none',
+    wx.navigateTo({
+      url: `/pages/planet-publish/index?planetId=${this.data.planetId}&planetName=${encodeURIComponent(this.data.planetName)}`,
     })
   },
 

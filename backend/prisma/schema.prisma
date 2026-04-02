@@ -1,0 +1,842 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+  BANNED
+}
+
+enum StaffRole {
+  OWNER
+  PARTNER
+  ADMIN
+  OPERATOR
+}
+
+enum GroupStatus {
+  DRAFT
+  ACTIVE
+  HIDDEN
+  CLOSED
+}
+
+enum GroupJoinType {
+  FREE
+  PAID
+  INVITE_ONLY
+}
+
+enum BillingPeriod {
+  MONTH
+  QUARTER
+  YEAR
+  FOREVER
+}
+
+enum MemberStatus {
+  ACTIVE
+  EXPIRED
+  QUIT
+  BANNED
+}
+
+enum JoinSource {
+  DIRECT
+  QR_CODE
+  COUPON
+  INVITE
+  MANUAL
+}
+
+enum PostType {
+  TOPIC
+  ARTICLE
+  NOTICE
+  CHECKIN
+  ASSIGNMENT
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+  DELETED
+}
+
+enum CommentStatus {
+  PUBLISHED
+  HIDDEN
+  DELETED
+}
+
+enum OrderType {
+  GROUP_JOIN
+  GROUP_RENEWAL
+  REWARD
+  QUESTION
+  IDENTITY_MEMBER_MONTHLY
+  IDENTITY_MEMBER_QUARTERLY
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CLOSED
+  REFUNDED
+  FAILED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum PaymentChannel {
+  WECHAT
+  ALIPAY
+  MANUAL
+  STAR_COIN
+}
+
+enum CouponType {
+  PROMOTION
+  RENEWAL
+}
+
+enum CouponStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  EXPIRED
+  ARCHIVED
+}
+
+enum NotificationStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+  CANCELLED
+}
+
+enum IdentityContractStatus {
+  UNPAID
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum ScoreEventType {
+  POST_LIKE
+  COMMENT_LIKE
+  POST_PUBLISH
+  COMMENT_PUBLISH
+  CHECKIN_PUBLISH
+  ASSIGNMENT_SUBMIT
+  MANUAL_ADJUST
+}
+
+enum ExportTaskType {
+  INCOME_REPORT
+  MEMBER_REPORT
+  CONTENT_REPORT
+  QR_CODE_REPORT
+  VIDEO_LIVE_MEMBER_LIST
+}
+
+enum ExportTaskStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  EXPIRED
+}
+
+enum HotBoardSource {
+  WEIBO
+  TOUTIAO
+  SOGOU
+}
+
+enum AnalyticsEventType {
+  PREVIEW_VIEW
+  PREVIEW_CLICK_JOIN
+  JOIN_PAID
+  RENEWAL_PAGE_VIEW
+  RENEWAL_PAID
+  APP_DOWNLOAD
+}
+
+enum AnalyticsTargetType {
+  GROUP
+  ORDER
+  POST
+  COMMENT
+}
+
+enum OutboxJobStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+}
+
+enum AuthSessionStatus {
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+model User {
+  id          String     @id @default(cuid())
+  mobile      String?    @unique
+  unionId     String?    @unique @map("union_id")
+  openId      String?    @unique @map("open_id")
+  status      UserStatus @default(ACTIVE)
+  lastLoginAt DateTime?  @map("last_login_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  profile      UserProfile?
+  authSessions AuthSession[]
+  ownedGroups  Group[]             @relation("GroupOwner")
+  staffGroups  GroupStaff[]
+  members      GroupMember[]
+  posts        Post[]
+  comments     Comment[]
+  orders       Order[]
+  scoreLedgers MemberScoreLedger[]
+
+  @@map("users")
+}
+
+model AuthSession {
+  id           String            @id @default(cuid())
+  userId       String            @map("user_id")
+  sessionToken String            @unique @map("session_token")
+  loginCode    String            @map("login_code")
+  sessionKey   String?           @map("session_key")
+  status       AuthSessionStatus @default(ACTIVE)
+  expiresAt    DateTime          @map("expires_at")
+  revokedAt    DateTime?         @map("revoked_at")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+
+  user         User              @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+  @@map("auth_sessions")
+}
+
+model UserProfile {
+  userId    String   @id @map("user_id")
+  nickname  String
+  avatarUrl String?  @map("avatar_url")
+  wechatNo  String?  @map("wechat_no")
+  city      String?
+  province  String?
+  bio       String?
+  remark    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("user_profiles")
+}
+
+model Group {
+  id                  String        @id @default(cuid())
+  name                String
+  slug                String        @unique
+  externalGroupId     String?       @unique @map("external_group_id")
+  ownerUserId         String        @map("owner_user_id")
+  avatarUrl           String?       @map("avatar_url")
+  coverUrl            String?       @map("cover_url")
+  intro               String?
+  description         String?
+  joinType            GroupJoinType @default(PAID) @map("join_type")
+  billingPeriod       BillingPeriod @default(YEAR) @map("billing_period")
+  priceAmount         Decimal       @default(0) @map("price_amount") @db.Decimal(10, 2)
+  originalPriceAmount Decimal       @default(0) @map("original_price_amount") @db.Decimal(10, 2)
+  status              GroupStatus   @default(DRAFT)
+  memberCount         Int           @default(0) @map("member_count")
+  paidMemberCount     Int           @default(0) @map("paid_member_count")
+  contentCount        Int           @default(0) @map("content_count")
+  publishedAt         DateTime?     @map("published_at")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  owner             User                          @relation("GroupOwner", fields: [ownerUserId], references: [id])
+  permissionPolicy  GroupPermissionPolicy?
+  staffs            GroupStaff[]
+  members           GroupMember[]
+  posts             Post[]
+  orders            Order[]
+  coupons           Coupon[]
+  promotionChannels PromotionChannel[]
+  notifications     GroupNotification[]
+  renewalSetting    RenewalSetting?
+  renewalTemplates  RenewalNotificationTemplate[]
+  scoreboardSetting ScoreboardSetting?
+  scoreRules        ScoreRule[]
+  scoreLedgers      MemberScoreLedger[]
+  incomeStats       GroupIncomeDailyStat[]
+  promotionStats    GroupPromotionDailyStat[]
+  memberStats       GroupMemberDailyStat[]
+  contentStats      GroupContentDailyStat[]
+  renewalStats      GroupRenewalDailyStat[]
+  exportTasks       ExportTask[]
+  identityContracts IdentityMemberContract[]
+
+  @@index([ownerUserId])
+  @@index([status])
+  @@map("groups")
+}
+
+model GroupPermissionPolicy {
+  id                          String   @id @default(cuid())
+  groupId                     String   @unique @map("group_id")
+  partnerCanViewDashboard     Boolean  @default(true) @map("partner_can_view_dashboard")
+  adminCanViewDashboard       Boolean  @default(true) @map("admin_can_view_dashboard")
+  partnerCanViewIncome        Boolean  @default(true) @map("partner_can_view_income")
+  adminCanViewIncome          Boolean  @default(true) @map("admin_can_view_income")
+  partnerCanViewMemberContact Boolean  @default(true) @map("partner_can_view_member_contact")
+  adminCanViewMemberContact   Boolean  @default(true) @map("admin_can_view_member_contact")
+  allowStarCoinJoin           Boolean  @default(false) @map("allow_star_coin_join")
+  allowStarCoinRenewal        Boolean  @default(false) @map("allow_star_coin_renewal")
+  allowJoin                   Boolean  @default(true) @map("allow_join")
+  needExamine                 Boolean  @default(false) @map("need_examine")
+  allowPreview                Boolean  @default(true) @map("allow_preview")
+  allowSearch                 Boolean  @default(true) @map("allow_search")
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@map("group_permission_policies")
+}
+
+model GroupStaff {
+  id        String    @id @default(cuid())
+  groupId   String    @map("group_id")
+  userId    String    @map("user_id")
+  role      StaffRole
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId])
+  @@map("group_staffs")
+}
+
+model GroupMember {
+  id            String       @id @default(cuid())
+  groupId       String       @map("group_id")
+  userId        String       @map("user_id")
+  memberNo      Int?         @map("member_no")
+  status        MemberStatus @default(ACTIVE)
+  joinSource    JoinSource   @default(DIRECT) @map("join_source")
+  isPaid        Boolean      @default(false) @map("is_paid")
+  joinedAt      DateTime     @default(now()) @map("joined_at")
+  firstJoinedAt DateTime?    @map("first_joined_at")
+  expireAt      DateTime?    @map("expire_at")
+  lastActiveAt  DateTime?    @map("last_active_at")
+  renewTimes    Int          @default(0) @map("renew_times")
+  phone         String?
+  wechatNo      String?      @map("wechat_no")
+  sourceOrderId String?      @map("source_order_id")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  group        Group               @relation(fields: [groupId], references: [id])
+  user         User                @relation(fields: [userId], references: [id])
+  couponClaims CouponClaim[]
+  scoreLedgers MemberScoreLedger[]
+
+  @@unique([groupId, userId])
+  @@index([groupId, status])
+  @@index([expireAt])
+  @@map("group_members")
+}
+
+model Post {
+  id           String     @id @default(cuid())
+  groupId      String     @map("group_id")
+  authorUserId String     @map("author_user_id")
+  type         PostType   @default(TOPIC)
+  status       PostStatus @default(PUBLISHED)
+  title        String?
+  summary      String?
+  contentText  String     @map("content_text")
+  readingCount Int        @default(0) @map("reading_count")
+  likeCount    Int        @default(0) @map("like_count")
+  commentCount Int        @default(0) @map("comment_count")
+  isPinned     Boolean    @default(false) @map("is_pinned")
+  isEssence    Boolean    @default(false) @map("is_essence")
+  publishedAt  DateTime?  @map("published_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  group    Group     @relation(fields: [groupId], references: [id])
+  author   User      @relation(fields: [authorUserId], references: [id])
+  comments Comment[]
+
+  @@index([groupId, type, status])
+  @@index([publishedAt])
+  @@map("posts")
+}
+
+model Comment {
+  id          String        @id @default(cuid())
+  postId      String        @map("post_id")
+  userId      String        @map("user_id")
+  parentId    String?       @map("parent_id")
+  status      CommentStatus @default(PUBLISHED)
+  contentText String        @map("content_text")
+  likeCount   Int           @default(0) @map("like_count")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  post    Post      @relation(fields: [postId], references: [id])
+  user    User      @relation(fields: [userId], references: [id])
+  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentReplies")
+
+  @@index([postId, createdAt])
+  @@map("comments")
+}
+
+model Order {
+  id                 String        @id @default(cuid())
+  orderNo            String        @unique @map("order_no")
+  groupId            String?       @map("group_id")
+  userId             String        @map("user_id")
+  type               OrderType
+  status             OrderStatus   @default(PENDING)
+  paymentStatus      PaymentStatus @default(UNPAID) @map("payment_status")
+  amount             Decimal       @db.Decimal(10, 2)
+  netAmount          Decimal       @default(0) @map("net_amount") @db.Decimal(10, 2)
+  originalAmount     Decimal       @default(0) @map("original_amount") @db.Decimal(10, 2)
+  discountAmount     Decimal       @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  couponId           String?       @map("coupon_id")
+  promotionChannelId String?       @map("promotion_channel_id")
+  expireAt           DateTime?     @map("expire_at")
+  paidAt             DateTime?     @map("paid_at")
+  createdAt          DateTime      @default(now()) @map("created_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  group            Group?            @relation(fields: [groupId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
+  coupon           Coupon?           @relation(fields: [couponId], references: [id])
+  promotionChannel PromotionChannel? @relation(fields: [promotionChannelId], references: [id])
+  paymentRecords   PaymentRecord[]
+  couponClaims     CouponClaim[]
+
+  @@index([groupId, type, status])
+  @@map("orders")
+}
+
+model PaymentRecord {
+  id            String         @id @default(cuid())
+  orderId       String         @map("order_id")
+  channel       PaymentChannel
+  status        PaymentStatus  @default(UNPAID)
+  transactionNo String?        @unique @map("transaction_no")
+  amount        Decimal        @db.Decimal(10, 2)
+  paidAt        DateTime?      @map("paid_at")
+  refundedAt    DateTime?      @map("refunded_at")
+  rawPayload    Json?          @map("raw_payload")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([status, paidAt])
+  @@map("payment_records")
+}
+
+model Coupon {
+  id            String       @id @default(cuid())
+  groupId       String       @map("group_id")
+  type          CouponType
+  name          String
+  code          String       @unique
+  amount        Decimal      @db.Decimal(10, 2)
+  totalQuantity Int?         @map("total_quantity")
+  usedQuantity  Int          @default(0) @map("used_quantity")
+  visitCount    Int          @default(0) @map("visit_count")
+  validFrom     DateTime?    @map("valid_from")
+  validTo       DateTime?    @map("valid_to")
+  status        CouponStatus @default(DRAFT)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  group  Group         @relation(fields: [groupId], references: [id])
+  claims CouponClaim[]
+  orders Order[]
+
+  @@index([groupId, type, status])
+  @@map("coupons")
+}
+
+model CouponClaim {
+  id        String    @id @default(cuid())
+  couponId  String    @map("coupon_id")
+  memberId  String    @map("member_id")
+  orderId   String?   @map("order_id")
+  claimedAt DateTime  @default(now()) @map("claimed_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  coupon Coupon      @relation(fields: [couponId], references: [id])
+  member GroupMember @relation(fields: [memberId], references: [id])
+  order  Order?      @relation(fields: [orderId], references: [id])
+
+  @@index([couponId, usedAt])
+  @@map("coupon_claims")
+}
+
+model PromotionChannel {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  name      String
+  code      String   @unique
+  qrCodeUrl String?  @map("qr_code_url")
+  isEnabled Boolean  @default(true) @map("is_enabled")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  group  Group   @relation(fields: [groupId], references: [id])
+  orders Order[]
+
+  @@index([groupId, isEnabled])
+  @@map("promotion_channels")
+}
+
+model GroupNotification {
+  id          String             @id @default(cuid())
+  groupId     String             @map("group_id")
+  title       String?
+  content     String
+  buttonText  String?            @map("button_text")
+  buttonUrl   String?            @map("button_url")
+  routeKey    String?            @map("route_key")
+  status      NotificationStatus @default(DRAFT)
+  scheduledAt DateTime?          @map("scheduled_at")
+  sentAt      DateTime?          @map("sent_at")
+  pushedCount Int                @default(0) @map("pushed_count")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@index([groupId, status, scheduledAt])
+  @@map("group_notifications")
+}
+
+model RenewalSetting {
+  id                        String    @id @default(cuid())
+  groupId                   String    @unique @map("group_id")
+  amount                    Decimal   @db.Decimal(10, 2)
+  originalAmount            Decimal   @map("original_amount") @db.Decimal(10, 2)
+  discountedPercentage      Int       @default(100) @map("discounted_percentage")
+  advanceAmount             Decimal   @map("advance_amount") @db.Decimal(10, 2)
+  advanceDiscountPercentage Int       @default(100) @map("advance_discount_percentage")
+  graceAmount               Decimal   @map("grace_amount") @db.Decimal(10, 2)
+  graceDiscountPercentage   Int       @default(100) @map("grace_discount_percentage")
+  mode                      String    @default("period")
+  duration                  String    @default("1Y")
+  beginTime                 DateTime? @map("begin_time")
+  guidance                  String?
+  renewalUrl                String?   @map("renewal_url")
+  createdAt                 DateTime  @default(now()) @map("created_at")
+  updatedAt                 DateTime  @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@map("renewal_settings")
+}
+
+model RenewalNotificationTemplate {
+  id          String   @id @default(cuid())
+  groupId     String   @map("group_id")
+  expiredDays Int      @map("expired_days")
+  text        String
+  pushedCount Int      @default(0) @map("pushed_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, expiredDays])
+  @@map("renewal_notification_templates")
+}
+
+model ScoreboardSetting {
+  id                   String    @id @default(cuid())
+  groupId              String    @unique @map("group_id")
+  enabled              Boolean   @default(false)
+  enabledHonor         Boolean   @default(false) @map("enabled_honor")
+  excludePrivilegeUser Boolean   @default(true) @map("exclude_privilege_user")
+  description          String?
+  rulesUpdatedAt       DateTime? @map("rules_updated_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@map("scoreboard_settings")
+}
+
+model ScoreRule {
+  id        String         @id @default(cuid())
+  groupId   String         @map("group_id")
+  eventType ScoreEventType @map("event_type")
+  score     Decimal        @db.Decimal(5, 1)
+  isEnabled Boolean        @default(true) @map("is_enabled")
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, eventType])
+  @@map("score_rules")
+}
+
+model MemberScoreLedger {
+  id           String         @id @default(cuid())
+  groupId      String         @map("group_id")
+  memberId     String         @map("member_id")
+  userId       String         @map("user_id")
+  eventType    ScoreEventType @map("event_type")
+  scoreDelta   Decimal        @map("score_delta") @db.Decimal(8, 1)
+  balanceAfter Decimal        @map("balance_after") @db.Decimal(12, 1)
+  sourceRefId  String?        @map("source_ref_id")
+  note         String?
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  group  Group       @relation(fields: [groupId], references: [id])
+  member GroupMember @relation(fields: [memberId], references: [id])
+  user   User        @relation(fields: [userId], references: [id])
+
+  @@index([groupId, createdAt])
+  @@map("member_score_ledgers")
+}
+
+model IdentityMemberContract {
+  id            String                 @id @default(cuid())
+  groupId       String                 @map("group_id")
+  monthlyAmount Decimal                @map("monthly_amount") @db.Decimal(10, 2)
+  quarterAmount Decimal                @map("quarter_amount") @db.Decimal(10, 2)
+  status        IdentityContractStatus @default(UNPAID)
+  beginTime     DateTime?              @map("begin_time")
+  endTime       DateTime?              @map("end_time")
+  canRenewal    Boolean                @default(false) @map("can_renewal")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@index([groupId, status])
+  @@map("identity_member_contracts")
+}
+
+model ExportTask {
+  id               String           @id @default(cuid())
+  groupId          String           @map("group_id")
+  type             ExportTaskType
+  status           ExportTaskStatus @default(PENDING)
+  fileName         String?          @map("file_name")
+  fileUrl          String?          @map("file_url")
+  beginTime        DateTime?        @map("begin_time")
+  endTime          DateTime?        @map("end_time")
+  onlyValidMembers Boolean?         @map("only_valid_members")
+  errorMessage     String?          @map("error_message")
+  expiredAt        DateTime?        @map("expired_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@index([groupId, type, status])
+  @@map("export_tasks")
+}
+
+model HotBoardSnapshot {
+  id        String         @id @default(cuid())
+  source    HotBoardSource
+  fetchedAt DateTime       @default(now()) @map("fetched_at")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  items HotBoardItem[]
+
+  @@index([source, fetchedAt])
+  @@map("hot_board_snapshots")
+}
+
+model HotBoardItem {
+  id         String         @id @default(cuid())
+  snapshotId String         @map("snapshot_id")
+  source     HotBoardSource
+  rank       Int
+  title      String
+  url        String
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  snapshot HotBoardSnapshot @relation(fields: [snapshotId], references: [id])
+
+  @@unique([snapshotId, rank])
+  @@map("hot_board_items")
+}
+
+model GroupIncomeDailyStat {
+  id                String   @id @default(cuid())
+  groupId           String   @map("group_id")
+  statDate          DateTime @map("stat_date") @db.Date
+  totalNetAmount    Decimal  @default(0) @map("total_net_amount") @db.Decimal(10, 2)
+  joinNetAmount     Decimal  @default(0) @map("join_net_amount") @db.Decimal(10, 2)
+  renewalNetAmount  Decimal  @default(0) @map("renewal_net_amount") @db.Decimal(10, 2)
+  rewardNetAmount   Decimal  @default(0) @map("reward_net_amount") @db.Decimal(10, 2)
+  questionNetAmount Decimal  @default(0) @map("question_net_amount") @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, statDate])
+  @@map("group_income_daily_stats")
+}
+
+model GroupPromotionDailyStat {
+  id                String   @id @default(cuid())
+  groupId           String   @map("group_id")
+  statDate          DateTime @map("stat_date") @db.Date
+  previewVisitCount Int      @default(0) @map("preview_visit_count")
+  clickJoinCount    Int      @default(0) @map("click_join_count")
+  paySuccessCount   Int      @default(0) @map("pay_success_count")
+  paidJoinCount     Int      @default(0) @map("paid_join_count")
+  joinIncomeAmount  Decimal  @default(0) @map("join_income_amount") @db.Decimal(10, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, statDate])
+  @@map("group_promotion_daily_stats")
+}
+
+model GroupMemberDailyStat {
+  id                  String   @id @default(cuid())
+  groupId             String   @map("group_id")
+  statDate            DateTime @map("stat_date") @db.Date
+  totalMemberCount    Int      @default(0) @map("total_member_count")
+  paidMemberCount     Int      @default(0) @map("paid_member_count")
+  freeMemberCount     Int      @default(0) @map("free_member_count")
+  quittedCount        Int      @default(0) @map("quitted_count")
+  activeMemberCount7d Int      @default(0) @map("active_member_count_7d")
+  weeklyActiveRate    Decimal  @default(0) @map("weekly_active_rate") @db.Decimal(8, 4)
+  appDownloadedCount  Int      @default(0) @map("app_downloaded_count")
+  appDownloadRate     Decimal  @default(0) @map("app_download_rate") @db.Decimal(8, 4)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, statDate])
+  @@map("group_member_daily_stats")
+}
+
+model GroupContentDailyStat {
+  id           String   @id @default(cuid())
+  groupId      String   @map("group_id")
+  statDate     DateTime @map("stat_date") @db.Date
+  topicCount   Int      @default(0) @map("topic_count")
+  fileCount    Int      @default(0) @map("file_count")
+  imageCount   Int      @default(0) @map("image_count")
+  commentCount Int      @default(0) @map("comment_count")
+  likeCount    Int      @default(0) @map("like_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, statDate])
+  @@map("group_content_daily_stats")
+}
+
+model GroupRenewalDailyStat {
+  id                     String   @id @default(cuid())
+  groupId                String   @map("group_id")
+  statDate               DateTime @map("stat_date") @db.Date
+  renewalIncomeAmount    Decimal  @default(0) @map("renewal_income_amount") @db.Decimal(10, 2)
+  renewedCount           Int      @default(0) @map("renewed_count")
+  renewableCount         Int      @default(0) @map("renewable_count")
+  renewalPageVisitCount  Int      @default(0) @map("renewal_page_visit_count")
+  renewalPaySuccessCount Int      @default(0) @map("renewal_pay_success_count")
+  renewalConversionRate  Decimal  @default(0) @map("renewal_conversion_rate") @db.Decimal(8, 4)
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, statDate])
+  @@map("group_renewal_daily_stats")
+}
+
+model AnalyticsEvent {
+  id                 String              @id @default(cuid())
+  groupId            String              @map("group_id")
+  userId             String?             @map("user_id")
+  eventType          AnalyticsEventType  @map("event_type")
+  targetType         AnalyticsTargetType @map("target_type")
+  targetId           String?             @map("target_id")
+  promotionChannelId String?             @map("promotion_channel_id")
+  eventDedupKey      String?             @unique @map("event_dedup_key")
+  properties         Json?
+  createdAt          DateTime            @default(now()) @map("created_at")
+
+  @@index([groupId, eventType, createdAt])
+  @@map("analytics_events")
+}
+
+model OrderStatusLog {
+  id         String       @id @default(cuid())
+  orderId    String       @map("order_id")
+  fromStatus OrderStatus? @map("from_status")
+  toStatus   OrderStatus  @map("to_status")
+  reason     String?
+  payload    Json?
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  @@index([orderId, createdAt])
+  @@map("order_status_logs")
+}
+
+model OutboxJob {
+  id            String          @id @default(cuid())
+  topic         String
+  aggregateType String          @map("aggregate_type")
+  aggregateId   String?         @map("aggregate_id")
+  payload       Json
+  status        OutboxJobStatus @default(PENDING)
+  retryCount    Int             @default(0) @map("retry_count")
+  nextRetryAt   DateTime?       @map("next_retry_at")
+  lastError     String?         @map("last_error")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  @@index([status, nextRetryAt])
+  @@map("outbox_jobs")
+}

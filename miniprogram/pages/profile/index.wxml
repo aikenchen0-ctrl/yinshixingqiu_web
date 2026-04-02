@@ -7,7 +7,7 @@
 
 <view class="page profile-page">
   <view class="profile-shell">
-    <view class="profile-hero">
+    <view class="profile-hero" bindtap="onLoginTap">
       <view class="profile-avatar-ring ring-outer"></view>
       <view class="profile-avatar-ring ring-middle"></view>
       <view class="profile-avatar-ring ring-inner"></view>
@@ -15,6 +15,15 @@
     </view>
 
     <text class="profile-name">{{nickname}}</text>
+    <text class="profile-mobile">{{mobile}}</text>
+
+    <button wx:if="{{!isLoggedIn}}" class="profile-login-button" bindtap="onLoginTap">
+      去登录 / 注册
+    </button>
+
+    <button wx:if="{{isLoggedIn}}" class="profile-logout-button" bindtap="onLogout">
+      退出登录
+    </button>
 
     <view class="profile-card-list">
       <view

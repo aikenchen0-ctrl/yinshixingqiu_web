@@ -86,13 +86,15 @@
       <button
         wx:if="{{currentStep === 1}}"
         class="create-submit-button {{!planetName ? 'create-submit-button-disabled' : ''}}"
+        disabled="{{!planetName || submitting}}"
         bindtap="goNextStep"
       >
         继续
       </button>
       <button
         wx:else
-        class="create-submit-button"
+        class="create-submit-button {{submitting ? 'create-submit-button-loading' : ''}}"
+        disabled="{{submitting}}"
         bindtap="onSubmit"
       >
         立即创建

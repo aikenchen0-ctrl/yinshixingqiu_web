@@ -1,6 +1,7 @@
 <navigation-bar
   title="知识星球"
   back="{{true}}"
+  back-url="/pages/index/index"
   color="#22160d"
   background="#ffffff"
 ></navigation-bar>
@@ -18,29 +19,98 @@
       />
     </view>
 
-    <view class="planet-list">
-      <view
-        class="planet-row"
-        wx:for="{{displayPlanets}}"
-        wx:key="id"
-        data-id="{{item.id}}"
-        data-name="{{item.name}}"
-        data-creator="{{item.ownerName}}"
-        bindtap="onPlanetTap"
-      >
-        <view class="planet-row-left">
-          <view class="planet-avatar {{item.avatarClass}}">
-            <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+    <block wx:if="{{searchValue}}">
+      <view class="planet-list">
+        <view
+          class="planet-row"
+          wx:for="{{searchResults}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          data-name="{{item.name}}"
+          data-creator="{{item.ownerName}}"
+          data-joined="{{item.joined}}"
+          bindtap="onPlanetTap"
+        >
+          <view class="planet-row-left">
+            <view class="planet-avatar {{item.avatarClass}}">
+              <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+            </view>
+            <text class="planet-name">{{item.name}}</text>
           </view>
-          <text class="planet-name">{{item.name}}</text>
-        </view>
 
-        <view class="planet-row-right">
-          <text wx:if="{{item.badge}}" class="planet-badge">{{item.badge}}</text>
-          <text class="planet-arrow">›</text>
+          <view class="planet-row-right">
+            <text wx:if="{{item.badge}}" class="planet-badge">{{item.badge}}</text>
+            <text class="planet-arrow">›</text>
+          </view>
         </view>
       </view>
-    </view>
+
+      <view wx:if="{{!searchResults.length}}" class="planet-empty-state">
+        <text class="planet-empty-text">没有找到匹配的星球</text>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view wx:if="{{joinedPlanets.length}}" class="planet-section planet-section-first">
+        <text class="planet-section-title">我加入的星球</text>
+        <view class="planet-list planet-list-subsection">
+          <view
+            class="planet-row"
+            wx:for="{{joinedPlanets}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            data-name="{{item.name}}"
+            data-creator="{{item.ownerName}}"
+            data-joined="{{item.joined}}"
+            bindtap="onPlanetTap"
+          >
+            <view class="planet-row-left">
+              <view class="planet-avatar {{item.avatarClass}}">
+                <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+              </view>
+              <text class="planet-name">{{item.name}}</text>
+            </view>
+
+            <view class="planet-row-right">
+              <text wx:if="{{item.badge}}" class="planet-badge">{{item.badge}}</text>
+              <text class="planet-arrow">›</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{userPlanets.length}}" class="planet-section">
+        <text class="planet-section-title">我的星球</text>
+        <view class="planet-list planet-list-subsection">
+          <view
+            class="planet-row"
+            wx:for="{{userPlanets}}"
+            wx:key="id"
+            data-id="{{item.id}}"
+            data-name="{{item.name}}"
+            data-creator="{{item.ownerName}}"
+            data-joined="{{item.joined}}"
+            bindtap="onPlanetTap"
+          >
+            <view class="planet-row-left">
+              <view class="planet-avatar {{item.avatarClass}}">
+                <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+              </view>
+              <text class="planet-name">{{item.name}}</text>
+            </view>
+
+            <view class="planet-row-right">
+              <text wx:if="{{item.badge}}" class="planet-badge">{{item.badge}}</text>
+              <text class="planet-arrow">›</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{!joinedPlanets.length && !userPlanets.length}}" class="planet-empty-state">
+        <text class="planet-empty-text">你还没有加入或创建任何星球</text>
+      </view>
+    </block>
 
     <view class="planet-create-card">
       <view class="planet-create-shape planet-create-shape-left"></view>
@@ -50,18 +120,5 @@
     </view>
   </view>
 
-  <view class="planet-bottom-bar">
-    <view class="planet-bottom-item planet-bottom-item-active">
-      <view class="planet-bottom-icon planet-bottom-icon-planet"></view>
-      <text class="planet-bottom-label">星球</text>
-    </view>
-    <view class="planet-bottom-item" data-key="discover" bindtap="onBottomNavTap">
-      <view class="planet-bottom-icon planet-bottom-icon-discover"></view>
-      <text class="planet-bottom-label">发现</text>
-    </view>
-    <view class="planet-bottom-item" data-key="mine" bindtap="onBottomNavTap">
-      <view class="planet-bottom-icon planet-bottom-icon-mine"></view>
-      <text class="planet-bottom-label">我的</text>
-    </view>
-  </view>
+  <planet-bottom-nav active-key="planet" bindchange="onPlanetTabChange"></planet-bottom-nav>
 </view>

@@ -8,6 +8,13 @@ Page({
   },
 
   onLoad() {
+    wx.redirectTo({
+      url: '/pages/planet/index',
+    })
+    return
+  },
+
+  onLoadLegacy() {
     this.refreshPlanets()
   },
 

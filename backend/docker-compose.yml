@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: xueyin-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: xueyin
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - xueyin-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  xueyin-postgres-data:

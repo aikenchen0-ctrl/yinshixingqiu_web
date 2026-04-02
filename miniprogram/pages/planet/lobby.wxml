@@ -1,6 +1,7 @@
 <navigation-bar
   title="发现"
   back="{{false}}"
+  back-url="/pages/planet/index"
   color="#2c1a0d"
   background="#ffffff"
 ></navigation-bar>
@@ -16,11 +17,11 @@
         </view>
       </view>
 
-      <view class="interest-list">
+      <view wx:if="{{interestList.length}}" class="interest-list">
         <view
           class="interest-item"
           wx:for="{{interestList}}"
-          wx:key="index"
+          wx:key="id"
           data-id="{{item.id}}"
           data-name="{{item.name}}"
           data-creator="{{item.creator}}"
@@ -29,10 +30,16 @@
           <image class="interest-cover" src="{{item.image}}" mode="aspectFill"></image>
           <view class="interest-copy">
             <text class="interest-name">{{item.name}}</text>
-            <text class="interest-meta">{{item.members}}</text>
+            <text class="interest-meta">{{item.meta}}</text>
             <text class="interest-summary">{{item.summary}}</text>
           </view>
         </view>
+      </view>
+      <view wx:elif="{{loadingInterest}}" class="section-empty">
+        <text class="section-empty-text">正在拉取真实星球...</text>
+      </view>
+      <view wx:else class="section-empty">
+        <text class="section-empty-text">{{interestStatusText || '还没有其他用户创建可推荐的真实星球'}}</text>
       </view>
     </view>
 
@@ -71,18 +78,5 @@
     </view>
   </view>
 
-  <view class="discover-bottom-bar">
-    <view class="discover-bottom-item" data-key="planet" bindtap="onBottomNavTap">
-      <view class="bottom-icon bottom-icon-planet"></view>
-      <text class="bottom-label">星球</text>
-    </view>
-    <view class="discover-bottom-item discover-bottom-item-active">
-      <view class="bottom-icon bottom-icon-discover"></view>
-      <text class="bottom-label">发现</text>
-    </view>
-    <view class="discover-bottom-item" data-key="mine" bindtap="onBottomNavTap">
-      <view class="bottom-icon bottom-icon-mine"></view>
-      <text class="bottom-label">我的</text>
-    </view>
-  </view>
+  <planet-bottom-nav active-key="discover" bindchange="onPlanetTabChange"></planet-bottom-nav>
 </view>

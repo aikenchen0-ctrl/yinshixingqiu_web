@@ -1,0 +1,31 @@
+xueyin-backend listening on http://0.0.0.0:3000
+[request] GET /health
+[request] GET /health
+[request] GET /health
+[request] GET /%C2%9E%C3%A9e
+[request] GET /favicon.ico
+[request] GET /health
+[request] POST /api/auth/login
+[auth] login request received { nickname: '测试用户', mobile: '19812340987', hasLoginCode: true }
+[authService] code2session ok { openId: 'oCSlJ1-Ds1h912YXpHd6qZi439wQ', hasUnionId: false }
+[auth] login response { statusCode: 200, ok: true, message: '' }
+[request] GET /api/auth/session
+[request] GET /api/auth/session
+[request] GET /api/auth/session
+[request] GET /api/auth/session
+[request] GET /api/auth/session
+[request] GET /api/auth/session
+[request] GET /favicon.ico
+[request] GET /favicon.ico
+[request] GET /favicon.ico
+[request] GET /health
+[request] POST /api/auth/login
+[auth] login request received { nickname: '测试用户ysc', mobile: '18750086213', hasLoginCode: true }
+[authService] code2session ok { openId: 'oCSlJ1-Ds1h912YXpHd6qZi439wQ', hasUnionId: false }
+[auth] login response { statusCode: 200, ok: true, message: '' }
+[request] GET /api/auth/session
+[request] POST /api/planets/create
+[request] POST /api/planets/create
+[request] POST /api/planets/create
+[request] POST /api/planets/create
+[request] POST /api/planets/create

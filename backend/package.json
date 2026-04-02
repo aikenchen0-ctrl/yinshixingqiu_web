@@ -1,0 +1,22 @@
+{
+  "name": "xueyin-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "db:start": "docker compose up -d postgres",
+    "db:stop": "docker compose down",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:seed": "node scripts/seedDemoData.js",
+    "db:delete-group": "node scripts/deleteGroup.js",
+    "start": "node src/server.js",
+    "start:prod": "node src/server.js",
+    "verify:join-flow": "node scripts/verifyJoinFlow.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "dotenv": "^17.3.1",
+    "prisma": "^6.18.0"
+  }
+}

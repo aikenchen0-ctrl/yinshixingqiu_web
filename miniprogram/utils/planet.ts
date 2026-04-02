@@ -1,9 +1,11 @@
 export interface PlanetPost {
   id: string
+  planetId?: string
   author: string
   avatar: string
   time: string
   content: string
+  richContent?: string
   tags: string[]
   images: string[]
   likeCount: number
@@ -62,6 +64,46 @@ export interface PlanetCreationPayload {
   joinType: 'rolling' | 'calendar'
 }
 
+export interface PlanetCreationOptions {
+  id?: string
+  ownerName?: string
+  ownerTagline?: string
+}
+
+export interface PlanetRemoteProfile {
+  id: string
+  name: string
+  avatarImageUrl?: string
+  coverImageUrl?: string
+  intro?: string
+  price: number
+  priceLabel: string
+  joinType: 'rolling' | 'calendar'
+  isFree: boolean
+  requireInviteCode: boolean
+  ownerName: string
+  ownerTagline?: string
+  category?: string
+  memberCount: number
+  postCount: number
+  createdAt: string
+  joined?: boolean
+}
+
+interface UpsertRemotePlanetsOptions {
+  defaultJoined?: boolean
+}
+
+interface AddPostPayload {
+  planetId?: string
+  content: string
+  richContent?: string
+  tags: string[]
+  images: string[]
+  author?: string
+  avatar?: string
+}
+
 const POST_KEY = 'planet_posts_v1'
 const PINNED_POST_KEY = 'planet_pinned_posts_v1'
 const COMMENT_PREFIX = 'planet_comments_'
@@ -76,6 +118,7 @@ const formatPriceLabel = (price: number) => `¥ ${price}/年`
 const seedPosts: PlanetPost[] = [
   {
     id: 'seed_1',
+    planetId: 'planet_2',
     author: '血饮',
     avatar: '',
     time: '今天 10:30',
@@ -91,6 +134,7 @@ const seedPosts: PlanetPost[] = [
   },
   {
     id: 'seed_2',
+    planetId: 'planet_1',
     author: '情报官',
     avatar: '',
     time: '昨天 21:10',
@@ -103,6 +147,7 @@ const seedPosts: PlanetPost[] = [
   },
   {
     id: 'seed_3',
+    planetId: 'planet_1',
     author: '安全教官',
     avatar: '',
     time: '03/08 14:05',
@@ -240,12 +285,14 @@ const normalizePosts = (posts: PlanetPost[]) => {
     if (!seedPost) {
       return {
         ...post,
+        planetId: post.planetId || '',
         images: Array.isArray(post.images) ? post.images : [],
       }
     }
 
     return {
       ...post,
+      planetId: post.planetId || seedPost.planetId || '',
       content: post.content || seedPost.content,
       images: Array.isArray(post.images) && post.images.length ? post.images : seedPost.images,
     }
@@ -312,16 +359,110 @@ export const savePlanets = (planets: PlanetProfile[]) => {
   wx.setStorageSync(PLANET_KEY, planets)
 }
 
+export const upsertRemotePlanets = (
+  remotePlanets: PlanetRemoteProfile[],
+  options: UpsertRemotePlanetsOptions = {}
+) => {
+  const defaultJoined = typeof options.defaultJoined === 'boolean' ? options.defaultJoined : true
+  const localPlanets = loadPlanets()
+  const localPlanetMap = localPlanets.reduce<Record<string, PlanetProfile>>((result, planet, index) => {
+    result[planet.id] = {
+      ...planet,
+      avatarClass: planet.avatarClass || getAvatarClass(index),
+      joined: typeof planet.joined === 'boolean' ? planet.joined : true,
+    }
+    return result
+  }, {})
+
+  const mergedRemotePlanets = remotePlanets.map((planet, index) => {
+    const localPlanet = localPlanetMap[planet.id]
+    const localAvatarClass = localPlanet ? localPlanet.avatarClass : ''
+    const localAvatarImageUrl = localPlanet ? localPlanet.avatarImageUrl : ''
+    const localCoverImageUrl = localPlanet ? localPlanet.coverImageUrl : ''
+    const localUnread = localPlanet ? localPlanet.unread : ''
+    const localBadge = localPlanet ? localPlanet.badge : ''
+    const localOwnerTagline = localPlanet ? localPlanet.ownerTagline : ''
+    const localCategory = localPlanet ? localPlanet.category : ''
+    const localIntro = localPlanet ? localPlanet.intro : ''
+    const localEmbedPath = localPlanet ? localPlanet.embedPath : ''
+    const localJoined = localPlanet ? localPlanet.joined : undefined
+
+    return {
+      id: planet.id,
+      name: planet.name,
+      joined:
+        typeof planet.joined === 'boolean'
+          ? planet.joined
+          : defaultJoined === false
+            ? false
+            : typeof localJoined === 'boolean'
+              ? localJoined
+              : defaultJoined,
+      avatarClass: localAvatarClass || getAvatarClass(index),
+      avatarImageUrl: planet.avatarImageUrl || localAvatarImageUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+      coverImageUrl: planet.coverImageUrl || localCoverImageUrl || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80',
+      unread: localUnread || '',
+      badge: localBadge || '',
+      price: planet.price,
+      priceLabel: planet.priceLabel,
+      joinType: planet.joinType,
+      isFree: planet.isFree,
+      requireInviteCode: planet.requireInviteCode,
+      ownerName: planet.ownerName,
+      ownerTagline: planet.ownerTagline || localOwnerTagline || '',
+      category: planet.category || localCategory || '其他',
+      intro: planet.intro || localIntro || `欢迎加入「${planet.name}」，这里会持续分享精选内容、答疑和社群互动。`,
+      embedPath: localEmbedPath || `pages/topics/topics?group_id=${planet.id}`,
+      memberCount: planet.memberCount,
+      postCount: planet.postCount,
+      createdAt: planet.createdAt,
+    } as PlanetProfile
+  })
+
+  const remotePlanetIds = new Set(mergedRemotePlanets.map((planet) => planet.id))
+  const preservedLocalPlanets = localPlanets.filter((planet) => !remotePlanetIds.has(planet.id))
+  const nextPlanets = [...mergedRemotePlanets, ...preservedLocalPlanets]
+
+  savePlanets(nextPlanets)
+  return nextPlanets
+}
+
 export const getPlanetById = (planetId: string) => {
   const planets = loadPlanets()
   return planets.find((planet) => planet.id === planetId)
 }
 
-export const createPlanet = (payload: PlanetCreationPayload) => {
+export const joinPlanet = (planetId: string) => {
+  const planets = loadPlanets()
+  let joinedPlanet: PlanetProfile | null = null
+
+  const nextPlanets = planets.map((planet) => {
+    if (planet.id !== planetId) {
+      return planet
+    }
+
+    joinedPlanet = {
+      ...planet,
+      joined: true,
+      memberCount: planet.memberCount + 1,
+    }
+
+    return joinedPlanet
+  })
+
+  if (!joinedPlanet) {
+    return null
+  }
+
+  savePlanets(nextPlanets)
+  return joinedPlanet
+}
+
+export const createPlanet = (payload: PlanetCreationPayload, options: PlanetCreationOptions = {}) => {
   const planets = loadPlanets()
   const now = Date.now()
   const createdPlanet: PlanetProfile = {
-    id: `planet_${now}`,
+    id: options.id || `planet_${now}`,
     name: payload.name,
     joined: true,
     avatarClass: getAvatarClass(planets.length),
@@ -334,16 +475,18 @@ export const createPlanet = (payload: PlanetCreationPayload) => {
     joinType: payload.joinType,
     isFree: false,
     requireInviteCode: false,
-    ownerName: `${payload.name} 主理人`,
-    ownerTagline: '(*^▽^*)o 创建',
+    ownerName: options.ownerName || `${payload.name} 主理人`,
+    ownerTagline: options.ownerTagline || '(*^▽^*)o 创建',
     category: '其他',
     intro: `欢迎加入「${payload.name}」，这里会持续分享精选内容、答疑和社群互动。`,
-    embedPath: `pages/topics/topics?group_id=${now}`,
+    embedPath: `pages/topics/topics?group_id=${options.id || now}`,
     memberCount: 1,
     postCount: 1,
     createdAt: formatDateTime(now).slice(0, 10),
   }
-  savePlanets([createdPlanet, ...planets])
+
+  const nextPlanets = [createdPlanet, ...planets.filter((planet) => planet.id !== createdPlanet.id)]
+  savePlanets(nextPlanets)
   return createdPlanet
 }
 
@@ -351,22 +494,45 @@ export const savePosts = (posts: PlanetPost[]) => {
   wx.setStorageSync(POST_KEY, posts)
 }
 
-export const addPost = (content: string, tags: string[], images: string[]) => {
+export const loadPostsByPlanet = (planetId: string) => {
+  const posts = loadPosts()
+  return posts.filter((post) => !post.planetId || post.planetId === planetId)
+}
+
+export const addPost = (payload: AddPostPayload) => {
   const posts = loadPosts()
   const newPost: PlanetPost = {
     id: `post_${Date.now()}`,
-    author: '当前成员',
-    avatar: '',
+    planetId: payload.planetId || '',
+    author: payload.author || '当前成员',
+    avatar: payload.avatar || '',
     time: formatDateTime(Date.now()),
-    content,
-    tags,
-    images,
+    content: payload.content,
+    richContent: payload.richContent || '',
+    tags: payload.tags,
+    images: payload.images,
     likeCount: 0,
     commentCount: 0,
     liked: false,
   }
   const nextPosts = [newPost, ...posts]
   savePosts(nextPosts)
+
+  if (payload.planetId) {
+    const planets = loadPlanets()
+    const nextPlanets = planets.map((planet) => {
+      if (planet.id !== payload.planetId) {
+        return planet
+      }
+
+      return {
+        ...planet,
+        postCount: planet.postCount + 1,
+      }
+    })
+    savePlanets(nextPlanets)
+  }
+
   return newPost
 }
 

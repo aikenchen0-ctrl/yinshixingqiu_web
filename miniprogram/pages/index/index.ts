@@ -71,7 +71,7 @@ Page({
   },
   goPlanet() {
     wx.navigateTo({
-      url: '/pages/planet/detail',
+      url: '/pages/planet/index',
     })
   },
   goAI() {

@@ -48,6 +48,10 @@ Component({
       type: Number,
       value: 1,
     },
+    backUrl: {
+      type: String,
+      value: '',
+    },
   },
   data: {
     displayStyle: '',
@@ -86,6 +90,30 @@ Component({
     },
     back() {
       const data = this.data
+      const backUrl = (data.backUrl || '').trim()
+
+      if (backUrl) {
+        const tabBarPages = [
+          '/pages/index/index',
+          '/pages/calendar/index',
+          '/pages/articles/index',
+          '/pages/store/index',
+          '/pages/profile/index',
+        ]
+
+        if (tabBarPages.includes(backUrl)) {
+          wx.switchTab({
+            url: backUrl,
+          })
+        } else {
+          wx.redirectTo({
+            url: backUrl,
+          })
+        }
+        this.triggerEvent('back', { delta: data.delta, backUrl }, {})
+        return
+      }
+
       if (data.delta) {
         wx.navigateBack({
           delta: data.delta,

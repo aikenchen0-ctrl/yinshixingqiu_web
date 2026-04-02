@@ -1,0 +1,18 @@
+<view class="planet-bottom-bar">
+  <view class="planet-bottom-item {{activeKey === 'planet' ? 'planet-bottom-item-active' : ''}}" data-key="planet" catchtap="onItemTap">
+    <view class="planet-bottom-icon planet-bottom-icon-planet"></view>
+    <text class="planet-bottom-label">星球</text>
+  </view>
+  <view class="planet-bottom-item {{activeKey === 'discover' ? 'planet-bottom-item-active' : ''}}" data-key="discover" catchtap="onItemTap">
+    <view class="planet-bottom-icon planet-bottom-icon-discover"></view>
+    <text class="planet-bottom-label">发现</text>
+  </view>
+  <view class="planet-bottom-item {{activeKey === 'mine' ? 'planet-bottom-item-active' : ''}}" data-key="mine" catchtap="onItemTap">
+    <view class="planet-bottom-icon planet-bottom-icon-mine"></view>
+    <text class="planet-bottom-label">我的</text>
+  </view>
+  <view class="planet-bottom-item {{activeKey === 'debug' ? 'planet-bottom-item-active' : ''}}" data-key="debug" catchtap="onItemTap">
+    <view class="planet-bottom-icon planet-bottom-icon-debug"></view>
+    <text class="planet-bottom-label">调试</text>
+  </view>
+</view>

@@ -1,3 +1,5 @@
+import { getStoredSession } from '../../utils/auth'
+
 interface PlanItem {
   id: string
   title: string
@@ -28,6 +30,14 @@ Page({
     })
   },
   onPay() {
+    const session = getStoredSession()
+    if (!session) {
+      wx.navigateTo({
+        url: '/pages/auth/login',
+      })
+      return
+    }
+
     // 支付需接入后端，这里仅模拟会员开通
     const app = getApp<IAppOption>()
     app.globalData.isMember = true

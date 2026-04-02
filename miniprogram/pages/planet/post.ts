@@ -10,6 +10,7 @@ import {
 
 interface PostDetailView extends PlanetPost {
   displayAuthor: string
+  isRichContent?: boolean
 }
 
 interface PinnedPostDetailView {
@@ -20,10 +21,12 @@ interface PinnedPostDetailView {
   content: string
   tags: string[]
   images: string[]
+  richContent?: string
   likeCount: number
   commentCount: number
   liked: boolean
   displayAuthor: string
+  isRichContent?: boolean
 }
 
 let currentPostId = ''
@@ -35,12 +38,14 @@ const createFallbackPost = (): PostDetailView => ({
   avatar: '',
   time: '2026/03/31 10:00',
   content: '官方下场，这实属是偷家了，A普要如何应对',
+  richContent: '',
   tags: [],
   images: [],
   likeCount: 0,
   commentCount: 0,
   liked: false,
   displayAuthor: '易安 星空',
+  isRichContent: false,
 })
 
 const createPinnedPostView = (
@@ -56,14 +61,16 @@ const createPinnedPostView = (
     author: pinnedPost.author,
     avatar: '',
     time: pinnedPost.time,
-    content: pinnedPost.content,
-    tags: [],
-    images: pinnedPost.images,
-    likeCount: pinnedPost.likeCount,
-    commentCount: pinnedPost.commentCount,
-    liked: !!pinnedPost.liked,
-    displayAuthor: pinnedPost.author,
-  }
+      content: pinnedPost.content,
+      richContent: '',
+      tags: [],
+      images: pinnedPost.images,
+      likeCount: pinnedPost.likeCount,
+      commentCount: pinnedPost.commentCount,
+      liked: !!pinnedPost.liked,
+      displayAuthor: pinnedPost.author,
+      isRichContent: false,
+    }
 }
 
 Page({
@@ -92,6 +99,7 @@ Page({
       ? {
           ...post,
           displayAuthor: post.author,
+          isRichContent: !!post.richContent,
         }
       : pinnedPost
       ? createPinnedPostView(id)
@@ -141,6 +149,7 @@ Page({
         ? {
             ...nextPost,
             displayAuthor: nextPost.author,
+            isRichContent: !!nextPost.richContent,
           }
         : nextPinnedPost
         ? createPinnedPostView(postId)
@@ -179,6 +188,7 @@ Page({
         post: {
           ...result.post,
           displayAuthor: result.post.author,
+          isRichContent: !!result.post.richContent,
         },
       })
       return

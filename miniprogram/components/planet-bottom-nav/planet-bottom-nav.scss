@@ -1,0 +1,128 @@
+.planet-bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  height: calc(104rpx + env(safe-area-inset-bottom));
+  padding: 10rpx 44rpx env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1rpx solid #ececec;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.planet-bottom-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+  color: #c5c5c5;
+}
+
+.planet-bottom-item-active {
+  color: #19c8ac;
+}
+
+.planet-bottom-icon {
+  width: 42rpx;
+  height: 42rpx;
+  position: relative;
+}
+
+.planet-bottom-label {
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.planet-bottom-icon-planet::before,
+.planet-bottom-icon-planet::after,
+.planet-bottom-icon-discover::before,
+.planet-bottom-icon-discover::after,
+.planet-bottom-icon-mine::before,
+.planet-bottom-icon-mine::after,
+.planet-bottom-icon-debug::before,
+.planet-bottom-icon-debug::after {
+  content: '';
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.planet-bottom-icon-planet::before {
+  left: 7rpx;
+  top: 7rpx;
+  width: 28rpx;
+  height: 28rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.planet-bottom-icon-planet::after {
+  left: 18rpx;
+  top: 2rpx;
+  width: 6rpx;
+  height: 10rpx;
+  border-radius: 999rpx;
+  background: currentColor;
+}
+
+.planet-bottom-icon-discover::before {
+  left: 4rpx;
+  top: 4rpx;
+  width: 34rpx;
+  height: 34rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.planet-bottom-icon-discover::after {
+  left: 18rpx;
+  top: 8rpx;
+  width: 6rpx;
+  height: 18rpx;
+  border-radius: 999rpx;
+  background: currentColor;
+  box-shadow: 0 16rpx 0 currentColor;
+  transform: rotate(24deg);
+}
+
+.planet-bottom-icon-mine::before {
+  left: 12rpx;
+  top: 4rpx;
+  width: 18rpx;
+  height: 18rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 50%;
+}
+
+.planet-bottom-icon-mine::after {
+  left: 8rpx;
+  top: 24rpx;
+  width: 26rpx;
+  height: 12rpx;
+  border: 3rpx solid currentColor;
+  border-top-left-radius: 18rpx;
+  border-top-right-radius: 18rpx;
+  border-bottom: none;
+}
+
+.planet-bottom-icon-debug::before {
+  left: 4rpx;
+  top: 7rpx;
+  width: 34rpx;
+  height: 26rpx;
+  border: 3rpx solid currentColor;
+  border-radius: 8rpx;
+}
+
+.planet-bottom-icon-debug::after {
+  left: 12rpx;
+  top: 16rpx;
+  width: 18rpx;
+  height: 3rpx;
+  background: currentColor;
+  box-shadow: 0 -8rpx 0 currentColor, 0 8rpx 0 currentColor;
+}

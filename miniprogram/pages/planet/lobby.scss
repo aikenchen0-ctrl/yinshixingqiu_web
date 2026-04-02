@@ -47,6 +47,17 @@
   border-top: 1rpx solid #ececec;
 }
 
+.section-empty {
+  border-top: 1rpx solid #ececec;
+  padding: 36rpx 0;
+}
+
+.section-empty-text {
+  font-size: 28rpx;
+  line-height: 40rpx;
+  color: #b0aaa4;
+}
+
 .interest-item {
   display: flex;
   align-items: center;
@@ -153,6 +164,7 @@
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 30;
   height: calc(104rpx + env(safe-area-inset-bottom));
   padding: 10rpx 44rpx env(safe-area-inset-bottom);
   box-sizing: border-box;
