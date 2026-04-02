@@ -1,9 +1,9 @@
 import { useLocation } from 'react-router-dom'
-import { NoticePanel } from '../components/NoticePanel'
-import { StatCards } from '../components/StatCards'
-import { TablePanel } from '../components/TablePanel'
-import { TrendPanel } from '../components/TrendPanel'
-import { useDashboardPageData } from '../hooks/useDashboardPageData'
+import { NoticePanel } from '../../components/NoticePanel'
+import { StatCards } from '../../components/StatCards'
+import { TablePanel } from '../../components/TablePanel'
+import { TrendPanel } from '../../components/TrendPanel'
+import { useDashboardPageData } from '../../hooks/useDashboardPageData'
 
 export function DashboardPage() {
   const location = useLocation()

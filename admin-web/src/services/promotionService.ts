@@ -14,7 +14,7 @@ export interface PromotionFunnelItem {
 export interface PromotionAdviceItem {
   title: string
   suffix: string
-  rows: string[][]
+  rows: [string, string][]
 }
 
 export interface PromotionPagePayload {

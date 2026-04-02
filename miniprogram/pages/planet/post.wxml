@@ -14,9 +14,9 @@
     </view>
   </view>
 
-  <rich-text wx:if="{{post.isRichContent}}" class="planet-post-rich-text" nodes="{{post.richContent}}"></rich-text>
+  <text wx:if="{{post.title}}" class="planet-post-title">{{post.title}}</text>
 
-  <text wx:else class="planet-post-title">{{post.content}}</text>
+  <rich-text wx:if="{{post.isRichContent}}" class="planet-post-rich-text" nodes="{{post.richContent}}"></rich-text>
 
   <view wx:if="{{post.images.length}}" class="planet-post-images">
     <image
@@ -29,6 +29,10 @@
   </view>
 
   <view class="planet-post-tools">
+    <view wx:if="{{canEdit}}" class="planet-post-tool" bindtap="onEditPost">
+      <view class="tool-icon tool-icon-edit"></view>
+      <text class="planet-post-tool-text">编辑主题</text>
+    </view>
     <button class="planet-post-tool planet-post-tool-button" open-type="share">
       <view class="tool-icon tool-icon-share"></view>
       <text class="planet-post-tool-text">分享好友</text>
@@ -48,6 +52,14 @@
           <text class="planet-post-comment-time">{{item.time}}</text>
         </view>
         <text class="planet-post-comment-content">{{item.content}}</text>
+        <view
+          class="planet-post-comment-like {{item.liked ? 'planet-post-comment-like-active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onCommentLikeTap"
+        >
+          <view class="feed-icon-like"></view>
+          <text>赞{{item.likeCount}}</text>
+        </view>
       </view>
     </view>
   </view>

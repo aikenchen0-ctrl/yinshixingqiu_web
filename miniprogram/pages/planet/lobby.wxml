@@ -52,12 +52,13 @@
         </view>
       </view>
 
-      <view class="topic-list">
+      <view wx:if="{{featuredList.length}}" class="topic-list">
         <view
           class="topic-item"
           wx:for="{{featuredList}}"
           wx:key="id"
-          data-article-id="{{item.articleId}}"
+          data-post-id="{{item.postId}}"
+          data-planet-id="{{item.planetId}}"
           bindtap="onTopicTap"
         >
           <view class="topic-main {{item.cover ? 'topic-main-with-cover' : ''}}">
@@ -74,6 +75,12 @@
             ></image>
           </view>
         </view>
+      </view>
+      <view wx:elif="{{loadingFeatured}}" class="section-empty">
+        <text class="section-empty-text">正在拉取真实精华主题...</text>
+      </view>
+      <view wx:else class="section-empty">
+        <text class="section-empty-text">{{featuredStatusText || '还没有可推荐的其他星球精华主题'}}</text>
       </view>
     </view>
   </view>

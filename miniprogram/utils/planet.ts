@@ -1,6 +1,9 @@
+import { getStoredSession } from './auth'
+
 export interface PlanetPost {
   id: string
   planetId?: string
+  authorId?: string
   author: string
   avatar: string
   time: string
@@ -29,6 +32,7 @@ export interface PlanetPinnedPost {
 
 export interface PlanetComment {
   id: string
+  authorId?: string
   author: string
   time: string
   content: string
@@ -104,6 +108,14 @@ interface AddPostPayload {
   avatar?: string
 }
 
+interface UpdatePostPayload {
+  id: string
+  content: string
+  richContent?: string
+  tags: string[]
+  images: string[]
+}
+
 const POST_KEY = 'planet_posts_v1'
 const PINNED_POST_KEY = 'planet_pinned_posts_v1'
 const COMMENT_PREFIX = 'planet_comments_'
@@ -112,8 +124,29 @@ const PLANET_KEY = 'planet_profiles_v1'
 const avatarClassPool = ['avatar-sand', 'avatar-sunset', 'avatar-navy', 'avatar-forest']
 
 const getAvatarClass = (index: number) => avatarClassPool[index % avatarClassPool.length]
+const DEFAULT_MEMBER_NAME = '当前成员'
 
 const formatPriceLabel = (price: number) => `¥ ${price}/年`
+
+const getCurrentUserDisplayName = () => {
+  const session = getStoredSession()
+  const nickname = session && session.nickname ? session.nickname.trim() : ''
+  return nickname || DEFAULT_MEMBER_NAME
+}
+
+const getCurrentUserId = () => {
+  const session = getStoredSession()
+  const userId = session && session.id ? session.id.trim() : ''
+  return userId || ''
+}
+
+export const resolveAuthorName = (author?: string) => {
+  const normalizedAuthor = typeof author === 'string' ? author.trim() : ''
+  if (!normalizedAuthor || normalizedAuthor === DEFAULT_MEMBER_NAME) {
+    return getCurrentUserDisplayName()
+  }
+  return normalizedAuthor
+}
 
 const seedPosts: PlanetPost[] = [
   {
@@ -286,6 +319,7 @@ const normalizePosts = (posts: PlanetPost[]) => {
       return {
         ...post,
         planetId: post.planetId || '',
+        authorId: typeof post.authorId === 'string' ? post.authorId : '',
         images: Array.isArray(post.images) ? post.images : [],
       }
     }
@@ -293,6 +327,7 @@ const normalizePosts = (posts: PlanetPost[]) => {
     return {
       ...post,
       planetId: post.planetId || seedPost.planetId || '',
+      authorId: typeof post.authorId === 'string' ? post.authorId : '',
       content: post.content || seedPost.content,
       images: Array.isArray(post.images) && post.images.length ? post.images : seedPost.images,
     }
@@ -504,7 +539,8 @@ export const addPost = (payload: AddPostPayload) => {
   const newPost: PlanetPost = {
     id: `post_${Date.now()}`,
     planetId: payload.planetId || '',
-    author: payload.author || '当前成员',
+    authorId: getCurrentUserId(),
+    author: resolveAuthorName(payload.author),
     avatar: payload.avatar || '',
     time: formatDateTime(Date.now()),
     content: payload.content,
@@ -534,6 +570,34 @@ export const addPost = (payload: AddPostPayload) => {
   }
 
   return newPost
+}
+
+export const updatePost = (payload: UpdatePostPayload) => {
+  const posts = loadPosts()
+  let updatedPost: PlanetPost | null = null
+
+  const nextPosts = posts.map((post) => {
+    if (post.id !== payload.id) {
+      return post
+    }
+
+    updatedPost = {
+      ...post,
+      content: payload.content,
+      richContent: payload.richContent || '',
+      tags: payload.tags,
+      images: payload.images,
+    }
+
+    return updatedPost
+  })
+
+  if (!updatedPost) {
+    return null
+  }
+
+  savePosts(nextPosts)
+  return updatedPost
 }
 
 export const toggleLike = (postId: string) => {
@@ -583,6 +647,16 @@ export const getPostById = (postId: string) => {
   return posts.find((post) => post.id === postId)
 }
 
+export const isPostOwnedByCurrentUser = (post: PlanetPost) => {
+  const currentUserId = getCurrentUserId()
+  if (currentUserId && post.authorId && post.authorId === currentUserId) {
+    return true
+  }
+
+  const currentDisplayName = getCurrentUserDisplayName()
+  return resolveAuthorName(post.author) === currentDisplayName
+}
+
 export const loadComments = (postId: string) => {
   const stored = wx.getStorageSync(`${COMMENT_PREFIX}${postId}`)
   if (!stored || !Array.isArray(stored)) {
@@ -599,7 +673,8 @@ export const addComment = (postId: string, content: string) => {
   const comments = loadComments(postId)
   const newComment: PlanetComment = {
     id: `c_${Date.now()}`,
-    author: '当前成员',
+    authorId: getCurrentUserId(),
+    author: getCurrentUserDisplayName(),
     time: formatDateTime(Date.now()),
     content,
   }

@@ -1,5 +1,5 @@
 import { getStoredSession } from '../../utils/auth'
-import { fetchDiscoverPlanets } from '../../utils/planet-api'
+import { fetchDiscoverFeaturedPosts, fetchDiscoverPlanets } from '../../utils/planet-api'
 import { PlanetRemoteProfile, upsertRemotePlanets } from '../../utils/planet'
 import { ensureWechatSession } from '../../utils/wechat-login'
 
@@ -14,7 +14,8 @@ interface InterestPlanetItem {
 
 interface FeaturedTopicItem {
   id: string
-  articleId: string
+  postId: string
+  planetId: string
   title: string
   summary: string
   author: string
@@ -23,45 +24,6 @@ interface FeaturedTopicItem {
 }
 
 const INTEREST_BATCH_SIZE = 3
-
-const featuredTopicPool: FeaturedTopicItem[] = [
-  {
-    id: 'topic_1',
-    articleId: 'a1',
-    title: '【2026年全球网络安全展望报告】',
-    summary: '94%的受访者认为人工智能是未来一年最关键的变革驱动力，较之2025年进一步提升。',
-    author: '丁利',
-    meta: '199T数据交流群',
-    cover: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=240&q=80',
-  },
-  {
-    id: 'topic_2',
-    articleId: 'a2',
-    title: '《AI Agent 场景应用 - ai draw.io》第4-0节：ai + draw.io 产品设计',
-    summary: '从画图到需求梳理，拆解 AI Agent 在产品设计链路中的真实落地方式。',
-    author: '小馒哥',
-    meta: '码农会馆',
-    cover: '',
-  },
-  {
-    id: 'topic_3',
-    articleId: 'a3',
-    title: '把私域内容做成可持续复利系统',
-    summary: '如何设计一套能长期更新的主题栏目、社群分层和转化节奏。',
-    author: '顾城',
-    meta: '增长笔记',
-    cover: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=240&q=80',
-  },
-  {
-    id: 'topic_4',
-    articleId: 'a4',
-    title: '一人公司如何搭建自己的知识产品矩阵',
-    summary: '从选题、交付到会员体系，拆最小可行的内容产品组合方式。',
-    author: '启明',
-    meta: '长期主义实验室',
-    cover: '',
-  },
-]
 
 const rotateBatch = <T>(list: T[], batchIndex: number, batchSize: number) => {
   if (list.length <= batchSize) {
@@ -90,11 +52,34 @@ const mapPlanetToInterestItem = (planet: PlanetRemoteProfile): InterestPlanetIte
   creator: planet.ownerName,
 })
 
+const mapRemoteFeaturedPost = (post: Record<string, any>): FeaturedTopicItem => {
+  const group = post.group && typeof post.group === 'object' ? post.group : {}
+  const title = String(post.title || '').trim()
+  const summary = String(post.summary || post.contentText || '').trim()
+
+  return {
+    id: String(post.id || ''),
+    postId: String(post.id || ''),
+    planetId: String(post.groupId || group.id || ''),
+    title: title || summary || '未命名精华主题',
+    summary: summary || '这篇精华主题暂时还没有摘要',
+    author:
+      post.author && typeof post.author === 'object' && typeof post.author.nickname === 'string'
+        ? post.author.nickname
+        : '当前成员',
+    meta: typeof group.name === 'string' && group.name ? group.name : '其他星球',
+    cover: typeof post.coverUrl === 'string' ? post.coverUrl : '',
+  }
+}
+
 Page({
   data: {
     loadingInterest: false,
+    loadingFeatured: false,
     interestStatusText: '',
+    featuredStatusText: '',
     interestSource: [] as InterestPlanetItem[],
+    featuredSource: [] as FeaturedTopicItem[],
     interestList: [] as InterestPlanetItem[],
     featuredList: [] as FeaturedTopicItem[],
     interestBatchIndex: 0,
@@ -144,39 +129,62 @@ Page({
     return remotePlanets.map(mapPlanetToInterestItem)
   },
 
+  async resolveFeaturedSource() {
+    const session = await this.ensurePlanetSession()
+    const response = await fetchDiscoverFeaturedPosts(12, session ? session.sessionToken : '')
+
+    if (!response.ok || !Array.isArray(response.data)) {
+      return [] as FeaturedTopicItem[]
+    }
+
+    return response.data
+      .filter((item) => item && item.id && item.groupId)
+      .map(mapRemoteFeaturedPost)
+  },
+
   async refreshContent(nextInterestBatchIndex: number, nextFeaturedBatchIndex: number) {
     this.setData({
       loadingInterest: true,
+      loadingFeatured: true,
       interestStatusText: '',
+      featuredStatusText: '',
     })
 
-    try {
-      const interestSource = await this.resolveInterestSource()
-      const interestList = rotateBatch(interestSource, nextInterestBatchIndex, INTEREST_BATCH_SIZE)
-      const featuredList = rotateBatch(featuredTopicPool, nextFeaturedBatchIndex, 2)
+    const [interestResult, featuredResult] = await Promise.allSettled([
+      this.resolveInterestSource(),
+      this.resolveFeaturedSource(),
+    ])
 
-      this.setData({
-        loadingInterest: false,
-        interestStatusText: interestSource.length ? '' : '还没有其他用户创建可推荐的真实星球',
-        interestSource,
-        interestList,
-        featuredList,
-        interestBatchIndex: nextInterestBatchIndex,
-        featuredBatchIndex: nextFeaturedBatchIndex,
-      })
-    } catch {
-      const featuredList = rotateBatch(featuredTopicPool, nextFeaturedBatchIndex, 2)
+    const interestSource =
+      interestResult.status === 'fulfilled' ? interestResult.value : []
+    const featuredSource =
+      featuredResult.status === 'fulfilled' ? featuredResult.value : []
 
-      this.setData({
-        loadingInterest: false,
-        interestStatusText: '真实星球数据拉取失败，请稍后重试',
-        interestSource: [],
-        interestList: [],
-        featuredList,
-        interestBatchIndex: nextInterestBatchIndex,
-        featuredBatchIndex: nextFeaturedBatchIndex,
-      })
-    }
+    const interestList = rotateBatch(interestSource, nextInterestBatchIndex, INTEREST_BATCH_SIZE)
+    const featuredList = rotateBatch(featuredSource, nextFeaturedBatchIndex, 2)
+
+    this.setData({
+      loadingInterest: false,
+      loadingFeatured: false,
+      interestStatusText:
+        interestResult.status === 'rejected'
+          ? '真实星球数据拉取失败，请稍后重试'
+          : interestSource.length
+            ? ''
+            : '还没有其他用户创建可推荐的真实星球',
+      featuredStatusText:
+        featuredResult.status === 'rejected'
+          ? '真实精华主题拉取失败，请稍后重试'
+          : featuredSource.length
+            ? ''
+            : '还没有可推荐的其他星球精华主题',
+      interestSource,
+      featuredSource,
+      interestList,
+      featuredList,
+      interestBatchIndex: nextInterestBatchIndex,
+      featuredBatchIndex: nextFeaturedBatchIndex,
+    })
   },
 
   onRefreshInterest() {
@@ -199,8 +207,13 @@ Page({
   },
 
   onRefreshFeatured() {
+    if (!this.data.featuredSource.length) {
+      void this.refreshContent(this.data.interestBatchIndex, 0)
+      return
+    }
+
     const nextFeaturedBatchIndex = this.data.featuredBatchIndex + 1
-    const featuredList = rotateBatch(featuredTopicPool, nextFeaturedBatchIndex, 2)
+    const featuredList = rotateBatch(this.data.featuredSource, nextFeaturedBatchIndex, 2)
 
     this.setData({
       featuredList,
@@ -219,9 +232,15 @@ Page({
   },
 
   onTopicTap(e: WechatMiniprogram.TouchEvent) {
-    const articleId = e.currentTarget.dataset.articleId || 'a1'
+    const postId = String(e.currentTarget.dataset.postId || '')
+    const planetId = String(e.currentTarget.dataset.planetId || '')
+
+    if (!postId) {
+      return
+    }
+
     wx.navigateTo({
-      url: `/pages/articles/detail?id=${articleId}`,
+      url: `/pages/planet/post?id=${postId}&planetId=${planetId}`,
     })
   },
 

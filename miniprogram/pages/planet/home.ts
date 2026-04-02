@@ -1,14 +1,16 @@
 import {
   getPlanetById,
   joinPlanet,
-  loadPinnedPosts,
-  loadPostsByPlanet,
-  PlanetPinnedPost,
-  PlanetPost,
   PlanetProfile,
 } from '../../utils/planet'
 import { getStoredSession } from '../../utils/auth'
-import { createJoinOrder, fetchMembershipStatus, mockJoinPayment } from '../../utils/planet-api'
+import {
+  createJoinOrder,
+  fetchMembershipStatus,
+  fetchPinnedPosts,
+  fetchPlanetPosts,
+  mockJoinPayment,
+} from '../../utils/planet-api'
 import { ensureWechatSession } from '../../utils/wechat-login'
 
 interface PlanetMetricItem {
@@ -65,11 +67,8 @@ interface FeedItem {
   hasFile?: boolean
   fileName?: string
 }
-
-interface PinnedArticleItem {
-  id: string
+interface PinnedArticleItem extends Pick<FeedItem, 'id' | 'title'> {
   prefix: string
-  title: string
 }
 
 const feedAvatarClassPool = [
@@ -83,6 +82,89 @@ const feedAvatarClassPool = [
 
 const getFeedAvatarClass = (index: number) => feedAvatarClassPool[index % feedAvatarClassPool.length]
 const PLANET_PUBLISH_REFRESH_KEY = 'planet_publish_refresh_v1'
+const legacyPlanetIdMap: Record<string, string> = {
+  planet_1: 'grp_datawhale_001',
+}
+
+const resolvePlanetId = (planetId: string) => legacyPlanetIdMap[planetId] || planetId
+
+const formatPostTime = (value?: string) => {
+  if (!value) {
+    return ''
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  const hour = `${date.getHours()}`.padStart(2, '0')
+  const minute = `${date.getMinutes()}`.padStart(2, '0')
+  return `${year}/${month}/${day} ${hour}:${minute}`
+}
+
+const isImageUrl = (value: string) => /\.(png|jpe?g|gif|webp|bmp|svg)(\?.*)?$/i.test(value)
+
+const extractPostImages = (post: Record<string, any>) => {
+  const attachments = Array.isArray(post.attachments) ? post.attachments : []
+  const attachmentImages = attachments
+    .map((item) => {
+      if (typeof item === 'string') {
+        return item.trim()
+      }
+      if (item && typeof item === 'object' && typeof item.url === 'string') {
+        return item.url.trim()
+      }
+      return ''
+    })
+    .filter((item) => /^https?:\/\//.test(item) && isImageUrl(item))
+
+  const metadata = post.metadata && typeof post.metadata === 'object' ? post.metadata : {}
+  const metadataImages = Array.isArray(metadata.images)
+    ? metadata.images.filter(
+        (item: unknown) => typeof item === 'string' && /^https?:\/\//.test(item) && isImageUrl(item)
+      )
+    : []
+
+  return Array.from(new Set(attachmentImages.concat(metadataImages))).slice(0, 9)
+}
+
+const mapRemotePostToFeedItem = (post: Record<string, any>, index: number): FeedItem => {
+  const metadata = post.metadata && typeof post.metadata === 'object' ? post.metadata : {}
+  const images = extractPostImages(post)
+  const title = String(post.title || post.summary || post.contentText || '').trim()
+  const content = String(post.contentText || '').trim()
+
+  return {
+    id: String(post.id || ''),
+    author:
+      post.author && typeof post.author === 'object' && typeof post.author.nickname === 'string'
+        ? post.author.nickname
+        : '当前成员',
+    avatarClass: getFeedAvatarClass(index),
+    time: formatPostTime(post.publishedAt || post.createdAt || ''),
+    title: title || content,
+    content: title && content && content !== title ? content : '',
+    images,
+    likeCount: `${Number(post.likeCount || 0)}`,
+    commentCount: `${Number(post.commentCount || 0)}`,
+    hasFile: images.length === 0 && Array.isArray(post.attachments) && post.attachments.length > 0,
+    fileName: typeof metadata.fileName === 'string' ? metadata.fileName : '附件资料',
+  }
+}
+
+const mapRemotePostsToFeedItems = (posts: Array<Record<string, any>>) =>
+  posts.map((post, index) => mapRemotePostToFeedItem(post, index))
+
+const mapRemotePinnedPostsToItems = (posts: Array<Record<string, any>>): PinnedArticleItem[] =>
+  posts.map((post) => ({
+    id: String(post.id || ''),
+    prefix: Array.isArray(post.attachments) && post.attachments.length ? '[图片]' : '',
+    title: String(post.title || post.summary || post.contentText || '').trim(),
+  }))
 
 const defaultPreviewList: PlanetPreviewItem[] = [
   {
@@ -224,26 +306,6 @@ const detailConfigMap: Record<string, PlanetDetailConfig> = {
   },
 }
 
-const mapPostsToFeedItems = (posts: PlanetPost[]): FeedItem[] =>
-  posts.map((post, index) => ({
-    id: post.id,
-    author: post.author,
-    avatarClass: getFeedAvatarClass(index),
-    time: post.time,
-    title: post.content,
-    content: '',
-    images: post.images || [],
-    likeCount: `${post.likeCount}`,
-    commentCount: `${post.commentCount}`,
-  }))
-
-const mapPinnedPostsToItems = (posts: PlanetPinnedPost[]): PinnedArticleItem[] =>
-  posts.map((post) => ({
-    id: post.id,
-    prefix: post.prefix,
-    title: post.title,
-  }))
-
 const formatMetricCount = (count: number) => {
   if (count >= 1000) {
     return `${(count / 1000).toFixed(1)}k+`
@@ -346,67 +408,92 @@ Page({
         fileName: 'ai agent综述 李飞飞.pdf',
       },
     ] as FeedItem[],
+    answerList: [] as FeedItem[],
   },
 
   onLoad(options: Record<string, string>) {
-    const planetId = options.id || 'planet_1'
+    const planetId = resolvePlanetId(options.id || 'planet_1')
     const planet = getPlanetById(planetId)
     const optionName = options.name ? decodeURIComponent(options.name) : ''
     const optionCreator = options.creator ? decodeURIComponent(options.creator) : ''
     const source = options.source || ''
-
-    if (!planet) {
-      return
-    }
+    const fallbackPlanet: PlanetProfile =
+      planet ||
+      ({
+        id: planetId,
+        name: optionName || '知识星球',
+        joined: source === 'joined',
+        avatarClass: 'avatar-sand',
+        avatarImageUrl: '',
+        coverImageUrl: '',
+        unread: '',
+        badge: '',
+        price: 0,
+        priceLabel: '免费加入',
+        joinType: 'rolling',
+        isFree: true,
+        requireInviteCode: false,
+        ownerName: optionCreator || '星主',
+        ownerTagline: '',
+        category: '其他',
+        intro: '',
+        embedPath: '',
+        memberCount: 0,
+        postCount: 0,
+        createdAt: '',
+      } as PlanetProfile)
 
     const detail = detailConfigMap[optionName] || detailConfigMap[planetId] || {
-      planetNo: planet.embedPath.replace(/\D/g, '').slice(0, 8) || '10000001',
+      planetNo: fallbackPlanet.embedPath.replace(/\D/g, '').slice(0, 8) || '10000001',
       verifiedLabel: '已认证',
       reportLabel: '投诉',
       ownerActiveText: `创建${Math.max(30, planet.memberCount)}天，今天活跃过`,
-      description: [planet.intro],
+      description: [fallbackPlanet.intro],
       feeNotices: [
         '付费后可在有效期内查看星球内容、参与互动并接收更新提醒。',
         '加入星球后 72 小时内可申请退款，超时后手续费不予退回。',
         '加入前请确认内容方向与更新节奏，平台不对第三方内容承担保证责任。',
       ],
       previewList: defaultPreviewList,
-      priceText: planet.isFree ? '免费' : `¥${planet.price}`,
+      priceText: fallbackPlanet.isFree ? '免费' : `¥${fallbackPlanet.price}`,
     }
 
-    const isJoined = source === 'discover' ? false : source === 'joined' ? true : !!planet.joined
-    const latestPosts = mapPostsToFeedItems(loadPostsByPlanet(planetId))
-    const pinnedList = mapPinnedPostsToItems(loadPinnedPosts())
-    const creatorName = optionCreator || planet.ownerName
-    const joinButtonText = isJoined ? '进入星球' : `立即加入：${detail.priceText || (planet.isFree ? '免费' : `¥${planet.price}`)}`
+    const isJoined = source === 'discover' ? false : source === 'joined' ? true : !!fallbackPlanet.joined
+    const creatorName = optionCreator || fallbackPlanet.ownerName
+    const joinButtonText =
+      isJoined ? '进入星球' : `立即加入：${detail.priceText || (fallbackPlanet.isFree ? '免费' : `¥${fallbackPlanet.price}`)}`
 
     this.setData({
       isJoined,
       joinLoading: false,
       planetId,
-      planetName: optionName || planet.name,
+      planetName: optionName || fallbackPlanet.name,
       creatorName,
-      avatarClass: planet.avatarClass,
-      avatarImageUrl: detail.avatarImageUrl || planet.avatarImageUrl,
+      avatarClass: fallbackPlanet.avatarClass,
+      avatarImageUrl: detail.avatarImageUrl || fallbackPlanet.avatarImageUrl,
       planetNo: detail.planetNo,
       ownerName: (detail.ownerNameOverride || creatorName).replace(/^(主理人\s*)/, '').replace(/老师$/, ''),
       ownerActiveText: detail.ownerActiveText,
-      tags: buildTags(planet, detail),
-      metrics: buildMetricList(planet, detail),
+      tags: buildTags(fallbackPlanet, detail),
+      metrics: buildMetricList(fallbackPlanet, detail),
       descriptionList: detail.description,
       previewDescriptionList: detail.description.slice(0, 1),
       introExpanded: false,
       feeNotices: detail.feeNotices,
       previewList: detail.previewList,
-      priceText: detail.priceText || (planet.isFree ? '免费' : `¥${planet.price}`),
+      priceText: detail.priceText || (fallbackPlanet.isFree ? '免费' : `¥${fallbackPlanet.price}`),
       joinButtonText,
       reportLabel: detail.reportLabel,
-      showNotices: !!pinnedList.length,
-      pinnedList,
-      latestList: latestPosts,
+      showNotices: false,
+      pinnedList: [],
+      latestList: [],
+      featuredList: [],
+      fileList: [],
+      answerList: [],
       source,
     })
 
+    void this.refreshFeedContent(planetId)
     void this.syncMembershipState(planetId, isJoined)
   },
 
@@ -423,19 +510,52 @@ Page({
       })
     }
 
-    this.refreshFeedContent(this.data.planetId)
+    void this.refreshFeedContent(this.data.planetId)
   },
 
-  refreshFeedContent(planetId: string) {
-    const latestPosts = mapPostsToFeedItems(loadPostsByPlanet(planetId))
-    const pinnedList = mapPinnedPostsToItems(loadPinnedPosts())
-    const showNotices = !!pinnedList.length
+  async refreshFeedContent(planetId: string) {
+    if (!planetId) {
+      return
+    }
 
-    this.setData({
-      latestList: latestPosts,
-      pinnedList,
-      showNotices,
-    })
+    try {
+      const session = getStoredSession()
+      const sessionToken = session && session.sessionToken ? session.sessionToken : ''
+      const [latestResponse, featuredResponse, fileResponse, answerResponse, pinnedResponse] =
+        await Promise.all([
+          fetchPlanetPosts({ groupId: planetId, tab: 'latest', limit: 20, sessionToken }),
+          fetchPlanetPosts({ groupId: planetId, tab: 'featured', limit: 20, sessionToken }),
+          fetchPlanetPosts({ groupId: planetId, tab: 'files', limit: 20, sessionToken }),
+          fetchPlanetPosts({ groupId: planetId, tab: 'answer', limit: 20, sessionToken }),
+          fetchPinnedPosts(planetId, sessionToken),
+        ])
+
+      const latestList = latestResponse.ok && latestResponse.data ? mapRemotePostsToFeedItems(latestResponse.data.items || []) : []
+      const featuredList =
+        featuredResponse.ok && featuredResponse.data ? mapRemotePostsToFeedItems(featuredResponse.data.items || []) : []
+      const fileList = fileResponse.ok && fileResponse.data ? mapRemotePostsToFeedItems(fileResponse.data.items || []) : []
+      const answerList =
+        answerResponse.ok && answerResponse.data ? mapRemotePostsToFeedItems(answerResponse.data.items || []) : []
+      const pinnedList = pinnedResponse.ok && Array.isArray(pinnedResponse.data) ? mapRemotePinnedPostsToItems(pinnedResponse.data) : []
+
+      this.setData({
+        latestList,
+        featuredList,
+        fileList,
+        answerList,
+        pinnedList,
+        showNotices: !!pinnedList.length,
+      })
+    } catch {
+      this.setData({
+        latestList: [],
+        featuredList: [],
+        fileList: [],
+        answerList: [],
+        pinnedList: [],
+        showNotices: false,
+      })
+    }
   },
 
   async ensurePlanetSession() {

@@ -212,6 +212,8 @@ model User {
   members      GroupMember[]
   posts        Post[]
   comments     Comment[]
+  postLikes    PostLike[]
+  commentLikes CommentLike[]
   orders       Order[]
   scoreLedgers MemberScoreLedger[]
 
@@ -380,6 +382,8 @@ model Post {
   title        String?
   summary      String?
   contentText  String     @map("content_text")
+  attachments  Json?
+  metadata     Json?
   readingCount Int        @default(0) @map("reading_count")
   likeCount    Int        @default(0) @map("like_count")
   commentCount Int        @default(0) @map("comment_count")
@@ -392,6 +396,7 @@ model Post {
   group    Group     @relation(fields: [groupId], references: [id])
   author   User      @relation(fields: [authorUserId], references: [id])
   comments Comment[]
+  likes    PostLike[]
 
   @@index([groupId, type, status])
   @@index([publishedAt])
@@ -413,9 +418,38 @@ model Comment {
   user    User      @relation(fields: [userId], references: [id])
   parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
   replies Comment[] @relation("CommentReplies")
+  likes   CommentLike[]
 
   @@index([postId, createdAt])
   @@map("comments")
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String   @map("post_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+  @@map("post_likes")
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  commentId String   @map("comment_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([userId, createdAt])
+  @@map("comment_likes")
 }
 
 model Order {

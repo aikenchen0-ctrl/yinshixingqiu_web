@@ -23,12 +23,27 @@ const {
   getJoinedPlanets,
   getMyPlanets,
 } = require("./services/planetService");
+const {
+  getGroupHome,
+  listPostsByTab,
+  listPinnedPosts,
+  listDiscoverFeaturedPosts,
+  getPostDetail,
+  createPost,
+  updatePost,
+  listComments,
+  listMyPosts,
+  createComment,
+  togglePostLike,
+  toggleCommentLike,
+} = require("./services/contentService");
 const { sendJson, readJsonBody } = require("./utils/http");
 const { prisma } = require("./db/prisma");
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "127.0.0.1";
 const schemaPath = path.join(__dirname, "..", "prisma", "schema.prisma");
+const uploadRootPath = path.join(__dirname, "..", "uploads");
 const promotionDataPayload = {
   title: "ysc的星球",
   subtitle: "",
@@ -93,6 +108,104 @@ const promotionDataPayload = {
   ]
 };
 
+function ensureUploadDir() {
+  if (!fs.existsSync(uploadRootPath)) {
+    fs.mkdirSync(uploadRootPath, { recursive: true });
+  }
+}
+
+function sendFile(res, filePath) {
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    sendJson(res, 404, {
+      ok: false,
+      message: "文件不存在",
+    });
+    return;
+  }
+
+  const extension = path.extname(filePath).toLowerCase();
+  const mimeTypeMap = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".bmp": "image/bmp",
+  };
+
+  res.writeHead(200, {
+    "Content-Type": mimeTypeMap[extension] || "application/octet-stream",
+    "Cache-Control": "public, max-age=31536000",
+    "Access-Control-Allow-Origin": "*",
+  });
+
+  fs.createReadStream(filePath).pipe(res);
+}
+
+function readRawBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+
+    req.on("data", (chunk) => {
+      chunks.push(chunk);
+    });
+
+    req.on("end", () => {
+      resolve(Buffer.concat(chunks));
+    });
+
+    req.on("error", reject);
+  });
+}
+
+function parseMultipartFile(buffer, contentType) {
+  const boundaryMatch = /boundary=([^;]+)/i.exec(contentType || "");
+  if (!boundaryMatch) {
+    return null;
+  }
+
+  const boundary = Buffer.from(`--${boundaryMatch[1]}`);
+  const headerEndMarker = Buffer.from("\r\n\r\n");
+  const start = buffer.indexOf(boundary);
+  if (start < 0) {
+    return null;
+  }
+
+  const headerStart = start + boundary.length + 2;
+  const headerEnd = buffer.indexOf(headerEndMarker, headerStart);
+  if (headerEnd < 0) {
+    return null;
+  }
+
+  const headerText = buffer.slice(headerStart, headerEnd).toString("utf8");
+  const filenameMatch = /filename="([^"]+)"/i.exec(headerText);
+  const typeMatch = /Content-Type:\s*([^\r\n]+)/i.exec(headerText);
+  const fileStart = headerEnd + headerEndMarker.length;
+  const nextBoundaryIndex = buffer.indexOf(boundary, fileStart);
+  if (nextBoundaryIndex < 0) {
+    return null;
+  }
+
+  const fileEnd = nextBoundaryIndex - 2;
+  const fileBuffer = buffer.slice(fileStart, fileEnd);
+
+  return {
+    filename: filenameMatch ? filenameMatch[1] : "image.jpg",
+    mimeType: typeMatch ? typeMatch[1].trim() : "application/octet-stream",
+    buffer: fileBuffer,
+  };
+}
+
+function createUploadFileName(originalName) {
+  const extension = path.extname(originalName || "").toLowerCase() || ".jpg";
+  const safeExtension = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"].includes(extension)
+    ? extension
+    : ".jpg";
+  const stamp = Date.now();
+  const random = Math.random().toString(36).slice(2, 8);
+  return `${stamp}_${random}${safeExtension}`;
+}
+
 function getSchemaSummary() {
   const schema = fs.readFileSync(schemaPath, "utf8");
   const modelMatches = [...schema.matchAll(/^model\s+(\w+)/gm)];
@@ -114,14 +227,22 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type,x-session-token",
     });
     res.end();
     return;
   }
 
   try {
+    if (req.method === "GET" && requestUrl.pathname.startsWith("/uploads/")) {
+      const relativePath = requestUrl.pathname.replace(/^\/uploads\//, "");
+      const normalizedPath = path.normalize(relativePath).replace(/^(\.\.(\/|\\|$))+/, "");
+      const filePath = path.join(uploadRootPath, normalizedPath);
+      sendFile(res, filePath);
+      return;
+    }
+
     if (req.method === "GET" && requestUrl.pathname === "/api/planets/preview") {
       const result = await buildPreview(
         requestUrl.searchParams.get("groupId"),
@@ -161,6 +282,154 @@ const server = http.createServer(async (req, res) => {
         limit: requestUrl.searchParams.get("limit"),
       });
       sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/home") {
+      const result = await getGroupHome(requestUrl.searchParams.get("groupId"), {
+        sessionToken: requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/posts") {
+      const result = await listPostsByTab(requestUrl.searchParams.get("groupId"), {
+        tab: requestUrl.searchParams.get("tab"),
+        cursor: requestUrl.searchParams.get("cursor"),
+        limit: requestUrl.searchParams.get("limit"),
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/pinned-posts") {
+      const result = await listPinnedPosts(requestUrl.searchParams.get("groupId"), {
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/discover-featured-posts") {
+      const result = await listDiscoverFeaturedPosts({
+        limit: requestUrl.searchParams.get("limit"),
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/posts") {
+      const body = await readJsonBody(req);
+      const result = await createPost({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/planets/posts") {
+      const body = await readJsonBody(req);
+      const result = await updatePost({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/my-posts") {
+      const result = await listMyPosts(requestUrl.searchParams.get("sessionToken"));
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/posts/detail") {
+      const result = await getPostDetail(requestUrl.searchParams.get("postId"), {
+        incrementRead: requestUrl.searchParams.get("incrementRead") !== "0",
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/posts/comments") {
+      const result = await listComments(requestUrl.searchParams.get("postId"), {
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/posts/comments") {
+      const body = await readJsonBody(req);
+      const result = await createComment({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/posts/like") {
+      const body = await readJsonBody(req);
+      const result = await togglePostLike(body.postId, body.increment !== false, {
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/comments/like") {
+      const body = await readJsonBody(req);
+      const result = await toggleCommentLike(body.commentId, body.increment !== false, {
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/uploads/image") {
+      ensureUploadDir();
+      const rawBody = await readRawBody(req);
+      const file = parseMultipartFile(rawBody, req.headers["content-type"]);
+
+      if (!file || !file.buffer.length) {
+        sendJson(res, 400, {
+          ok: false,
+          message: "图片上传失败，未解析到文件内容",
+        });
+        return;
+      }
+
+      if (!/^image\//i.test(file.mimeType)) {
+        sendJson(res, 400, {
+          ok: false,
+          message: "仅支持上传图片文件",
+        });
+        return;
+      }
+
+      const todayFolder = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const targetDir = path.join(uploadRootPath, todayFolder);
+      fs.mkdirSync(targetDir, { recursive: true });
+
+      const savedName = createUploadFileName(file.filename);
+      const savedPath = path.join(targetDir, savedName);
+      fs.writeFileSync(savedPath, file.buffer);
+
+      const publicUrl = `http://${req.headers.host}/uploads/${todayFolder}/${savedName}`;
+      sendJson(res, 201, {
+        ok: true,
+        data: {
+          url: publicUrl,
+          filename: savedName,
+        },
+      });
       return;
     }
 
@@ -277,6 +546,16 @@ const server = http.createServer(async (req, res) => {
           "/api/auth/logout",
           "/api/planets/joined?sessionToken=<token>",
           "/api/planets/discover?sessionToken=<token>&limit=12",
+          "/api/planets/home?groupId=<groupId>&sessionToken=<token>",
+          "/api/planets/posts?groupId=<groupId>&tab=latest&limit=20",
+          "/api/planets/pinned-posts?groupId=<groupId>",
+          "/api/planets/posts",
+          "/api/planets/my-posts?sessionToken=<token>",
+          "/api/posts/detail?postId=<postId>",
+          "/api/posts/comments?postId=<postId>",
+          "/api/posts/comments",
+          "/api/posts/like",
+          "/api/comments/like",
           "/api/planets/preview?groupId=grp_datawhale_001&userId=usr_buyer_001&couponCode=NEW1000&channelCode=CH_WECHAT_MENU_001",
           "/api/orders/join",
           "/api/payments/mock-callback",
@@ -303,6 +582,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 async function start() {
+  ensureUploadDir();
   startAccessTokenRefreshScheduler();
   server.listen(PORT, HOST, () => {
     console.log(`xueyin-backend listening on http://${HOST}:${PORT}`);

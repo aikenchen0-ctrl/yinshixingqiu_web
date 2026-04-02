@@ -152,7 +152,30 @@
         </view>
       </view>
 
-      <view wx:if="{{activeTab === 'answer'}}" class="planet-empty-answer">
+      <view wx:if="{{activeTab === 'answer' && answerList.length}}" class="planet-feed-list">
+        <view class="planet-feed-card" wx:for="{{answerList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
+          <view class="planet-feed-head">
+            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-author">
+              <text class="planet-feed-name">{{item.author}}</text>
+              <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+          </view>
+          <text class="planet-feed-title">{{item.title}}</text>
+          <view class="planet-feed-bar">
+            <view class="planet-feed-action">
+              <view class="feed-icon-like"></view>
+              <text>{{item.likeCount}}</text>
+            </view>
+            <view class="planet-feed-action">
+              <view class="feed-icon-comment"></view>
+              <text>{{item.commentCount}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{activeTab === 'answer' && !answerList.length}}" class="planet-empty-answer">
         <text class="planet-empty-text">这里空空如也</text>
       </view>
     </view>

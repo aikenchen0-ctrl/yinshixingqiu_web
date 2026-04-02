@@ -8,7 +8,7 @@ import {
   type JoinOrderResponse,
   type MembershipStatusResponse,
   type PreviewResponse,
-} from '../services/planetPreviewService'
+} from '../../services/planetPreviewService'
 
 const demoUserId = 'usr_buyer_001'
 
@@ -93,7 +93,7 @@ export function PlanetPreviewPage() {
 
     try {
       const payload = await mockPayJoinOrder(joinOrder.order.orderNo)
-      setJoinOrder((current) =>
+      setJoinOrder((current: JoinOrderResponse['data'] | null) =>
         current
           ? {
               ...current,

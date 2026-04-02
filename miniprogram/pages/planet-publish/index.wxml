@@ -1,4 +1,4 @@
-<navigation-bar title="发表主题" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
+<navigation-bar title="{{isEditMode ? '编辑主题' : '发表主题'}}" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
 
 <view class="page planet-publish-page">
   <scroll-view class="planet-publish-scroll" scroll-y="{{true}}">
@@ -84,24 +84,23 @@
 
       <view class="planet-publish-section">
         <view class="planet-publish-section-head">
-          <text class="planet-publish-section-title">网络图片</text>
-          <text class="planet-publish-section-action" bindtap="onInsertImages">插入到正文</text>
+          <text class="planet-publish-section-title">图片附件</text>
+          <view
+            class="planet-publish-section-button {{uploadingImages ? 'planet-publish-section-button-disabled' : ''}}"
+            bindtap="onChooseImages"
+          >
+            {{uploadingImages ? '上传中...' : '本地选图'}}
+          </view>
         </view>
-        <textarea
-          class="planet-publish-textarea"
-          placeholder="粘贴网络图片地址，多个地址用英文逗号或换行分隔"
-          placeholder-class="planet-publish-input-placeholder"
-          value="{{imageInput}}"
-          bindinput="onImageInput"
-        ></textarea>
+        <text class="planet-publish-section-helper">正文里只保留文字内容，图片作为帖子附件展示，更符合论坛发帖习惯。</text>
         <view wx:if="{{imagePreviewList.length}}" class="planet-publish-preview-list">
-          <image
-            wx:for="{{imagePreviewList}}"
-            wx:key="*this"
-            class="planet-publish-preview-image"
-            src="{{item}}"
-            mode="aspectFill"
-          ></image>
+          <view wx:for="{{imagePreviewList}}" wx:key="*this" class="planet-publish-preview-item">
+            <image class="planet-publish-preview-image" src="{{item}}" mode="aspectFill"></image>
+            <view class="planet-publish-preview-remove" data-index="{{index}}" bindtap="onRemoveImage">删除</view>
+          </view>
+        </view>
+        <view wx:else class="planet-publish-empty-images">
+          <text class="planet-publish-empty-images-text">还没有添加图片，支持从相册或相机选择</text>
         </view>
       </view>
 
@@ -119,6 +118,6 @@
   </scroll-view>
 
   <view class="planet-publish-footer">
-    <button class="planet-publish-submit" loading="{{submitting}}" bindtap="onSubmit">发布主题</button>
+    <button class="planet-publish-submit" loading="{{submitting}}" bindtap="onSubmit">{{isEditMode ? '保存修改' : '发布主题'}}</button>
   </view>
 </view>

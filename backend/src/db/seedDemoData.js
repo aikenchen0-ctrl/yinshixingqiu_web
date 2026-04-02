@@ -29,6 +29,9 @@ const LEGACY_DISCOVER_OWNER_IDS = [
 async function ensureDemoData(options = {}) {
   const { resetRuntime = false } = options;
 
+  const seedPostIds = ["pst_welcome_001", "pst_featured_001", "pst_file_001", "pst_answer_001"];
+  const seedCommentIds = ["cmt_demo_001", "cmt_demo_002"];
+
   if (resetRuntime) {
     await prisma.$transaction([
       prisma.couponClaim.deleteMany({}),
@@ -37,6 +40,20 @@ async function ensureDemoData(options = {}) {
       prisma.analyticsEvent.deleteMany({}),
       prisma.orderStatusLog.deleteMany({}),
       prisma.outboxJob.deleteMany({}),
+      prisma.comment.deleteMany({
+        where: {
+          id: {
+            in: seedCommentIds,
+          },
+        },
+      }),
+      prisma.post.deleteMany({
+        where: {
+          id: {
+            in: seedPostIds,
+          },
+        },
+      }),
       prisma.groupMember.deleteMany({
         where: {
           groupId: IDS.group,
@@ -246,6 +263,164 @@ async function ensureDemoData(options = {}) {
       firstJoinedAt: new Date(),
       expireAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
       lastActiveAt: new Date(),
+    },
+  });
+
+  await prisma.post.upsert({
+    where: { id: "pst_welcome_001" },
+    update: {
+      groupId: IDS.group,
+      authorUserId: IDS.ownerUser,
+      type: "NOTICE",
+      status: "PUBLISHED",
+      title: "新来的朋友，大家好，欢迎来到我的知识星球。",
+      summary: "新来的朋友，大家好，欢迎来到我的知识星球。这里会持续更新 AI 学习与实践内容。",
+      contentText: "新来的朋友，大家好，欢迎来到我的知识星球。这里会持续更新 AI 学习与实践内容，方便大家按主题回看。",
+      isPinned: true,
+      isEssence: true,
+      publishedAt: new Date(),
+    },
+    create: {
+      id: "pst_welcome_001",
+      groupId: IDS.group,
+      authorUserId: IDS.ownerUser,
+      type: "NOTICE",
+      status: "PUBLISHED",
+      title: "新来的朋友，大家好，欢迎来到我的知识星球。",
+      summary: "新来的朋友，大家好，欢迎来到我的知识星球。这里会持续更新 AI 学习与实践内容。",
+      contentText: "新来的朋友，大家好，欢迎来到我的知识星球。这里会持续更新 AI 学习与实践内容，方便大家按主题回看。",
+      isPinned: true,
+      isEssence: true,
+      publishedAt: new Date(),
+    },
+  });
+
+  await prisma.post.upsert({
+    where: { id: "pst_featured_001" },
+    update: {
+      groupId: IDS.group,
+      authorUserId: IDS.ownerUser,
+      type: "TOPIC",
+      status: "PUBLISHED",
+      title: "大多数人忽略的管理真相",
+      summary: "拆解组织磨合、沟通和管理中的几个关键误区。",
+      contentText: "拆解组织磨合、沟通和管理中的几个关键误区，帮助新成员更快建立判断框架。",
+      isPinned: false,
+      isEssence: true,
+      publishedAt: new Date(Date.now() - 3600 * 1000),
+    },
+    create: {
+      id: "pst_featured_001",
+      groupId: IDS.group,
+      authorUserId: IDS.ownerUser,
+      type: "TOPIC",
+      status: "PUBLISHED",
+      title: "大多数人忽略的管理真相",
+      summary: "拆解组织磨合、沟通和管理中的几个关键误区。",
+      contentText: "拆解组织磨合、沟通和管理中的几个关键误区，帮助新成员更快建立判断框架。",
+      isPinned: false,
+      isEssence: true,
+      publishedAt: new Date(Date.now() - 3600 * 1000),
+    },
+  });
+
+  await prisma.post.upsert({
+    where: { id: "pst_file_001" },
+    update: {
+      groupId: IDS.group,
+      authorUserId: IDS.ownerUser,
+      type: "ARTICLE",
+      status: "PUBLISHED",
+      title: "分享一个关于AI智能体的综述",
+      summary: "附 PDF 资料，适合先建立完整认知框架。",
+      contentText: "附 PDF 资料，适合先建立完整认知框架。",
+      attachments: ["https://example.com/files/ai-agent-review.pdf"],
+      metadata: {
+        hasFile: true,
+        fileName: "ai-agent-review.pdf",
+      },
+      publishedAt: new Date(Date.now() - 2 * 3600 * 1000),
+    },
+    create: {
+      id: "pst_file_001",
+      groupId: IDS.group,
+      authorUserId: IDS.ownerUser,
+      type: "ARTICLE",
+      status: "PUBLISHED",
+      title: "分享一个关于AI智能体的综述",
+      summary: "附 PDF 资料，适合先建立完整认知框架。",
+      contentText: "附 PDF 资料，适合先建立完整认知框架。",
+      attachments: ["https://example.com/files/ai-agent-review.pdf"],
+      metadata: {
+        hasFile: true,
+        fileName: "ai-agent-review.pdf",
+      },
+      publishedAt: new Date(Date.now() - 2 * 3600 * 1000),
+    },
+  });
+
+  await prisma.post.upsert({
+    where: { id: "pst_answer_001" },
+    update: {
+      groupId: IDS.group,
+      authorUserId: IDS.buyerUser,
+      type: "TOPIC",
+      status: "PUBLISHED",
+      title: "如果想做一个最小 AI 工具，第一步应该怎么验证？",
+      summary: "等我回答示例帖子。",
+      contentText: "如果想做一个最小 AI 工具，第一步应该怎么验证？",
+      metadata: {
+        answerStatus: "PENDING",
+      },
+      publishedAt: new Date(Date.now() - 3 * 3600 * 1000),
+    },
+    create: {
+      id: "pst_answer_001",
+      groupId: IDS.group,
+      authorUserId: IDS.buyerUser,
+      type: "TOPIC",
+      status: "PUBLISHED",
+      title: "如果想做一个最小 AI 工具，第一步应该怎么验证？",
+      summary: "等我回答示例帖子。",
+      contentText: "如果想做一个最小 AI 工具，第一步应该怎么验证？",
+      metadata: {
+        answerStatus: "PENDING",
+      },
+      publishedAt: new Date(Date.now() - 3 * 3600 * 1000),
+    },
+  });
+
+  await prisma.comment.upsert({
+    where: { id: "cmt_demo_001" },
+    update: {
+      postId: "pst_welcome_001",
+      userId: IDS.buyerUser,
+      contentText: "欢迎帖写得很清楚，已加入学习。",
+      status: "PUBLISHED",
+    },
+    create: {
+      id: "cmt_demo_001",
+      postId: "pst_welcome_001",
+      userId: IDS.buyerUser,
+      contentText: "欢迎帖写得很清楚，已加入学习。",
+      status: "PUBLISHED",
+    },
+  });
+
+  await prisma.comment.upsert({
+    where: { id: "cmt_demo_002" },
+    update: {
+      postId: "pst_featured_001",
+      userId: IDS.ownerUser,
+      contentText: "后面我会继续补这个主题的案例。",
+      status: "PUBLISHED",
+    },
+    create: {
+      id: "cmt_demo_002",
+      postId: "pst_featured_001",
+      userId: IDS.ownerUser,
+      contentText: "后面我会继续补这个主题的案例。",
+      status: "PUBLISHED",
     },
   });
 

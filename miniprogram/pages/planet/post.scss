@@ -102,7 +102,8 @@
 }
 
 .tool-icon-share::before,
-.tool-icon-generate::before {
+.tool-icon-generate::before,
+.tool-icon-edit::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -131,6 +132,19 @@
   height: 16rpx;
   border: 3rpx solid #ffffff;
   border-radius: 3rpx;
+}
+
+.tool-icon-edit::after {
+  content: '';
+  position: absolute;
+  left: 8rpx;
+  top: 8rpx;
+  width: 13rpx;
+  height: 5rpx;
+  background: #ffffff;
+  border-radius: 999rpx;
+  transform: rotate(-40deg);
+  box-shadow: 4rpx 8rpx 0 -1rpx #ffffff;
 }
 
 .planet-post-tool-text {
@@ -185,6 +199,18 @@
   font-size: 28rpx;
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+.planet-post-comment-like {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  color: #9aa0a6;
+  font-size: 24rpx;
+}
+
+.planet-post-comment-like-active {
+  color: #57c9a8;
 }
 
 .planet-post-comment-bar {

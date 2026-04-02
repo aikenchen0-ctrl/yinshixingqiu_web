@@ -1,6 +1,11 @@
-import { addPost } from '../../utils/planet'
+import { getPlanetById } from '../../utils/planet'
+import { getStoredSession } from '../../utils/auth'
+import { createPlanetPost, fetchPlanetPostDetail, updatePlanetPost, uploadPlanetImage } from '../../utils/planet-api'
 
 const PLANET_PUBLISH_REFRESH_KEY = 'planet_publish_refresh_v1'
+const legacyPlanetIdMap: Record<string, string> = {
+  planet_1: 'grp_datawhale_001',
+}
 
 interface EditorStatusPayload {
   bold?: boolean
@@ -13,8 +18,9 @@ interface EditorStatusPayload {
 interface PublishPageData {
   planetId: string
   planetName: string
+  postId: string
+  isEditMode: boolean
   title: string
-  imageInput: string
   tagInput: string
   imagePreviewList: string[]
   editorReady: boolean
@@ -28,6 +34,7 @@ interface PublishPageData {
     bulletList: boolean
   }
   submitting: boolean
+  uploadingImages: boolean
 }
 
 type EditorContext = WechatMiniprogram.EditorContext
@@ -36,6 +43,9 @@ const MAX_TITLE_LENGTH = 40
 const MAX_TEXT_LENGTH = 5000
 
 let editorCtx: EditorContext | null = null
+let pendingEditorHtml = ''
+
+const resolvePlanetId = (planetId: string) => legacyPlanetIdMap[planetId] || planetId
 
 const escapeHtml = (value: string) =>
   value
@@ -44,6 +54,8 @@ const escapeHtml = (value: string) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const stripHtml = (html: string) =>
   html
@@ -71,20 +83,72 @@ const extractImageUrls = (html: string) => {
 
 const buildSummary = (title: string, text: string) => {
   const normalizedText = text.replace(/\s+/g, ' ').trim()
-
   if (title && normalizedText) {
     return `${title} ${normalizedText}`.slice(0, 120)
   }
-
   return (title || normalizedText).slice(0, 120)
+}
+
+const toEditorHtml = (value: string) => {
+  const content = String(value || '').trim()
+  if (!content) {
+    return ''
+  }
+
+  if (/<[a-z][\s\S]*>/i.test(content)) {
+    return content
+  }
+
+  return content
+    .split(/\n+/)
+    .map((item) => `<p>${escapeHtml(item)}</p>`)
+    .join('')
+}
+
+const stripLeadingTitleFromHtml = (html: string, title: string) => {
+  const normalizedTitle = title.trim()
+  if (!normalizedTitle || !html) {
+    return html
+  }
+
+  const headingPattern = new RegExp(
+    `^\\s*<(h1|h2|h3|p|div)[^>]*>\\s*${escapeRegExp(escapeHtml(normalizedTitle))}\\s*<\\/\\1>\\s*`,
+    'i'
+  )
+  return html.replace(headingPattern, '').trim()
+}
+
+const stripImageTags = (html: string) => html.replace(/<img[^>]*>/gi, '').trim()
+
+const extractImageUrlsFromPost = (post: Record<string, any>, richContent: string) => {
+  const attachmentImages = Array.isArray(post.attachments)
+    ? post.attachments.filter((item: unknown) => typeof item === 'string' && /^https?:\/\//.test(item))
+    : []
+  const richImages = extractImageUrls(richContent)
+  return Array.from(new Set(attachmentImages.concat(richImages))).slice(0, 9)
+}
+
+const parseRemotePostDraft = (post: Record<string, any>) => {
+  const metadata = post.metadata && typeof post.metadata === 'object' ? post.metadata : {}
+  const title = typeof post.title === 'string' ? post.title : ''
+  const richContent = typeof metadata.richContent === 'string' ? metadata.richContent : ''
+  const cleanedHtml = stripImageTags(stripLeadingTitleFromHtml(richContent || toEditorHtml(String(post.contentText || '')), title))
+
+  return {
+    title: title.slice(0, MAX_TITLE_LENGTH),
+    editorHtml: cleanedHtml,
+    tags: Array.isArray(metadata.tags) ? metadata.tags.filter((item: unknown) => typeof item === 'string') : [],
+    images: extractImageUrlsFromPost(post, richContent),
+  }
 }
 
 Page<PublishPageData>({
   data: {
-    planetId: 'planet_1',
+    planetId: 'grp_datawhale_001',
     planetName: '知识星球',
+    postId: '',
+    isEditMode: false,
     title: '',
-    imageInput: '',
     tagInput: '',
     imagePreviewList: [],
     editorReady: false,
@@ -98,14 +162,57 @@ Page<PublishPageData>({
       bulletList: false,
     },
     submitting: false,
+    uploadingImages: false,
   },
 
-  onLoad(options: Record<string, string>) {
+  async onLoad(options: Record<string, string>) {
     editorCtx = null
+    pendingEditorHtml = ''
+
+    const planetId = resolvePlanetId(options.planetId || 'grp_datawhale_001')
+    const postId = options.postId || ''
+    const currentPlanet = getPlanetById(planetId)
+    const planetName =
+      options.planetName
+        ? decodeURIComponent(options.planetName)
+        : currentPlanet && currentPlanet.name
+          ? currentPlanet.name
+          : '知识星球'
+
     this.setData({
-      planetId: options.planetId || 'planet_1',
-      planetName: options.planetName ? decodeURIComponent(options.planetName) : '知识星球',
+      planetId,
+      planetName,
+      postId,
+      isEditMode: !!postId,
     })
+
+    if (!postId) {
+      return
+    }
+
+    try {
+      const session = getStoredSession()
+      const response = await fetchPlanetPostDetail(postId, false, session && session.sessionToken ? session.sessionToken : '')
+      if (!response.ok || !response.data) {
+        throw new Error('原帖子不存在')
+      }
+
+      const draft = parseRemotePostDraft(response.data)
+      pendingEditorHtml = draft.editorHtml
+
+      this.setData({
+        title: draft.title,
+        tagInput: draft.tags.join(', '),
+        imagePreviewList: draft.images,
+        editorHtml: draft.editorHtml,
+        editorText: stripHtml(draft.editorHtml),
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error instanceof Error ? error.message : '读取帖子失败',
+        icon: 'none',
+      })
+    }
   },
 
   onUnload() {
@@ -124,20 +231,6 @@ Page<PublishPageData>({
     })
   },
 
-  onImageInput(e: WechatMiniprogram.Input) {
-    const imageInput = e.detail.value
-    const imagePreviewList = imageInput
-      .split(/[\n,]/)
-      .map((item) => item.trim())
-      .filter((item) => /^https?:\/\//.test(item))
-      .slice(0, 9)
-
-    this.setData({
-      imageInput,
-      imagePreviewList,
-    })
-  },
-
   onEditorReady() {
     wx.createSelectorQuery()
       .in(this)
@@ -149,6 +242,13 @@ Page<PublishPageData>({
         this.setData({
           editorReady: !!context,
         })
+
+        if (context && pendingEditorHtml) {
+          context.setContents({
+            html: pendingEditorHtml,
+          })
+          void this.syncEditorContent()
+        }
       })
       .exec()
   },
@@ -250,38 +350,104 @@ Page<PublishPageData>({
     this.execFormat(command, typeof value === 'string' ? value : undefined)
   },
 
-  onInsertImages() {
-    if (!editorCtx) {
+  async onChooseImages() {
+    const session = getStoredSession()
+    if (!session || !session.sessionToken) {
       wx.showToast({
-        title: '编辑器还没准备好',
+        title: '请先登录',
         icon: 'none',
       })
       return
     }
 
-    if (!this.data.imagePreviewList.length) {
+    const remainCount = Math.max(0, 9 - this.data.imagePreviewList.length)
+    if (!remainCount) {
       wx.showToast({
-        title: '先输入图片地址',
+        title: '最多上传9张图片',
         icon: 'none',
       })
       return
     }
 
-    this.data.imagePreviewList.forEach((url) => {
-      editorCtx!.insertImage({
-        src: url,
-        alt: '主题配图',
+    try {
+      const chooseResult = await new Promise<WechatMiniprogram.ChooseMediaSuccessCallbackResult>((resolve, reject) => {
+        wx.chooseMedia({
+          count: remainCount,
+          mediaType: ['image'],
+          sizeType: ['compressed'],
+          sourceType: ['album', 'camera'],
+          success: resolve,
+          fail: reject,
+        })
       })
-    })
 
-    wx.showToast({
-      title: '已插入正文',
-      icon: 'success',
+      const files = Array.isArray(chooseResult.tempFiles) ? chooseResult.tempFiles : []
+      if (!files.length) {
+        return
+      }
+
+      this.setData({
+        uploadingImages: true,
+      })
+
+      wx.showLoading({
+        title: '上传图片中',
+        mask: true,
+      })
+
+      const uploadedUrls: string[] = []
+      for (const file of files) {
+        if (!file.tempFilePath) {
+          continue
+        }
+
+        const response = await uploadPlanetImage(file.tempFilePath, session.sessionToken)
+        if (!response.ok || !response.data || !response.data.url) {
+          throw new Error('图片上传失败')
+        }
+        uploadedUrls.push(response.data.url)
+      }
+
+      const imagePreviewList = Array.from(new Set(this.data.imagePreviewList.concat(uploadedUrls))).slice(0, 9)
+      this.setData({
+        imagePreviewList,
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error instanceof Error ? error.message : '图片上传失败',
+        icon: 'none',
+      })
+    } finally {
+      wx.hideLoading()
+      this.setData({
+        uploadingImages: false,
+      })
+    }
+  },
+
+  onRemoveImage(e: WechatMiniprogram.TouchEvent) {
+    const index = Number(e.currentTarget.dataset.index)
+    if (!Number.isFinite(index) || index < 0) {
+      return
+    }
+
+    const nextList = this.data.imagePreviewList.filter((_, currentIndex) => currentIndex !== index)
+    this.setData({
+      imagePreviewList: nextList,
     })
   },
 
   async onSubmit() {
     if (this.data.submitting) {
+      return
+    }
+
+    const session = getStoredSession()
+    if (!session || !session.id || !session.sessionToken) {
+      wx.showToast({
+        title: '请先登录',
+        icon: 'none',
+      })
       return
     }
 
@@ -304,29 +470,44 @@ Page<PublishPageData>({
       .map((item) => item.trim())
       .filter(Boolean)
       .slice(0, 4)
-    const imageUrls = extractImageUrls(editorHtml)
+    const nextImages = this.data.imagePreviewList
     const summary = buildSummary(title, normalizedText)
-    const richContent = title ? `<h2>${escapeHtml(title)}</h2>${editorHtml}` : editorHtml
+    const richContent = editorHtml
 
     this.setData({
       submitting: true,
     })
 
     try {
-      addPost({
-        planetId: this.data.planetId,
-        content: summary,
-        richContent,
-        tags,
-        images: imageUrls.length ? imageUrls : this.data.imagePreviewList,
-      })
+      const payload = {
+        postId: this.data.postId,
+        groupId: this.data.planetId,
+        userId: session.id,
+        sessionToken: session.sessionToken,
+        title,
+        summary,
+        contentText: normalizedText,
+        attachments: nextImages,
+        metadata: {
+          tags,
+          richContent,
+          images: nextImages,
+        },
+      }
+
+      const response = this.data.isEditMode && this.data.postId ? await updatePlanetPost(payload) : await createPlanetPost(payload)
+
+      if (!response.ok) {
+        throw new Error(this.data.isEditMode ? '修改失败' : '发布失败')
+      }
 
       wx.setStorageSync(PLANET_PUBLISH_REFRESH_KEY, this.data.planetId)
 
       wx.showToast({
-        title: '发布成功',
+        title: this.data.isEditMode ? '修改成功' : '发布成功',
         icon: 'success',
       })
+
       setTimeout(() => {
         const pages = getCurrentPages()
         if (pages.length > 1) {
@@ -341,9 +522,8 @@ Page<PublishPageData>({
         })
       }, 280)
     } catch (error) {
-      const message = error instanceof Error ? error.message : '发布失败，请稍后再试'
       wx.showToast({
-        title: message,
+        title: error instanceof Error ? error.message : '发布失败，请稍后再试',
         icon: 'none',
       })
     } finally {

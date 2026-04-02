@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { defaultReferencePath, referencePageMap } from '../data/referencePages'
+import { defaultReferencePath, referencePageMap } from '../../data/referencePages'
 
 const titleRouteMap: Record<string, string> = {
   收入数据: '/income',

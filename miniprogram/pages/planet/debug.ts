@@ -1,6 +1,6 @@
 import { fetchSessionProfile, pingBackend } from '../../utils/auth-api'
 import { getStoredSession } from '../../utils/auth'
-import { fetchDiscoverPlanets, fetchJoinedPlanets } from '../../utils/planet-api'
+import { fetchDiscoverPlanets, fetchJoinedPlanets, fetchMyPlanetPosts } from '../../utils/planet-api'
 import { getApiBaseUrl, request } from '../../utils/request'
 
 interface DebugActionItem {
@@ -29,6 +29,11 @@ const debugActions: DebugActionItem[] = [
     id: 'joined',
     title: '我加入的星球',
     desc: '查看当前用户真实已加入的星球列表',
+  },
+  {
+    id: 'my-posts',
+    title: '我的发帖',
+    desc: '查看当前登录账号在后端帖子表里的发帖记录',
   },
   {
     id: 'discover',
@@ -140,7 +145,7 @@ Page({
     })
   },
 
-  executeAction(action: string) {
+  async executeAction(action: string) {
     const sessionToken = this.data.sessionToken
 
     if (action === 'health') {
@@ -175,6 +180,52 @@ Page({
 
     if (action === 'discover') {
       return fetchDiscoverPlanets(sessionToken || '', 12)
+    }
+
+    if (action === 'my-posts') {
+      const session = getStoredSession()
+      const nickname = session && session.nickname ? session.nickname.trim() : ''
+      const userId = session && session.id ? session.id.trim() : ''
+      const sessionToken = session && session.sessionToken ? session.sessionToken.trim() : ''
+
+      if (!sessionToken) {
+        throw new Error('当前没有登录信息，请先去“我的”完成登录')
+      }
+
+      const response = await fetchMyPlanetPosts(sessionToken)
+      if (!response.ok || !Array.isArray(response.data)) {
+        throw new Error('读取我的发帖失败')
+      }
+
+      const minePosts = response.data.map((post) => {
+        const metadata = post.metadata && typeof post.metadata === 'object' ? post.metadata : {}
+        const tags = Array.isArray(metadata.tags)
+          ? metadata.tags.filter((item: unknown) => typeof item === 'string')
+          : []
+
+        return {
+          id: post.id || '',
+          planetId: post.groupId || '',
+          planetName: post.group && typeof post.group === 'object' ? post.group.name || '未识别星球' : '未识别星球',
+          authorId: post.author && typeof post.author === 'object' ? post.author.id || '' : '',
+          author: post.author && typeof post.author === 'object' ? post.author.nickname || nickname : nickname,
+          time: post.publishedAt || post.createdAt || '',
+          content: post.title || post.summary || post.contentText || '',
+          tags,
+          imageCount: Array.isArray(post.attachments) ? post.attachments.length : 0,
+          likeCount: Number(post.likeCount || 0),
+          commentCount: Number(post.commentCount || 0),
+        }
+      })
+
+      return {
+        ok: true,
+        source: 'backend-post-storage',
+        userId,
+        nickname,
+        total: minePosts.length,
+        posts: minePosts,
+      }
     }
 
     if (action === 'state') {

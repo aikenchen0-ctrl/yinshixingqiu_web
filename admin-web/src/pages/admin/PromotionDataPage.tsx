@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AdminLayout } from '../components/AdminLayout'
+import { AdminLayout } from '../../components/AdminLayout'
 import {
   getPromotionPageData,
   type PromotionAdviceItem,
   type PromotionFunnelItem,
   type PromotionPagePayload,
   type PromotionSummaryItem,
-} from '../services/promotionService'
+} from '../../services/promotionService'
 
 function SummaryCard({
   label,
@@ -93,7 +93,7 @@ function AdviceSection({
         <span className={`promo-advice-caret${collapsed ? ' is-collapsed' : ''}`}>⌃</span>
       </button>
       <div className={`promo-advice-body${collapsed ? ' is-collapsed' : ''}`}>
-        {rows.map(([label, text], index) => (
+        {rows.map(([label, text]: [string, string], index: number) => (
           <div className="promo-advice-row" key={label}>
             <span className="promo-advice-index">{index + 1}.</span>
             <div>
@@ -116,7 +116,7 @@ export function PromotionDataPage() {
   useEffect(() => {
     let active = true
 
-    getPromotionPageData().then((data) => {
+    getPromotionPageData().then((data: PromotionPagePayload) => {
       if (active) {
         setPageData(data)
       }
