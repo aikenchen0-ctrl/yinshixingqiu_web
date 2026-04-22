@@ -1,0 +1,16 @@
+[Unit]
+Description=Hermes Agent Gateway for %i
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i
+EnvironmentFile=/home/%i/.hermes/.env
+ExecStart=/home/%i/.local/bin/hermes gateway
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

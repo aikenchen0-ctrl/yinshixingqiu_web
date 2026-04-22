@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-04-03T01:04:12.0717669+08:00",
+  "type": "heartbeat",
+  "timeout_minutes": 30,
+  "pid": 23328,
+  "status": "running",
+  "prompt": "03-后端一期开发计划",
+  "started_at": "2026-04-03T00:34:11.7609650+08:00",
+  "pass": 1
+}

@@ -1,0 +1,15 @@
+{
+  "status": "running",
+  "stderr_path": "D:\\CodeDevelopment\\xueyinMiniapp\\.codex-ai-finish-plan-runs\\runs\\plan-01-全局推进版\\execution-01\\stderr-attempt-02.log",
+  "execution_total": 2,
+  "thread_id": "019d6d3f-171c-7f12-a4c3-9e20f502643f",
+  "timeout_minutes": 5,
+  "stdout_path": "D:\\CodeDevelopment\\xueyinMiniapp\\.codex-ai-finish-plan-runs\\runs\\plan-01-全局推进版\\execution-01\\stdout-attempt-02.log",
+  "elapsed_seconds": 5,
+  "execution_index": 1,
+  "attempt_index": 2,
+  "result_path": "D:\\CodeDevelopment\\xueyinMiniapp\\.codex-ai-finish-plan-runs\\runs\\plan-01-全局推进版\\execution-01\\result.md",
+  "prompt_name": "plan-01-全局推进版",
+  "prompt_index": 1,
+  "prompt_total": 10
+}

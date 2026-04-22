@@ -1,0 +1,104 @@
+<svg width="1600" height="1040" viewBox="0 0 1600 1040" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="160" y1="80" x2="1360" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#133A72"/>
+      <stop offset="0.55" stop-color="#0C2A58"/>
+      <stop offset="1" stop-color="#08162F"/>
+    </linearGradient>
+    <radialGradient id="orbA" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(292 204) rotate(43.5) scale(310 262)">
+      <stop stop-color="#B9F4FF" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#B9F4FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orbB" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1232 792) rotate(130) scale(332 256)">
+      <stop stop-color="#378FFF" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#378FFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="card" x1="210" y1="164" x2="1254" y2="932" gradientUnits="userSpaceOnUse">
+      <stop stop-color="white" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="white" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="line" x1="395" y1="462" x2="1130" y2="462" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#A8E8FF" stop-opacity="0.14"/>
+      <stop offset="0.48" stop-color="#86CFFF" stop-opacity="1"/>
+      <stop offset="1" stop-color="#B8FFF7" stop-opacity="0.14"/>
+    </linearGradient>
+    <filter id="blur" x="-100" y="-100" width="1800" height="1240" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="36"/>
+    </filter>
+    <filter id="shadow" x="140" y="100" width="1320" height="860" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="44" stdDeviation="48" flood-color="#07162E" flood-opacity="0.34"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1040" rx="54" fill="url(#bg)"/>
+  <g filter="url(#blur)">
+    <ellipse cx="286" cy="212" rx="218" ry="180" fill="url(#orbA)"/>
+    <ellipse cx="1276" cy="798" rx="268" ry="222" fill="url(#orbB)"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="182" y="144" width="1236" height="750" rx="46" fill="url(#card)" stroke="#CBE8FF" stroke-opacity="0.24"/>
+    <rect x="214" y="176" width="1172" height="686" rx="34" fill="#FFFFFF" fill-opacity="0.03" stroke="#CBE8FF" stroke-opacity="0.14"/>
+  </g>
+
+  <g opacity="0.78">
+    <path d="M398 461.5C488 404 566 383 655 383C743 383 815 420 878 444C938 468 1008 500 1125 462" stroke="url(#line)" stroke-width="2.5"/>
+    <path d="M395 574C499 520 565 496 670 496C770 496 855 538 925 567C998 598 1064 621 1191 566" stroke="url(#line)" stroke-width="2"/>
+    <path d="M441 332C590 291 699 291 814 332C927 373 1021 425 1178 391" stroke="url(#line)" stroke-width="1.8" opacity="0.65"/>
+  </g>
+
+  <circle cx="800" cy="474" r="172" fill="#76B6FF" fill-opacity="0.14" stroke="#AEE1FF" stroke-opacity="0.38" stroke-width="2"/>
+  <circle cx="800" cy="474" r="124" fill="none" stroke="#AEE1FF" stroke-opacity="0.28" stroke-width="2"/>
+  <ellipse cx="800" cy="474" rx="146" ry="70" fill="none" stroke="#AEE1FF" stroke-opacity="0.34" stroke-width="2"/>
+  <ellipse cx="800" cy="474" rx="84" ry="162" fill="none" stroke="#AEE1FF" stroke-opacity="0.24" stroke-width="2"/>
+  <path d="M654 474H946" stroke="#AEE1FF" stroke-opacity="0.28" stroke-width="2"/>
+  <path d="M800 312V636" stroke="#AEE1FF" stroke-opacity="0.18" stroke-width="2"/>
+
+  <g>
+    <circle cx="800" cy="474" r="14" fill="#EFF8FF"/>
+    <circle cx="800" cy="474" r="32" fill="#EFF8FF" fill-opacity="0.12"/>
+    <circle cx="800" cy="474" r="58" fill="#EFF8FF" fill-opacity="0.05"/>
+  </g>
+
+  <g>
+    <circle cx="566" cy="398" r="10" fill="#9BE0FF"/>
+    <circle cx="1016" cy="392" r="10" fill="#B2FFF6"/>
+    <circle cx="1118" cy="462" r="10" fill="#9BE0FF"/>
+    <circle cx="1186" cy="567" r="10" fill="#B2FFF6"/>
+    <circle cx="445" cy="332" r="8" fill="#B2FFF6"/>
+    <circle cx="395" cy="574" r="8" fill="#9BE0FF"/>
+    <circle cx="534" cy="612" r="9" fill="#9BE0FF"/>
+    <circle cx="1033" cy="594" r="9" fill="#B2FFF6"/>
+  </g>
+
+  <g>
+    <rect x="292" y="252" width="266" height="182" rx="28" fill="#FFFFFF" fill-opacity="0.08" stroke="#CFE9FF" stroke-opacity="0.16"/>
+    <rect x="324" y="286" width="120" height="12" rx="6" fill="#CDEAFF" fill-opacity="0.78"/>
+    <rect x="324" y="316" width="196" height="8" rx="4" fill="#A3C8EE" fill-opacity="0.48"/>
+    <rect x="324" y="346" width="166" height="8" rx="4" fill="#A3C8EE" fill-opacity="0.36"/>
+    <path d="M326 392L370 360L404 384L448 338L488 354L526 304" stroke="#8DE6FF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g>
+    <rect x="1078" y="250" width="228" height="146" rx="26" fill="#FFFFFF" fill-opacity="0.08" stroke="#CFE9FF" stroke-opacity="0.16"/>
+    <rect x="1110" y="284" width="82" height="14" rx="7" fill="#D8F2FF" fill-opacity="0.86"/>
+    <rect x="1110" y="318" width="162" height="8" rx="4" fill="#A3C8EE" fill-opacity="0.48"/>
+    <rect x="1110" y="344" width="118" height="8" rx="4" fill="#A3C8EE" fill-opacity="0.36"/>
+    <circle cx="1232" cy="330" r="38" fill="#9BE0FF" fill-opacity="0.14" stroke="#B8F1FF" stroke-opacity="0.42" stroke-width="2"/>
+    <path d="M1232 300V360M1202 330H1262" stroke="#D6F2FF" stroke-width="2"/>
+  </g>
+
+  <g>
+    <rect x="1060" y="620" width="292" height="168" rx="28" fill="#FFFFFF" fill-opacity="0.08" stroke="#CFE9FF" stroke-opacity="0.16"/>
+    <rect x="1092" y="654" width="104" height="14" rx="7" fill="#D8F2FF" fill-opacity="0.84"/>
+    <rect x="1092" y="688" width="222" height="8" rx="4" fill="#A3C8EE" fill-opacity="0.42"/>
+    <rect x="1092" y="714" width="182" height="8" rx="4" fill="#A3C8EE" fill-opacity="0.3"/>
+    <path d="M1094 752C1164 704 1234 704 1310 742" stroke="#9BE0FF" stroke-width="4" stroke-linecap="round"/>
+    <path d="M1128 738L1160 706L1196 730L1244 690L1294 726" stroke="#B2FFF6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g opacity="0.8">
+    <text x="310" y="866" fill="#EAF7FF" fill-opacity="0.8" font-family="Lexend, Arial, sans-serif" font-size="44" font-weight="600" letter-spacing="-1.5">Research Driven Interface</text>
+    <text x="312" y="910" fill="#A8C9EA" fill-opacity="0.92" font-family="Source Sans 3, Arial, sans-serif" font-size="24" letter-spacing="0.5">Global collaboration, knowledge structure and alliance layer visualized in one frame.</text>
+  </g>
+</svg>

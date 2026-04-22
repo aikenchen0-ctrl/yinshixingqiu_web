@@ -1,0 +1,2741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>血饮智参（深圳）科技有限公司官网</title>
+  <meta
+    name="description"
+    content="血饮智参（深圳）科技有限公司，聚焦宏观战略、产业研究、企业家决策支持、联盟协同与全球化表达。"
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --bg: #edf6ff;
+      --bg-soft: #e4f0ff;
+      --paper: rgba(255, 255, 255, 0.56);
+      --paper-strong: rgba(255, 255, 255, 0.74);
+      --ink: #0b2340;
+      --ink-soft: #5a7695;
+      --brand: #1172ff;
+      --brand-deep: #0a4fd6;
+      --brand-soft: rgba(17, 114, 255, 0.1);
+      --brand-cyan: #73d6ff;
+      --line: rgba(107, 154, 219, 0.18);
+      --shadow: 0 24px 72px rgba(69, 112, 176, 0.12);
+      --panel: rgba(7, 25, 54, 0.72);
+      --panel-top: rgba(10, 34, 73, 0.82);
+      --panel-ink: #f5fbff;
+      --panel-muted: #9dbfe4;
+      --map-land: #2e5079;
+      --map-land-hover: #42688f;
+      --map-china: #76b6ff;
+      --map-line-primary: #74d1ff;
+      --map-line-secondary: #a5fff2;
+      --map-dot-primary: #9be0ff;
+      --map-dot-secondary: #b2fff6;
+      --map-dot-hub: #eff8ff;
+      --map-city: #d6f2ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Source Sans 3", sans-serif;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(115, 214, 255, 0.26), transparent 24%),
+        radial-gradient(circle at 92% 14%, rgba(17, 114, 255, 0.16), transparent 24%),
+        radial-gradient(circle at 48% 82%, rgba(255, 255, 255, 0.62), transparent 32%),
+        linear-gradient(180deg, #f7fbff 0%, #edf6ff 52%, #e8f2ff 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background:
+        linear-gradient(90deg, rgba(95, 146, 214, 0.06) 1px, transparent 1px),
+        linear-gradient(rgba(95, 146, 214, 0.06) 1px, transparent 1px);
+      background-size: 68px 68px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.36), transparent 86%);
+    }
+
+    body::after {
+      background:
+        radial-gradient(circle at 20% 26%, rgba(255, 255, 255, 0.7), transparent 18%),
+        radial-gradient(circle at 82% 36%, rgba(255, 255, 255, 0.58), transparent 16%);
+      opacity: 0.88;
+      animation: sky-drift 16s ease-in-out infinite alternate;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    a,
+    button {
+      cursor: pointer;
+    }
+
+    :focus-visible {
+      outline: 3px solid rgba(17, 114, 255, 0.24);
+      outline-offset: 4px;
+      border-radius: 18px;
+    }
+
+    .skip-link {
+      position: fixed;
+      left: 16px;
+      top: -56px;
+      z-index: 100;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: var(--brand);
+      color: #f8fcff;
+      transition: top 0.2s ease;
+    }
+
+    .skip-link:focus {
+      top: 16px;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 56px;
+    }
+
+    .site-nav {
+      position: sticky;
+      top: 16px;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.38));
+      backdrop-filter: blur(22px) saturate(160%);
+      box-shadow: 0 14px 36px rgba(91, 128, 184, 0.12);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      position: relative;
+      flex: 0 0 auto;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      color: #f6fbff;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.28), transparent 38%),
+        linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%);
+      box-shadow: 0 22px 40px rgba(17, 114, 255, 0.2);
+      font-family: "Lexend", sans-serif;
+      font-size: 23px;
+      font-weight: 600;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      border-radius: 13px;
+    }
+
+    .brand-copy {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+
+    .brand-copy strong {
+      display: block;
+      font-family: "Lexend", sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-copy span {
+      color: var(--ink-soft);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(124, 168, 226, 0.16);
+      color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.32);
+      font-size: 13px;
+      transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+    }
+
+    .nav-links a:hover {
+      transform: translateY(-1px);
+      border-color: rgba(17, 114, 255, 0.22);
+      background: rgba(255, 255, 255, 0.58);
+    }
+
+    .hero {
+      padding: clamp(38px, 5vw, 70px) 0 34px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.16fr) minmax(360px, 430px);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .hero-copy {
+      display: grid;
+      align-content: start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      color: var(--brand);
+      border: 1px solid rgba(115, 214, 255, 0.18);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.54), rgba(255, 255, 255, 0.32));
+      backdrop-filter: blur(20px) saturate(150%);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #aef0ff 0%, var(--brand) 100%);
+      box-shadow: 0 0 18px rgba(17, 114, 255, 0.24);
+    }
+
+    .hero-company {
+      margin: 18px 0 10px;
+      color: #6a8ab0;
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 10ch;
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(52px, 6.4vw, 88px);
+      line-height: 0.94;
+      letter-spacing: -0.065em;
+      font-weight: 600;
+    }
+
+    .title-line {
+      display: block;
+    }
+
+    .title-line + .title-line {
+      margin-top: 8px;
+    }
+
+    .title-line.accent {
+      background: linear-gradient(135deg, #0b6dff 0%, #73d6ff 62%, #ecfbff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-lead {
+      margin: 18px 0 0;
+      max-width: 34ch;
+      color: var(--ink-soft);
+      font-size: clamp(15px, 1.7vw, 17px);
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 14px;
+      font-weight: 700;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button.primary {
+      color: #f7fbff;
+      background: linear-gradient(135deg, #1d8cff 0%, #0a56de 100%);
+      box-shadow: 0 18px 38px rgba(17, 114, 255, 0.22);
+    }
+
+    .button.secondary {
+      color: var(--ink);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.4));
+      border-color: rgba(113, 165, 230, 0.18);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+
+    .hero-stats {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-stat {
+      padding: 16px 18px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.4));
+      backdrop-filter: blur(20px) saturate(150%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-stat strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--brand);
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(32px, 4vw, 44px);
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .hero-stat span {
+      display: block;
+      margin-bottom: 0;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hero-stat small {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: rgba(17, 114, 255, 0.08);
+      color: #4678b8;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .hero-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: 34px;
+      color: var(--panel-ink);
+      background:
+        radial-gradient(circle at top right, rgba(115, 214, 255, 0.18), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(17, 114, 255, 0.2), transparent 38%),
+        linear-gradient(180deg, var(--panel-top) 0%, var(--panel) 100%);
+      border: 1px solid rgba(167, 209, 255, 0.1);
+      backdrop-filter: blur(22px) saturate(140%);
+      box-shadow: 0 30px 80px rgba(20, 42, 82, 0.24);
+    }
+
+    .glass-sheen {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-sheen::after {
+      content: "";
+      position: absolute;
+      inset: -30% auto -30% -45%;
+      width: 42%;
+      transform: rotate(18deg);
+      background: linear-gradient(180deg, transparent 0%, rgba(255, 255, 255, 0.22) 50%, transparent 100%);
+      opacity: 0.55;
+      pointer-events: none;
+      animation: sheen-slide 8.5s linear infinite;
+    }
+
+    .hero-panel::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border: 1px solid rgba(202, 227, 255, 0.12);
+      border-radius: 26px;
+      pointer-events: none;
+    }
+
+    .hero-panel-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .panel-label {
+      color: rgba(206, 229, 255, 0.72);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .hero-panel h2 {
+      margin: 8px 0 0;
+      max-width: 11ch;
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(30px, 4vw, 42px);
+      line-height: 1.02;
+      letter-spacing: -0.05em;
+      font-weight: 600;
+    }
+
+    .panel-chip {
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(194, 225, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(235, 247, 255, 0.88);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .panel-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+      min-height: 290px;
+      margin-bottom: 18px;
+      border-radius: 28px;
+      border: 1px solid rgba(196, 224, 255, 0.12);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+      backdrop-filter: blur(18px);
+      box-shadow: 0 18px 50px rgba(20, 42, 82, 0.18);
+      animation: hero-float 12s ease-in-out infinite;
+    }
+
+    .hero-visual img {
+      width: 100%;
+      height: 100%;
+      min-height: 290px;
+      display: block;
+      object-fit: cover;
+      transform: scale(1.02);
+    }
+
+    .floating-chip {
+      position: absolute;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(196, 224, 255, 0.16);
+      background: rgba(255, 255, 255, 0.12);
+      color: #eef8ff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      backdrop-filter: blur(18px) saturate(160%);
+      box-shadow: 0 14px 34px rgba(12, 31, 64, 0.18);
+      animation: chip-float 8s ease-in-out infinite;
+    }
+
+    .floating-chip::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #b9f2ff 0%, #5bb8ff 100%);
+      box-shadow: 0 0 16px rgba(115, 214, 255, 0.42);
+    }
+
+    .floating-chip.chip-a {
+      top: 16px;
+      right: 18px;
+      animation-delay: -1.2s;
+    }
+
+    .floating-chip.chip-b {
+      left: 18px;
+      bottom: 78px;
+      animation-delay: -3.2s;
+    }
+
+    .floating-chip.chip-c {
+      right: 24px;
+      bottom: 18px;
+      animation-delay: -5.2s;
+    }
+
+    .hero-visual-note {
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      z-index: 2;
+      max-width: 190px;
+      padding: 12px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(196, 224, 255, 0.12);
+      background: rgba(8, 29, 59, 0.44);
+      color: rgba(235, 246, 255, 0.9);
+      font-size: 11.5px;
+      line-height: 1.6;
+      backdrop-filter: blur(20px);
+    }
+
+    .panel-card {
+      padding: 16px 16px 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(196, 224, 255, 0.1);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      backdrop-filter: blur(16px);
+    }
+
+    .panel-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #edf7ff;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .panel-card p {
+      margin: 0;
+      color: rgba(219, 236, 255, 0.76);
+      font-size: 12.5px;
+      line-height: 1.65;
+    }
+
+    .hero-quote {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      padding-top: 16px;
+      border-top: 1px solid rgba(196, 224, 255, 0.1);
+      color: rgba(228, 241, 255, 0.82);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .hero-stat,
+    .approach-card,
+    .service-card,
+    .audience-card,
+    .year-card,
+    .research-card,
+    .info-card,
+    .source-link,
+    .country-item {
+      transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, background 0.28s ease;
+    }
+
+    .hero-stat:hover,
+    .approach-card:hover,
+    .service-card:hover,
+    .audience-card:hover,
+    .year-card:hover,
+    .research-card:hover,
+    .info-card:hover,
+    .source-link:hover,
+    .country-item:hover {
+      transform: translateY(-6px);
+      border-color: rgba(105, 171, 250, 0.28);
+      box-shadow: 0 28px 64px rgba(44, 95, 167, 0.16);
+    }
+
+    section {
+      margin-top: 44px;
+    }
+
+    .section-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(240px, 0.62fr);
+      gap: 10px 22px;
+      align-items: center;
+      max-width: none;
+      margin-bottom: 22px;
+    }
+
+    .section-label {
+      grid-column: 1 / -1;
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      max-width: 13ch;
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.05;
+      letter-spacing: -0.055em;
+      font-weight: 600;
+    }
+
+    .section-heading p {
+      margin: 0;
+      max-width: 28ch;
+      justify-self: end;
+      color: var(--ink-soft);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .approach-grid,
+    .service-grid,
+    .audience-grid,
+    .year-grid,
+    .research-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .approach-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .approach-card,
+    .service-card,
+    .audience-card,
+    .year-card,
+    .research-card,
+    .info-card {
+      border-radius: 30px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.38)),
+        rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px) saturate(160%);
+      box-shadow: var(--shadow);
+    }
+
+    .approach-card {
+      padding: 20px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .approach-card small {
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .approach-card h3,
+    .service-card h3,
+    .audience-card h3,
+    .research-card h3 {
+      margin: 0;
+      font-family: "Lexend", sans-serif;
+      font-size: 24px;
+      line-height: 1.12;
+      letter-spacing: -0.045em;
+      font-weight: 600;
+    }
+
+    .approach-card p,
+    .service-card p,
+    .audience-card p,
+    .research-card p,
+    .info-card p {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .approach-card.featured {
+      color: var(--panel-ink);
+      background:
+        radial-gradient(circle at top right, rgba(115, 214, 255, 0.18), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(17, 114, 255, 0.16), transparent 32%),
+        linear-gradient(180deg, rgba(10, 37, 77, 0.92) 0%, rgba(8, 24, 52, 0.88) 100%);
+      border-color: rgba(194, 225, 255, 0.12);
+      box-shadow: 0 26px 70px rgba(33, 67, 121, 0.18);
+    }
+
+    .approach-card.featured p,
+    .approach-card.featured small {
+      color: rgba(218, 236, 255, 0.76);
+    }
+
+    .approach-card.featured small {
+      color: rgba(205, 236, 255, 0.86);
+    }
+
+    .global-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, 410px);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .map-shell {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: 38px;
+      color: var(--panel-ink);
+      background:
+        radial-gradient(circle at top left, rgba(115, 214, 255, 0.18), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(17, 114, 255, 0.18), transparent 34%),
+        linear-gradient(180deg, rgba(10, 35, 75, 0.9) 0%, rgba(8, 24, 52, 0.94) 100%);
+      border: 1px solid rgba(179, 220, 255, 0.12);
+      backdrop-filter: blur(24px) saturate(150%);
+      box-shadow: 0 32px 90px rgba(28, 56, 103, 0.24);
+    }
+
+    .map-shell::after {
+      content: "";
+      position: absolute;
+      inset: 16px;
+      border: 1px solid rgba(196, 224, 255, 0.1);
+      border-radius: 28px;
+      pointer-events: none;
+    }
+
+    .map-header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .map-header h3 {
+      margin: 8px 0 0;
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(30px, 3vw, 42px);
+      line-height: 1.04;
+      letter-spacing: -0.05em;
+      font-weight: 600;
+    }
+
+    .map-header p,
+    .console-hint,
+    .map-note {
+      margin: 0;
+      color: rgba(218, 236, 255, 0.72);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .map-actions {
+      display: grid;
+      justify-items: end;
+      gap: 10px;
+      min-width: 248px;
+    }
+
+    .view-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid rgba(196, 224, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
+    }
+
+    .view-button,
+    .city-toggle,
+    .filter {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      transition: transform 0.22s ease, background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+    }
+
+    .view-button {
+      padding: 9px 14px;
+      color: rgba(221, 238, 255, 0.74);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .view-button:hover,
+    .city-toggle:hover,
+    .filter:hover {
+      transform: translateY(-1px);
+    }
+
+    .view-button.active {
+      color: #0b2340;
+      background: linear-gradient(135deg, #e9f8ff 0%, #9de1ff 100%);
+    }
+
+    .city-toggle {
+      padding: 11px 15px;
+      border: 1px solid rgba(196, 224, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(236, 246, 255, 0.88);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .city-toggle.active {
+      color: #0b2340;
+      border-color: transparent;
+      background: linear-gradient(135deg, #ebf9ff 0%, #a8e5ff 100%);
+    }
+
+    #chart {
+      position: relative;
+      z-index: 1;
+      height: min(64vh, 620px);
+      margin-top: 18px;
+      border-radius: 28px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 30% 35%, rgba(255, 255, 255, 0.07), transparent 26%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.08));
+    }
+
+    .map-fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+      color: rgba(236, 246, 255, 0.84);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .map-footer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(196, 224, 255, 0.1);
+    }
+
+    .map-note strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #edf7ff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .map-badge {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(196, 224, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
+    }
+
+    .map-badge-mark {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      color: #f6fbff;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.28), transparent 38%),
+        linear-gradient(135deg, var(--brand) 0%, var(--brand-deep) 100%);
+      font-family: "Lexend", sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .map-badge-text {
+      display: grid;
+      gap: 2px;
+    }
+
+    .map-badge-text strong {
+      color: #edf7ff;
+      font-size: 13px;
+    }
+
+    .map-badge-text span {
+      color: rgba(221, 238, 255, 0.72);
+      font-size: 11px;
+    }
+
+    .info-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .info-card {
+      padding: 22px;
+    }
+
+    .info-card h3 {
+      margin: 0 0 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-family: "Lexend", sans-serif;
+      font-size: 28px;
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+      font-weight: 600;
+    }
+
+    .info-card h3 span {
+      color: var(--ink-soft);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-family: "Source Sans 3", sans-serif;
+      font-weight: 700;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .overview-stat {
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(121, 170, 233, 0.16);
+      background: var(--paper-strong);
+    }
+
+    .overview-stat strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--brand);
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .overview-stat span {
+      display: block;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .filter {
+      padding: 10px 14px;
+      border: 1px solid rgba(121, 170, 233, 0.16);
+      background: var(--paper-strong);
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .filter.active {
+      color: #f7fbff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #1d8cff 0%, #0a56de 100%);
+    }
+
+    .list-head {
+      margin-bottom: 14px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .country-list {
+      display: grid;
+      gap: 10px;
+      max-height: 430px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .country-list::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .country-list::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(17, 114, 255, 0.22);
+    }
+
+    .country-item {
+      display: grid;
+      gap: 8px;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(121, 170, 233, 0.16);
+      background: var(--paper-strong);
+    }
+
+    .country-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .country-name {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .country-en {
+      margin-top: 3px;
+      color: var(--ink-soft);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .country-meta {
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .pill {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid currentColor;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.36);
+    }
+
+    .source-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .source-link {
+      display: block;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(121, 170, 233, 0.16);
+      background: var(--paper-strong);
+      transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+
+    .source-link:hover {
+      transform: translateY(-2px);
+      border-color: rgba(17, 114, 255, 0.22);
+    }
+
+    .source-link strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .source-link span {
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .service-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .service-card,
+    .audience-card,
+    .research-card {
+      padding: 20px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .service-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      color: var(--brand);
+      background: var(--brand-soft);
+      font-family: "Lexend", sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .service-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: fit-content;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(17, 114, 255, 0.08);
+      color: #3b78c0;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .archive-shell {
+      padding: 24px;
+      border-radius: 38px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0.38)),
+        rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px) saturate(160%);
+      box-shadow: var(--shadow);
+    }
+
+    .archive-layout {
+      display: grid;
+      grid-template-columns: minmax(290px, 0.92fr) minmax(0, 1.08fr);
+      gap: 18px;
+    }
+
+    .archive-lead {
+      padding: 24px;
+      border-radius: 30px;
+      color: var(--panel-ink);
+      background:
+        radial-gradient(circle at top right, rgba(115, 214, 255, 0.18), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(17, 114, 255, 0.16), transparent 32%),
+        linear-gradient(180deg, rgba(10, 37, 77, 0.92) 0%, rgba(8, 24, 52, 0.88) 100%);
+      box-shadow: 0 26px 70px rgba(33, 67, 121, 0.18);
+    }
+
+    .archive-lead strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #eef7ff;
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(64px, 8vw, 90px);
+      line-height: 0.9;
+      letter-spacing: -0.05em;
+      font-weight: 600;
+    }
+
+    .archive-lead p {
+      margin: 0;
+      color: rgba(220, 238, 255, 0.78);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding: 16px 16px 16px 20px;
+      border-radius: 22px;
+      border: 1px solid rgba(196, 224, 255, 0.1);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 22px;
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #8fe0ff;
+      box-shadow: 0 0 18px rgba(115, 214, 255, 0.5);
+    }
+
+    .timeline-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #eef7ff;
+      font-size: 16px;
+    }
+
+    .timeline-item span {
+      display: block;
+      color: rgba(220, 238, 255, 0.74);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .archive-content {
+      display: grid;
+      gap: 16px;
+    }
+
+    .story-media-card,
+    .cta-media-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      border: 1px solid rgba(121, 170, 233, 0.18);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.38));
+      backdrop-filter: blur(24px) saturate(160%);
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .story-media-card:hover,
+    .cta-media-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(98, 169, 249, 0.28);
+      box-shadow: 0 28px 68px rgba(44, 95, 167, 0.16);
+    }
+
+    .story-media-card img,
+    .cta-media-card img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      transform: scale(1.02);
+      transition: transform 0.45s ease;
+    }
+
+    .story-media-card:hover img,
+    .cta-media-card:hover img {
+      transform: scale(1.06);
+    }
+
+    .story-media-card img {
+      aspect-ratio: 16 / 8.8;
+    }
+
+    .cta-media-card img {
+      aspect-ratio: 4 / 3;
+    }
+
+    .story-media-caption,
+    .cta-media-caption {
+      padding: 16px 18px 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .story-media-caption strong,
+    .cta-media-caption strong {
+      font-family: "Lexend", sans-serif;
+      font-size: 18px;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
+      font-weight: 600;
+    }
+
+    .story-media-caption span,
+    .cta-media-caption span {
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .year-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .year-card {
+      padding: 18px;
+    }
+
+    .year-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--brand);
+      font-family: "Lexend", sans-serif;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .year-card span {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .year-card small {
+      color: var(--ink-soft);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .research-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .audience-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .cta-band {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+      align-items: center;
+      gap: 24px;
+      margin-top: 18px;
+      padding: 28px;
+      border-radius: 34px;
+      color: #f6fbff;
+      background:
+        radial-gradient(circle at top right, rgba(115, 214, 255, 0.22), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(255, 255, 255, 0.08), transparent 30%),
+        linear-gradient(135deg, rgba(18, 109, 255, 0.94) 0%, rgba(10, 80, 214, 0.92) 58%, rgba(8, 46, 134, 0.96) 100%);
+      border: 1px solid rgba(176, 219, 255, 0.14);
+      backdrop-filter: blur(22px) saturate(150%);
+      box-shadow: 0 28px 80px rgba(17, 114, 255, 0.18);
+    }
+
+    .cta-copy {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cta-side {
+      display: grid;
+      gap: 14px;
+      justify-items: stretch;
+    }
+
+    .cta-band h3 {
+      margin: 0 0 12px;
+      max-width: 10ch;
+      font-family: "Lexend", sans-serif;
+      font-size: clamp(34px, 5vw, 52px);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      font-weight: 600;
+    }
+
+    .cta-band p {
+      margin: 0;
+      max-width: 58ch;
+      color: rgba(232, 244, 255, 0.82);
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .cta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: flex-start;
+    }
+
+    .cta-actions .button.primary {
+      background: linear-gradient(135deg, #ffffff 0%, #d9f1ff 100%);
+      color: #0b2340;
+      box-shadow: none;
+    }
+
+    .cta-actions .button.secondary {
+      color: #f6fbff;
+      border-color: rgba(196, 224, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      margin-top: 44px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-soft);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .footer-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .footer-brand .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      font-size: 22px;
+      box-shadow: 0 14px 28px rgba(17, 114, 255, 0.16);
+    }
+
+    .footer-brand .brand-mark::after {
+      inset: 5px;
+      border-radius: 10px;
+    }
+
+    .footer-brand-copy {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .footer-brand-copy strong {
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .footer-brand-copy span {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    .delay-1 {
+      animation-delay: 0.08s;
+    }
+
+    .delay-2 {
+      animation-delay: 0.16s;
+    }
+
+    .delay-3 {
+      animation-delay: 0.24s;
+    }
+
+    @keyframes rise {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes sky-drift {
+      from {
+        transform: translate3d(-2%, 0, 0) scale(1);
+      }
+      to {
+        transform: translate3d(2%, -1%, 0) scale(1.04);
+      }
+    }
+
+    @keyframes hero-float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @keyframes chip-float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes sheen-slide {
+      0% {
+        transform: translateX(-160%) rotate(18deg);
+      }
+      50%, 100% {
+        transform: translateX(360%) rotate(18deg);
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .hero-grid,
+      .global-layout,
+      .archive-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading p {
+        max-width: 56ch;
+        justify-self: start;
+      }
+
+      .approach-grid,
+      .service-grid,
+      .audience-grid,
+      .year-grid,
+      .research-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .map-actions {
+        justify-items: start;
+      }
+
+      .cta-band {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+      }
+
+      .cta-actions {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .page {
+        width: min(100%, calc(100% - 20px));
+      }
+
+      .site-nav,
+      .footer,
+      .map-header,
+      .map-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav-links {
+        justify-content: flex-start;
+      }
+
+      .hero-stats,
+      .overview-grid,
+      .approach-grid,
+      .service-grid,
+      .audience-grid,
+      .year-grid,
+      .research-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions,
+      .cta-actions {
+        width: 100%;
+      }
+
+      .hero-visual-note {
+        max-width: 180px;
+      }
+
+      .hero-actions .button,
+      .cta-actions .button {
+        width: 100%;
+      }
+
+      #chart {
+        height: 460px;
+      }
+
+      .map-actions {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .view-switcher {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .view-button {
+        flex: 1 1 auto;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .site-nav,
+      .hero-panel,
+      .map-shell,
+      .archive-shell,
+      .info-card,
+      .approach-card,
+      .service-card,
+      .audience-card,
+      .research-card,
+      .year-card,
+      .cta-band {
+        border-radius: 24px;
+      }
+
+      .brand-mark {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+      }
+
+      .hero-company {
+        letter-spacing: 0.08em;
+      }
+
+      .section-heading h2 {
+        font-size: 40px;
+        max-width: none;
+      }
+
+      .map-shell,
+      .hero-panel,
+      .archive-shell,
+      .cta-band {
+        padding: 18px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">跳到主要内容</a>
+
+  <div class="page">
+    <nav class="site-nav reveal">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">血</div>
+        <div class="brand-copy">
+          <strong>血饮智参（深圳）科技有限公司</strong>
+          <span>XUEYIN ZHICAN SHENZHEN TECH</span>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="#approach">公司简介</a>
+        <a href="#global">全球网络</a>
+        <a href="#services">核心业务</a>
+        <a href="#archive">研究沉淀</a>
+        <a href="#alliance">联盟生态</a>
+      </div>
+    </nav>
+
+    <header class="hero" id="hero">
+      <div class="hero-grid">
+        <div class="hero-copy reveal">
+          <div class="eyebrow">Research · Strategy · Alliance · Global Network</div>
+          <div class="hero-company">血饮智参（深圳）科技有限公司</div>
+          <h1>
+            <span class="title-line">研究洞察驱动决策</span>
+            <span class="title-line accent">全球协同连接增长</span>
+          </h1>
+          <p class="hero-lead">
+            以研究为底座，为企业家、高管团队与跨境合作伙伴提供持续决策支持。
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#services">业务矩阵</a>
+            <a class="button secondary" href="#global">全球网络</a>
+            <a class="button secondary" href="#archive">研究沉淀</a>
+          </div>
+          <div class="hero-stats">
+            <article class="hero-stat">
+              <strong>296</strong>
+              <span>历史研究稿</span>
+              <small>2015-2020</small>
+            </article>
+            <article class="hero-stat">
+              <strong>6</strong>
+              <span>核心业务线</span>
+              <small>Research + Service</small>
+            </article>
+            <article class="hero-stat">
+              <strong>21</strong>
+              <span>金砖国家网络</span>
+              <small>BRICS+</small>
+            </article>
+            <article class="hero-stat">
+              <strong>24</strong>
+              <span>一带一路节点</span>
+              <small>Global Nodes</small>
+            </article>
+          </div>
+        </div>
+
+        <aside class="hero-panel reveal delay-1" aria-label="公司核心能力">
+          <div class="hero-panel-top">
+            <div>
+              <div class="panel-label">Core Capabilities</div>
+              <h2>研究底座与全球节点一屏呈现。</h2>
+            </div>
+            <div class="panel-chip">Core Overview</div>
+          </div>
+
+          <div class="hero-visual glass-sheen">
+            <img src="./assets/hero-network.svg" alt="全球研究与协同网络主视觉图" loading="eager" />
+            <div class="hero-visual-note">从深圳出发，连接研究议题、国际网络与合作资源。</div>
+            <div class="floating-chip chip-a">21 国网络</div>
+            <div class="floating-chip chip-b">研究底座</div>
+            <div class="floating-chip chip-c">Alliance Network</div>
+          </div>
+
+          <div class="panel-grid">
+            <article class="panel-card">
+              <strong>研究底座</strong>
+              <p>沉淀宏观、产业、地缘与贸易议题，支撑专题研究与简报输出。</p>
+            </article>
+            <article class="panel-card">
+              <strong>决策支持</strong>
+              <p>服务企业家与管理团队，提供闭门研讨、议题判断与内部共学。</p>
+            </article>
+            <article class="panel-card">
+              <strong>联盟与全球网络</strong>
+              <p>连接联盟资源、金砖网络与一带一路节点，承接跨境协同场景。</p>
+            </article>
+          </div>
+
+          <p class="hero-quote">
+            面向企业家、高管团队与跨境合作伙伴。
+          </p>
+        </aside>
+      </div>
+    </header>
+
+    <main id="main-content">
+      <section id="approach" class="reveal delay-1">
+        <div class="section-heading">
+          <div class="section-label">Company Profile</div>
+          <h2>研究底座、组织协同、全球视野。</h2>
+          <p>面向企业家与管理团队，提供持续决策支持。</p>
+        </div>
+
+        <div class="approach-grid">
+          <article class="approach-card featured">
+            <small>01 · 定位</small>
+            <h3>战略研究与决策支持</h3>
+            <p>服务企业家、高管团队与产业合作方。</p>
+          </article>
+          <article class="approach-card">
+            <small>02 · 研究</small>
+            <h3>宏观、产业、地缘、贸易</h3>
+            <p>把长期议题沉淀成专题判断与研究框架。</p>
+          </article>
+          <article class="approach-card">
+            <small>03 · 协同</small>
+            <h3>私董会、商研院、读书会</h3>
+            <p>让研究、共学与资源连接形成常态机制。</p>
+          </article>
+          <article class="approach-card">
+            <small>04 · 全球</small>
+            <h3>金砖网络与一带一路节点</h3>
+            <p>服务跨境合作、国际资源连接与项目沟通。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="global" class="reveal delay-2">
+        <div class="section-heading">
+          <div class="section-label">Global Network</div>
+          <h2>从中国出发，连接全球节点。</h2>
+          <p>金砖与一带一路双视图，直观看到覆盖范围与协同半径。</p>
+        </div>
+
+        <div class="global-layout">
+          <section class="map-shell">
+            <div class="map-header">
+              <div>
+                <div class="panel-label">Interactive Map</div>
+                <h3 id="map-title-text">中国金砖全球辐射网络</h3>
+                <p id="map-title-desc">以中国为核心源点，连接成员国、伙伴国与重点城市。</p>
+              </div>
+              <div class="map-actions">
+                <div class="view-switcher" id="view-switcher">
+                  <button class="view-button active" type="button" data-view="brics">金砖网络</button>
+                  <button class="view-button" type="button" data-view="bri">一带一路</button>
+                </div>
+                <button class="city-toggle" id="city-toggle" type="button">城市标注：关</button>
+                <p class="console-hint" id="city-tip">开启后可显示主要城市标注。</p>
+              </div>
+            </div>
+
+            <div id="chart" aria-label="全球辐射网络地图"></div>
+
+            <div class="map-footer">
+              <div class="map-note">
+                <strong id="dataset-subtitle">覆盖 21 国</strong>
+                <span>支持拖拽与缩放，展示国际协同网络。</span>
+              </div>
+
+              <div class="map-badge">
+                <div class="map-badge-mark" aria-hidden="true">血</div>
+                <div class="map-badge-text">
+                  <strong>血饮智参（深圳）科技有限公司</strong>
+                  <span>Research · Alliance · Global Strategy</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="info-stack">
+            <section class="info-card">
+              <h3>规模概览 <span>Overview</span></h3>
+              <p>统计数据与地图视图同步更新。</p>
+              <div class="overview-grid">
+                <div class="overview-stat">
+                  <strong id="stat-total">21</strong>
+                  <span id="stat-total-label">全部国家</span>
+                </div>
+                <div class="overview-stat">
+                  <strong id="stat-primary">11</strong>
+                  <span id="stat-primary-label">成员国</span>
+                </div>
+                <div class="overview-stat">
+                  <strong id="stat-secondary">10</strong>
+                  <span id="stat-secondary-label">伙伴国</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="info-card">
+              <h3><span id="list-card-title-text">国家列表</span> <span>Filterable List</span></h3>
+              <div class="filters">
+                <button class="filter active" id="filter-all" type="button" data-filter="all">全部 21 国</button>
+                <button class="filter" id="filter-primary" type="button" data-filter="member">仅成员国</button>
+                <button class="filter" id="filter-secondary" type="button" data-filter="partner">仅伙伴国</button>
+              </div>
+              <div class="list-head" id="list-head">当前展示 21 国 · 成员国 11 · 伙伴国 10</div>
+              <div class="country-list" id="country-list"></div>
+            </section>
+
+            <section class="info-card">
+              <h3>来源口径 <span>Sources</span></h3>
+              <div class="source-list">
+                <a class="source-link" href="https://brics.br/en/about-the-brics" target="_blank" rel="noreferrer">
+                  <strong>BRICS 官方介绍页</strong>
+                  <span>用于核对成员国与伙伴国构成。</span>
+                </a>
+                <a class="source-link" href="https://brics.br/en/documents/presidency-documents/250705-brics-leaders-declaration-en.pdf/@@download/file" target="_blank" rel="noreferrer">
+                  <strong>里约宣言 PDF</strong>
+                  <span>补充伙伴国与扩容口径。</span>
+                </a>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section id="services" class="reveal delay-2">
+        <div class="section-heading">
+          <div class="section-label">Business Matrix</div>
+          <h2>六条业务线，一套研究底座。</h2>
+          <p>从专题研究到联盟协同，形成统一服务界面。</p>
+        </div>
+
+        <div class="service-grid">
+          <article class="service-card">
+            <div class="service-number">01</div>
+            <div class="service-tag">Research Support</div>
+            <h3>血饮 AI 智囊团</h3>
+            <p>提供趋势梳理、议题归纳与研究型简报支持。</p>
+          </article>
+          <article class="service-card">
+            <div class="service-number">02</div>
+            <div class="service-tag">Closed-Door Strategy</div>
+            <h3>血饮私董会</h3>
+            <p>围绕战略判断、风险识别与资源协同展开闭门交流。</p>
+          </article>
+          <article class="service-card">
+            <div class="service-number">03</div>
+            <div class="service-tag">Industry Research</div>
+            <h3>血饮商研院</h3>
+            <p>输出专题研究、课程内训与品牌研究成果。</p>
+          </article>
+          <article class="service-card">
+            <div class="service-number">04</div>
+            <div class="service-tag">Learning Community</div>
+            <h3>血饮读书会</h3>
+            <p>以共读、沙龙和主题书单构建长期学习社群。</p>
+          </article>
+          <article class="service-card">
+            <div class="service-number">05</div>
+            <div class="service-tag">Alliance Platform</div>
+            <h3>华商智企联盟</h3>
+            <p>连接企业、专家与产业资源，承接论坛与专题活动。</p>
+          </article>
+          <article class="service-card">
+            <div class="service-number">06</div>
+            <div class="service-tag">Cross-Border Business</div>
+            <h3>一带一路全球化跨国商业集团</h3>
+            <p>服务跨境合作与产业整合，覆盖多元国际业务场景。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="archive" class="reveal delay-3">
+        <div class="section-heading">
+          <div class="section-label">Archive 2015-2020</div>
+          <h2>296 篇研究沉淀，构成判断力。</h2>
+          <p>2015-2020 年内容归档，持续支撑专题研究与战略研判。</p>
+        </div>
+
+        <div class="archive-shell">
+          <div class="archive-layout">
+            <aside class="archive-lead">
+              <strong>296</strong>
+              <p>篇历史研究稿，沉淀宏观、产业、地缘、贸易与风险议题。</p>
+              <div class="timeline">
+                <article class="timeline-item">
+                  <strong>2015-2016 · 宏观金融观察框架</strong>
+                  <span>围绕货币、人民币国际化与全球金融秩序建立研究骨架。</span>
+                </article>
+                <article class="timeline-item">
+                  <strong>2017-2018 · 地缘与产业链转向</strong>
+                  <span>强化对去美元化、一带一路、贸易战与科技竞争的长期观察。</span>
+                </article>
+                <article class="timeline-item">
+                  <strong>2019-2020 · 风险预警能力成形</strong>
+                  <span>围绕数字货币、能源结算与全球波动沉淀预警视角。</span>
+                </article>
+              </div>
+            </aside>
+
+            <div class="archive-content">
+              <div class="year-grid">
+                <article class="year-card">
+                  <strong>53</strong>
+                  <span>2015</span>
+                  <small>宏观金融观察起点。</small>
+                </article>
+                <article class="year-card">
+                  <strong>80</strong>
+                  <span>2016</span>
+                  <small>人民币与 SDR 议题深化。</small>
+                </article>
+                <article class="year-card">
+                  <strong>49</strong>
+                  <span>2017</span>
+                  <small>地缘协同议题强化。</small>
+                </article>
+                <article class="year-card">
+                  <strong>38</strong>
+                  <span>2018</span>
+                  <small>贸易战与科技竞争升温。</small>
+                </article>
+                <article class="year-card">
+                  <strong>38</strong>
+                  <span>2019</span>
+                  <small>数字货币与能源结算抬升。</small>
+                </article>
+                <article class="year-card">
+                  <strong>37</strong>
+                  <span>2020</span>
+                  <small>全球风险预警成为主轴。</small>
+                </article>
+              </div>
+
+              <figure class="story-media-card glass-sheen">
+                <img src="./assets/research-archive.svg" alt="研究资料、全球地图与分析卡片构成的视觉图" loading="lazy" />
+                <figcaption class="story-media-caption">
+                  <strong>研究内容、数据结构与全球议题持续沉淀</strong>
+                  <span>形成资料库、分析框架与专题输出能力。</span>
+                </figcaption>
+              </figure>
+
+              <div class="research-grid">
+                <article class="research-card">
+                  <h3>金融与货币</h3>
+                  <p>持续观察人民币国际化、SDR、汇率与储备货币体系。</p>
+                </article>
+                <article class="research-card">
+                  <h3>地缘与秩序</h3>
+                  <p>延伸到去美元化、一带一路、金砖合作与区域平台。</p>
+                </article>
+                <article class="research-card">
+                  <h3>风险与预警</h3>
+                  <p>围绕数字货币、全球波动与公共事件形成预警型研究能力。</p>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="alliance" class="reveal delay-3">
+        <div class="section-heading">
+          <div class="section-label">Alliance Ecosystem</div>
+          <h2>研究、活动与合作资源持续汇流。</h2>
+          <p>面向企业家、企业组织与生态伙伴搭建协同网络。</p>
+        </div>
+
+        <div class="audience-grid">
+          <article class="audience-card">
+            <h3>面向企业家</h3>
+            <p>提供战略判断、闭门研讨、认知升级与资源连接。</p>
+          </article>
+          <article class="audience-card">
+            <h3>面向企业组织</h3>
+            <p>承接企业内训、专题研究、战略共创与高管简报。</p>
+          </article>
+          <article class="audience-card">
+            <h3>面向生态合作</h3>
+            <p>承接论坛、合作发起、资源整合与品牌联动项目。</p>
+          </article>
+        </div>
+
+        <div class="cta-band">
+          <div class="cta-copy">
+            <h3>围绕研究、联盟与跨境合作展开协同。</h3>
+            <p>可对接专题研究、闭门研讨、企业内训与全球化合作场景。</p>
+          </div>
+          <div class="cta-side">
+            <figure class="cta-media-card glass-sheen">
+              <img src="./assets/alliance-network.svg" alt="联盟协同与全球连接的视觉图" loading="lazy" />
+              <figcaption class="cta-media-caption">
+                <strong>研究、活动、联盟与国际网络形成统一协同界面</strong>
+                <span>聚焦企业家服务、联盟共建与跨境协同场景。</span>
+              </figcaption>
+            </figure>
+            <div class="cta-actions">
+              <a class="button primary" href="#services">查看核心业务</a>
+              <a class="button secondary" href="#global">浏览全球网络</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer reveal delay-3">
+      <div class="footer-brand">
+        <div class="brand-mark" aria-hidden="true">血</div>
+        <div class="footer-brand-copy">
+          <strong>血饮智参（深圳）科技有限公司</strong>
+          <span>Research · Strategy · Alliance · Global Network</span>
+        </div>
+      </div>
+      <div>以研究支撑决策，以全球网络连接协同。</div>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts/map/js/world.js"></script>
+  <script>
+    const source = {
+      nameZh: "中国",
+      nameEn: "China",
+      city: "Beijing",
+      coords: [116.4074, 39.9042]
+    };
+
+    const countries = [
+      { nameZh: "中国", nameEn: "China", city: "Beijing", type: "member", coords: [116.4074, 39.9042], labelPosition: "top" },
+      { nameZh: "巴西", nameEn: "Brazil", city: "Brasilia", type: "member", coords: [-47.8825, -15.7942], labelPosition: "right" },
+      { nameZh: "俄罗斯", nameEn: "Russia", city: "Moscow", type: "member", coords: [37.6173, 55.7558], labelPosition: "top" },
+      { nameZh: "印度", nameEn: "India", city: "New Delhi", type: "member", coords: [77.209, 28.6139], labelPosition: "bottom" },
+      { nameZh: "南非", nameEn: "South Africa", city: "Pretoria", type: "member", coords: [28.2293, -25.7461], labelPosition: "bottom" },
+      { nameZh: "沙特", nameEn: "Saudi Arabia", city: "Riyadh", type: "member", coords: [46.6753, 24.7136], labelPosition: "top" },
+      { nameZh: "埃及", nameEn: "Egypt", city: "Cairo", type: "member", coords: [31.2357, 30.0444], labelPosition: "bottom" },
+      { nameZh: "阿联酋", nameEn: "United Arab Emirates", city: "Abu Dhabi", type: "member", coords: [54.3773, 24.4539], labelPosition: "bottom" },
+      { nameZh: "埃塞俄比亚", nameEn: "Ethiopia", city: "Addis Ababa", type: "member", coords: [38.7578, 8.9806], labelPosition: "bottom" },
+      { nameZh: "印尼", nameEn: "Indonesia", city: "Jakarta", type: "member", coords: [106.8456, -6.2088], labelPosition: "bottom" },
+      { nameZh: "伊朗", nameEn: "Iran", city: "Tehran", type: "member", coords: [51.389, 35.6892], labelPosition: "top" },
+      { nameZh: "白俄罗斯", nameEn: "Belarus", city: "Minsk", type: "partner", coords: [27.5615, 53.9045], labelPosition: "top" },
+      { nameZh: "玻利维亚", nameEn: "Bolivia", city: "La Paz", type: "partner", coords: [-68.1193, -16.4897], labelPosition: "bottom" },
+      { nameZh: "古巴", nameEn: "Cuba", city: "Havana", type: "partner", coords: [-82.3666, 23.1136], labelPosition: "top" },
+      { nameZh: "哈萨克斯坦", nameEn: "Kazakhstan", city: "Astana", type: "partner", coords: [71.4304, 51.1694], labelPosition: "top" },
+      { nameZh: "马来西亚", nameEn: "Malaysia", city: "Kuala Lumpur", type: "partner", coords: [101.6869, 3.139], labelPosition: "right" },
+      { nameZh: "尼日利亚", nameEn: "Nigeria", city: "Abuja", type: "partner", coords: [7.3986, 9.0765], labelPosition: "top" },
+      { nameZh: "泰国", nameEn: "Thailand", city: "Bangkok", type: "partner", coords: [100.5018, 13.7563], labelPosition: "bottom" },
+      { nameZh: "乌干达", nameEn: "Uganda", city: "Kampala", type: "partner", coords: [32.5825, 0.3476], labelPosition: "bottom" },
+      { nameZh: "乌兹别克斯坦", nameEn: "Uzbekistan", city: "Tashkent", type: "partner", coords: [69.2401, 41.2995], labelPosition: "top" },
+      { nameZh: "越南", nameEn: "Vietnam", city: "Hanoi", type: "partner", coords: [105.8342, 21.0278], labelPosition: "top" }
+    ];
+
+    const briNodes = [
+      { nameZh: "俄罗斯", nameEn: "Russia", city: "Moscow", type: "land", coords: [37.6173, 55.7558], labelPosition: "top" },
+      { nameZh: "白俄罗斯", nameEn: "Belarus", city: "Minsk", type: "land", coords: [27.5615, 53.9045], labelPosition: "top" },
+      { nameZh: "哈萨克斯坦", nameEn: "Kazakhstan", city: "Astana", type: "land", coords: [71.4304, 51.1694], labelPosition: "top" },
+      { nameZh: "乌兹别克斯坦", nameEn: "Uzbekistan", city: "Tashkent", type: "land", coords: [69.2401, 41.2995], labelPosition: "top" },
+      { nameZh: "伊朗", nameEn: "Iran", city: "Tehran", type: "land", coords: [51.389, 35.6892], labelPosition: "top" },
+      { nameZh: "土耳其", nameEn: "Türkiye", city: "Istanbul", type: "land", coords: [28.9784, 41.0082], labelPosition: "top" },
+      { nameZh: "塞尔维亚", nameEn: "Serbia", city: "Belgrade", type: "land", coords: [20.4573, 44.7872], labelPosition: "bottom" },
+      { nameZh: "匈牙利", nameEn: "Hungary", city: "Budapest", type: "land", coords: [19.0402, 47.4979], labelPosition: "top" },
+      { nameZh: "巴基斯坦", nameEn: "Pakistan", city: "Islamabad", type: "land", coords: [73.0479, 33.6844], labelPosition: "bottom" },
+      { nameZh: "沙特", nameEn: "Saudi Arabia", city: "Riyadh", type: "land", coords: [46.6753, 24.7136], labelPosition: "top" },
+      { nameZh: "埃及", nameEn: "Egypt", city: "Cairo", type: "land", coords: [31.2357, 30.0444], labelPosition: "bottom" },
+      { nameZh: "埃塞俄比亚", nameEn: "Ethiopia", city: "Addis Ababa", type: "land", coords: [38.7578, 8.9806], labelPosition: "bottom" },
+      { nameZh: "印尼", nameEn: "Indonesia", city: "Jakarta", type: "maritime", coords: [106.8456, -6.2088], labelPosition: "bottom" },
+      { nameZh: "马来西亚", nameEn: "Malaysia", city: "Kuala Lumpur", type: "maritime", coords: [101.6869, 3.139], labelPosition: "right" },
+      { nameZh: "泰国", nameEn: "Thailand", city: "Bangkok", type: "maritime", coords: [100.5018, 13.7563], labelPosition: "bottom" },
+      { nameZh: "越南", nameEn: "Vietnam", city: "Hanoi", type: "maritime", coords: [105.8342, 21.0278], labelPosition: "top" },
+      { nameZh: "斯里兰卡", nameEn: "Sri Lanka", city: "Colombo", type: "maritime", coords: [79.8612, 6.9271], labelPosition: "bottom" },
+      { nameZh: "阿联酋", nameEn: "United Arab Emirates", city: "Abu Dhabi", type: "maritime", coords: [54.3773, 24.4539], labelPosition: "bottom" },
+      { nameZh: "肯尼亚", nameEn: "Kenya", city: "Mombasa", type: "maritime", coords: [39.6682, -4.0435], labelPosition: "bottom" },
+      { nameZh: "吉布提", nameEn: "Djibouti", city: "Djibouti", type: "maritime", coords: [43.1456, 11.5721], labelPosition: "bottom" },
+      { nameZh: "希腊", nameEn: "Greece", city: "Athens", type: "maritime", coords: [23.7275, 37.9838], labelPosition: "top" },
+      { nameZh: "阿曼", nameEn: "Oman", city: "Muscat", type: "maritime", coords: [58.4059, 23.588], labelPosition: "bottom" },
+      { nameZh: "坦桑尼亚", nameEn: "Tanzania", city: "Dar es Salaam", type: "maritime", coords: [39.2083, -6.7924], labelPosition: "bottom" },
+      { nameZh: "尼日利亚", nameEn: "Nigeria", city: "Lagos", type: "maritime", coords: [3.3792, 6.5244], labelPosition: "top" }
+    ];
+
+    const majorCities = [
+      { nameZh: "北京", coords: [116.4074, 39.9042], labelPosition: "top" },
+      { nameZh: "上海", coords: [121.4737, 31.2304], labelPosition: "bottom" },
+      { nameZh: "深圳", coords: [114.0579, 22.5431], labelPosition: "bottom" },
+      { nameZh: "莫斯科", coords: [37.6173, 55.7558], labelPosition: "top" },
+      { nameZh: "伊斯坦布尔", coords: [28.9784, 41.0082], labelPosition: "top" },
+      { nameZh: "德黑兰", coords: [51.389, 35.6892], labelPosition: "top" },
+      { nameZh: "利雅得", coords: [46.6753, 24.7136], labelPosition: "bottom" },
+      { nameZh: "迪拜", coords: [55.2708, 25.2048], labelPosition: "top" },
+      { nameZh: "开罗", coords: [31.2357, 30.0444], labelPosition: "bottom" },
+      { nameZh: "亚的斯亚贝巴", coords: [38.7578, 8.9806], labelPosition: "bottom" },
+      { nameZh: "新德里", coords: [77.209, 28.6139], labelPosition: "bottom" },
+      { nameZh: "雅加达", coords: [106.8456, -6.2088], labelPosition: "bottom" },
+      { nameZh: "吉隆坡", coords: [101.6869, 3.139], labelPosition: "right" },
+      { nameZh: "曼谷", coords: [100.5018, 13.7563], labelPosition: "bottom" },
+      { nameZh: "河内", coords: [105.8342, 21.0278], labelPosition: "top" },
+      { nameZh: "阿斯塔纳", coords: [71.4304, 51.1694], labelPosition: "top" },
+      { nameZh: "塔什干", coords: [69.2401, 41.2995], labelPosition: "top" },
+      { nameZh: "内罗毕", coords: [36.8219, -1.2921], labelPosition: "bottom" },
+      { nameZh: "科伦坡", coords: [79.8612, 6.9271], labelPosition: "bottom" },
+      { nameZh: "雅典", coords: [23.7275, 37.9838], labelPosition: "top" },
+      { nameZh: "拉各斯", coords: [3.3792, 6.5244], labelPosition: "top" },
+      { nameZh: "巴西利亚", coords: [-47.8825, -15.7942], labelPosition: "right" },
+      { nameZh: "圣保罗", coords: [-46.6333, -23.5505], labelPosition: "bottom" },
+      { nameZh: "哈瓦那", coords: [-82.3666, 23.1136], labelPosition: "top" }
+    ];
+
+    const datasets = {
+      brics: {
+        title: "中国金砖全球辐射网络",
+        desc: "以中国为核心源点，连接成员国、伙伴国与重点城市。",
+        listTitle: "国家列表",
+        statLabels: { total: "全部国家", primary: "成员国", secondary: "伙伴国" },
+        filterLabels: {
+          all: { key: "all", text: "全部 21 国" },
+          primary: { key: "member", text: "仅成员国" },
+          secondary: { key: "partner", text: "仅伙伴国" }
+        },
+        primaryType: "member",
+        secondaryType: "partner",
+        primaryTypeLabel: "成员国",
+        secondaryTypeLabel: "伙伴国",
+        primaryTag: "MEMBER",
+        secondaryTag: "PARTNER",
+        primarySeriesName: "成员国连线",
+        secondarySeriesName: "伙伴国连线",
+        subtitle(filter) {
+          if (filter === "member") return "成员国 11";
+          if (filter === "partner") return "伙伴国 10";
+          return "覆盖 21 国";
+        },
+        listHead(visible, primaryCount, secondaryCount) {
+          return `当前展示 ${visible.length} 国 · 成员国 ${primaryCount} · 伙伴国 ${secondaryCount}`;
+        },
+        items: countries
+      },
+      bri: {
+        title: "中国一带一路全球辐射网络",
+        desc: "从中国出发，连接海陆通道上的重点协同节点。",
+        listTitle: "节点列表",
+        statLabels: { total: "重点节点", primary: "陆上丝路", secondary: "海上丝路" },
+        filterLabels: {
+          all: { key: "all", text: "全部节点" },
+          primary: { key: "land", text: "陆上丝路" },
+          secondary: { key: "maritime", text: "海上丝路" }
+        },
+        primaryType: "land",
+        secondaryType: "maritime",
+        primaryTypeLabel: "陆上丝路",
+        secondaryTypeLabel: "海上丝路",
+        primaryTag: "LAND",
+        secondaryTag: "SEA",
+        primarySeriesName: "陆上丝路连线",
+        secondarySeriesName: "海上丝路连线",
+        subtitle(filter) {
+          if (filter === "land") return "陆上丝路 12 节点";
+          if (filter === "maritime") return "海上丝路 12 节点";
+          return "覆盖 24 个节点";
+        },
+        listHead(visible, primaryCount, secondaryCount) {
+          return `当前展示 ${visible.length} 节点 · 陆上 ${primaryCount} · 海上 ${secondaryCount}`;
+        },
+        items: briNodes
+      }
+    };
+
+    const palette = {
+      titleColor: "rgba(215, 236, 255, 0.24)",
+      tooltipBg: "rgba(8, 24, 49, 0.96)",
+      tooltipText: "#f4fbff",
+      tooltipMuted: "rgba(207, 229, 255, 0.72)",
+      geoArea: "#31567e",
+      geoBorder: "rgba(186, 220, 255, 0.18)",
+      geoEmphasis: "#426b97",
+      geoChinaArea: "#76b6ff",
+      geoShadow: "rgba(0, 0, 0, 0.18)",
+      primaryLine: "#74d1ff",
+      secondaryLine: "#a5fff2",
+      primaryGlow: "rgba(116, 209, 255, 0.82)",
+      secondaryGlow: "rgba(165, 255, 242, 0.82)",
+      hubGlow: "rgba(239, 248, 255, 0.84)",
+      baseHalo: "rgba(182, 230, 255, 0.12)",
+      primaryDot: "#9be0ff",
+      secondaryDot: "#b2fff6",
+      hubDot: "#eff8ff",
+      cityDot: "#d6f2ff",
+      cityGlow: "rgba(214, 242, 255, 0.36)"
+    };
+
+    const chartElement = document.getElementById("chart");
+    const countryList = document.getElementById("country-list");
+    const listHead = document.getElementById("list-head");
+    const listCardTitleText = document.getElementById("list-card-title-text");
+    const mapTitleText = document.getElementById("map-title-text");
+    const mapTitleDesc = document.getElementById("map-title-desc");
+    const datasetSubtitle = document.getElementById("dataset-subtitle");
+    const statTotal = document.getElementById("stat-total");
+    const statPrimary = document.getElementById("stat-primary");
+    const statSecondary = document.getElementById("stat-secondary");
+    const statTotalLabel = document.getElementById("stat-total-label");
+    const statPrimaryLabel = document.getElementById("stat-primary-label");
+    const statSecondaryLabel = document.getElementById("stat-secondary-label");
+    const cityToggle = document.getElementById("city-toggle");
+    const cityTip = document.getElementById("city-tip");
+    const filterAllButton = document.getElementById("filter-all");
+    const filterPrimaryButton = document.getElementById("filter-primary");
+    const filterSecondaryButton = document.getElementById("filter-secondary");
+    const filterButtons = [...document.querySelectorAll(".filter")];
+    const viewButtons = [...document.querySelectorAll(".view-button")];
+
+    let chart = null;
+    let currentFilter = "all";
+    let currentViewKey = "brics";
+    let cityLabelsEnabled = false;
+    let cityLabelsVisible = false;
+    let lastCityWheelToggleAt = 0;
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function getDataset() {
+      return datasets[currentViewKey];
+    }
+
+    function getDatasetItems() {
+      return getDataset().items;
+    }
+
+    function isSourceCountry(item) {
+      return item.nameEn === source.nameEn;
+    }
+
+    function isValidFilter(filter) {
+      const dataset = getDataset();
+      return [dataset.filterLabels.all.key, dataset.filterLabels.primary.key, dataset.filterLabels.secondary.key].includes(filter);
+    }
+
+    function getVisibleItems(filter) {
+      const dataset = getDataset();
+      const items = getDatasetItems();
+      if (filter === dataset.filterLabels.primary.key) return items.filter((item) => item.type === dataset.primaryType);
+      if (filter === dataset.filterLabels.secondary.key) return items.filter((item) => item.type === dataset.secondaryType);
+      return items;
+    }
+
+    function getDisplayColor(item) {
+      if (isSourceCountry(item)) return palette.hubDot;
+      return item.type === getDataset().primaryType ? palette.primaryDot : palette.secondaryDot;
+    }
+
+    function getTypeLabel(item) {
+      const dataset = getDataset();
+      if (isSourceCountry(item)) return "CORE";
+      return item.type === dataset.primaryType ? dataset.primaryTag : dataset.secondaryTag;
+    }
+
+    function getTypeNameZh(item) {
+      const dataset = getDataset();
+      if (isSourceCountry(item)) return currentViewKey === "brics" ? "成员国 / 核心源点" : "核心源点";
+      return item.type === dataset.primaryType ? dataset.primaryTypeLabel : dataset.secondaryTypeLabel;
+    }
+
+    function renderFilterLabels() {
+      const dataset = getDataset();
+      filterAllButton.dataset.filter = dataset.filterLabels.all.key;
+      filterPrimaryButton.dataset.filter = dataset.filterLabels.primary.key;
+      filterSecondaryButton.dataset.filter = dataset.filterLabels.secondary.key;
+      filterAllButton.textContent = dataset.filterLabels.all.text;
+      filterPrimaryButton.textContent = dataset.filterLabels.primary.text;
+      filterSecondaryButton.textContent = dataset.filterLabels.secondary.text;
+    }
+
+    function renderStats() {
+      const dataset = getDataset();
+      const items = getDatasetItems();
+      statTotal.textContent = items.length;
+      statPrimary.textContent = items.filter((item) => item.type === dataset.primaryType).length;
+      statSecondary.textContent = items.filter((item) => item.type === dataset.secondaryType).length;
+      statTotalLabel.textContent = dataset.statLabels.total;
+      statPrimaryLabel.textContent = dataset.statLabels.primary;
+      statSecondaryLabel.textContent = dataset.statLabels.secondary;
+    }
+
+    function renderViewUI() {
+      const dataset = getDataset();
+      mapTitleText.textContent = dataset.title;
+      mapTitleDesc.textContent = dataset.desc;
+      listCardTitleText.textContent = dataset.listTitle;
+      datasetSubtitle.textContent = dataset.subtitle(currentFilter);
+      renderFilterLabels();
+      renderStats();
+      viewButtons.forEach((button) => button.classList.toggle("active", button.dataset.view === currentViewKey));
+    }
+
+    function renderCountryList() {
+      const dataset = getDataset();
+      const visible = getVisibleItems(currentFilter);
+      const primaryCount = visible.filter((item) => item.type === dataset.primaryType).length;
+      const secondaryCount = visible.filter((item) => item.type === dataset.secondaryType).length;
+      listHead.textContent = dataset.listHead(visible, primaryCount, secondaryCount);
+      datasetSubtitle.textContent = dataset.subtitle(currentFilter);
+      countryList.innerHTML = visible.map((item) => `
+        <article class="country-item">
+          <div class="country-head">
+            <div>
+              <div class="country-name">${escapeHtml(item.nameZh)}</div>
+              <div class="country-en">${escapeHtml(item.nameEn)}</div>
+            </div>
+            <span class="pill" style="color:${getDisplayColor(item)}">${getTypeLabel(item)}</span>
+          </div>
+          <div class="country-meta">${escapeHtml(item.city)} · ${getTypeNameZh(item)}</div>
+        </article>
+      `).join("");
+    }
+
+    function buildScatterData() {
+      const dataset = getDataset();
+      return getVisibleItems(currentFilter)
+        .filter((item) => !isSourceCountry(item))
+        .map((item) => ({
+          name: item.nameZh,
+          value: [...item.coords, item.type === dataset.primaryType ? 1 : 0],
+          country: item,
+          symbolSize: item.type === dataset.primaryType ? 10 : 8,
+          itemStyle: {
+            color: item.type === dataset.primaryType ? palette.primaryDot : palette.secondaryDot,
+            shadowBlur: 18,
+            shadowColor: item.type === dataset.primaryType ? palette.primaryGlow : palette.secondaryGlow
+          },
+          label: {
+            show: currentFilter !== dataset.filterLabels.all.key || item.type === dataset.primaryType,
+            position: item.labelPosition || "right",
+            distance: 7,
+            color: "#edf8ff",
+            fontSize: item.type === dataset.primaryType ? 13 : 12,
+            fontWeight: item.type === dataset.primaryType ? 700 : 600,
+            textBorderColor: "rgba(16, 18, 21, 0.72)",
+            textBorderWidth: 4,
+            formatter: item.nameZh
+          }
+        }));
+    }
+
+    function buildLineData(type) {
+      return getVisibleItems(currentFilter)
+        .filter((item) => item.type === type && !isSourceCountry(item))
+        .map((item) => ({
+          coords: [source.coords, item.coords],
+          country: item
+        }));
+    }
+
+    function buildMajorCityData() {
+      if (!(cityLabelsEnabled && cityLabelsVisible)) return [];
+      return majorCities.map((item) => ({
+        name: item.nameZh,
+        value: item.coords,
+        symbolSize: 5,
+        itemStyle: {
+          color: palette.cityDot,
+          shadowBlur: 12,
+          shadowColor: palette.cityGlow
+        },
+        label: {
+          show: true,
+          position: item.labelPosition || "right",
+          distance: 5,
+          color: "#dff4ff",
+          fontSize: 11,
+          fontWeight: 700,
+          textBorderColor: "rgba(16, 18, 21, 0.7)",
+          textBorderWidth: 4,
+          formatter: item.nameZh
+        }
+      }));
+    }
+
+    function buildOption() {
+      const dataset = getDataset();
+      return {
+        backgroundColor: "transparent",
+        animationDuration: 1000,
+        animationEasing: "cubicOut",
+        tooltip: {
+          trigger: "item",
+          backgroundColor: palette.tooltipBg,
+          borderColor: "rgba(196, 224, 255, 0.14)",
+          borderWidth: 1,
+          textStyle: {
+            color: palette.tooltipText,
+            fontFamily: "Source Sans 3, sans-serif"
+          },
+          formatter(params) {
+            if ((params.seriesType === "lines" || params.seriesType === "scatter") && params.data && params.data.country) {
+              const item = params.data.country;
+              const typeColor = item.type === dataset.primaryType ? palette.primaryDot : palette.secondaryDot;
+              return `<div style="min-width:190px"><div style="font-size:15px;font-weight:700;margin-bottom:6px">${escapeHtml(item.nameZh)}</div><div style="color:${palette.tooltipMuted};line-height:1.8">${escapeHtml(item.nameEn)}</div><div style="color:${palette.tooltipMuted};line-height:1.8">${escapeHtml(item.city)}</div><div style="color:${typeColor};line-height:1.8">${getTypeNameZh(item)}</div></div>`;
+            }
+            return `<div style="min-width:170px"><div style="font-size:15px;font-weight:700;margin-bottom:6px">${source.nameZh}</div><div style="color:${palette.tooltipMuted};line-height:1.8">${source.nameEn}</div><div style="color:${palette.hubDot};line-height:1.8">核心源点</div></div>`;
+          }
+        },
+        title: {
+          text: dataset.subtitle(currentFilter),
+          left: "center",
+          top: 16,
+          textStyle: {
+            color: palette.titleColor,
+            fontSize: 14,
+            fontFamily: "Source Sans 3, sans-serif",
+            fontWeight: 700,
+            letterSpacing: 2
+          }
+        },
+        geo: {
+          map: "world",
+          roam: true,
+          zoom: 1.08,
+          center: [46, 20],
+          top: 50,
+          bottom: 18,
+          left: 6,
+          right: 6,
+          itemStyle: {
+            areaColor: palette.geoArea,
+            borderColor: palette.geoBorder,
+            borderWidth: 0.9,
+            shadowColor: palette.geoShadow,
+            shadowBlur: 10
+          },
+          emphasis: {
+            label: { show: false },
+            itemStyle: {
+              areaColor: palette.geoEmphasis,
+              borderColor: palette.geoBorder
+            }
+          },
+          regions: [
+            {
+              name: "China",
+              itemStyle: { areaColor: palette.geoChinaArea },
+              emphasis: { itemStyle: { areaColor: palette.geoChinaArea } }
+            }
+          ]
+        },
+        series: [
+          {
+            id: "primary-lines-series",
+            name: dataset.primarySeriesName,
+            type: "lines",
+            coordinateSystem: "geo",
+            zlevel: 2,
+            blendMode: "lighter",
+            effect: {
+              show: true,
+              period: 5.6,
+              trailLength: 0.16,
+              symbol: "circle",
+              symbolSize: 4
+            },
+            lineStyle: {
+              color: palette.primaryLine,
+              width: 1.7,
+              opacity: 0.72,
+              curveness: 0.18
+            },
+            data: buildLineData(dataset.primaryType)
+          },
+          {
+            id: "secondary-lines-series",
+            name: dataset.secondarySeriesName,
+            type: "lines",
+            coordinateSystem: "geo",
+            zlevel: 2,
+            blendMode: "lighter",
+            effect: {
+              show: true,
+              period: 6.8,
+              trailLength: 0.14,
+              symbol: "circle",
+              symbolSize: 3.5
+            },
+            lineStyle: {
+              color: palette.secondaryLine,
+              width: 1.3,
+              opacity: 0.58,
+              curveness: 0.16
+            },
+            data: buildLineData(dataset.secondaryType)
+          },
+          {
+            id: "major-cities-series",
+            name: "主要城市名",
+            type: "scatter",
+            coordinateSystem: "geo",
+            zlevel: 3,
+            tooltip: { show: false },
+            data: buildMajorCityData()
+          },
+          {
+            id: "items-series",
+            name: dataset.listTitle,
+            type: "scatter",
+            coordinateSystem: "geo",
+            zlevel: 4,
+            data: buildScatterData()
+          },
+          {
+            id: "source-effect-series",
+            name: "中国核心",
+            type: "effectScatter",
+            coordinateSystem: "geo",
+            zlevel: 5,
+            rippleEffect: {
+              scale: 6,
+              period: 4,
+              brushType: "stroke"
+            },
+            symbolSize: 16,
+            itemStyle: {
+              color: palette.hubDot,
+              shadowBlur: 26,
+              shadowColor: palette.hubGlow
+            },
+            label: {
+              show: true,
+              formatter: "中国 China",
+              position: "right",
+              distance: 10,
+              color: "#eff8ff",
+              fontWeight: 800,
+              fontSize: 16,
+              textBorderColor: "rgba(16, 18, 21, 0.72)",
+              textBorderWidth: 4
+            },
+            data: [{ name: source.nameZh, value: source.coords }]
+          },
+          {
+            id: "source-base-series",
+            name: "中国核心底座",
+            type: "scatter",
+            coordinateSystem: "geo",
+            zlevel: 2,
+            symbolSize: 30,
+            itemStyle: {
+              color: palette.baseHalo
+            },
+            tooltip: { show: false },
+            data: [{ name: source.nameZh, value: source.coords }]
+          }
+        ]
+      };
+    }
+
+    function syncCityToggleUI() {
+      cityToggle.classList.toggle("active", cityLabelsEnabled);
+      cityToggle.textContent = cityLabelsEnabled ? "城市标注：开" : "城市标注：关";
+      if (!cityLabelsEnabled) {
+        cityTip.textContent = "开启后可显示主要城市标注。";
+      } else if (cityLabelsVisible) {
+        cityTip.textContent = "当前已显示主要城市名。";
+      } else {
+        cityTip.textContent = "滚动地图可切换主要城市名。";
+      }
+    }
+
+    function updateMajorCitiesSeries() {
+      if (!chart) return;
+      chart.setOption({
+        series: [
+          {
+            id: "major-cities-series",
+            data: buildMajorCityData()
+          }
+        ]
+      });
+      syncCityToggleUI();
+    }
+
+    function renderChart() {
+      if (!chart) return;
+      chart.setOption(buildOption(), true);
+      syncCityToggleUI();
+    }
+
+    function applyFilter(filter) {
+      if (!isValidFilter(filter)) filter = getDataset().filterLabels.all.key;
+      currentFilter = filter;
+      filterButtons.forEach((button) => button.classList.toggle("active", button.dataset.filter === filter));
+      renderCountryList();
+      renderChart();
+    }
+
+    function applyView(viewKey) {
+      currentViewKey = viewKey;
+      currentFilter = getDataset().filterLabels.all.key;
+      renderViewUI();
+      renderCountryList();
+      renderChart();
+    }
+
+    function handleMapWheel() {
+      if (!cityLabelsEnabled) return;
+      const now = Date.now();
+      if (now - lastCityWheelToggleAt < 420) return;
+      lastCityWheelToggleAt = now;
+      cityLabelsVisible = !cityLabelsVisible;
+      updateMajorCitiesSeries();
+    }
+
+    filterButtons.forEach((button) => button.addEventListener("click", () => applyFilter(button.dataset.filter)));
+    viewButtons.forEach((button) => button.addEventListener("click", () => applyView(button.dataset.view)));
+    cityToggle.addEventListener("click", () => {
+      cityLabelsEnabled = !cityLabelsEnabled;
+      if (!cityLabelsEnabled) cityLabelsVisible = false;
+      updateMajorCitiesSeries();
+    });
+
+    renderViewUI();
+    renderCountryList();
+    syncCityToggleUI();
+
+    if (!window.echarts || !window.echarts.getMap || !window.echarts.getMap("world")) {
+      chartElement.innerHTML = '<div class="map-fallback">地图脚本加载失败。连接网络后刷新页面，即可恢复地图显示。</div>';
+      cityToggle.disabled = true;
+      cityToggle.textContent = "城市标注：不可用";
+    } else {
+      chart = window.echarts.init(chartElement);
+      renderChart();
+      chartElement.addEventListener("wheel", handleMapWheel, { passive: true });
+      window.addEventListener("resize", () => chart.resize());
+    }
+  </script>
+</body>
+</html>

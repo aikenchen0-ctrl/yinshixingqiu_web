@@ -1,0 +1,103 @@
+- generic [ref=e17]:
+  - banner [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]: C
+      - generic [ref=e21]: 知识星球
+      - generic [ref=e22]:
+        - text: 笔记
+        - generic [ref=e23]: "0"
+    - generic [ref=e24]:
+      - textbox [ref=e25]: 搜索星球、文件、主题
+      - generic [ref=e26]: ⌕
+    - generic [ref=e27]:
+      - button "管理后台" [ref=e28] [cursor=pointer]
+      - button "退出" [ref=e29] [cursor=pointer]
+      - button "榜单" [ref=e30] [cursor=pointer]
+      - generic [ref=e31]: ◔
+      - generic [ref=e32]: ◌
+  - main [ref=e34]:
+    - complementary [ref=e35]:
+      - generic [ref=e36]:
+        - generic [ref=e37]: 所有星球 · 最新动态
+        - generic [ref=e38]: "0"
+      - generic [ref=e39]:
+        - generic [ref=e40]: 创建/管理的星球 ▾
+        - button "审核流演示星球" [ref=e41] [cursor=pointer]:
+          - generic [ref=e42]: 审核流演示星球
+        - button "多管理员协作星球" [ref=e43] [cursor=pointer]:
+          - generic [ref=e44]: 多管理员协作星球
+        - button "空内容演示星球" [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]: 空内容演示星球
+        - button "Datawhale AI成长星球" [ref=e47] [cursor=pointer]:
+          - generic [ref=e48]: Datawhale AI成长星球
+      - generic [ref=e50]: 加入的星球 ▾
+      - generic [ref=e51]:
+        - generic [ref=e52]: "更多优质星球:"
+        - button "微信ysc 小号创建星球001" [ref=e53] [cursor=pointer]:
+          - generic [ref=e54]: 微信ysc 小号创建星球001
+        - button "微信ysc 大号创建星球001" [ref=e59] [cursor=pointer]:
+          - generic [ref=e60]: 微信ysc 大号创建星球001
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - button "点击发表主题..." [ref=e67] [cursor=pointer]:
+          - generic [ref=e70]: 点击发表主题...
+        - generic [ref=e71]:
+          - generic [ref=e72]: ☺
+          - generic [ref=e73]: ▣
+          - generic [ref=e74]: ◫
+          - generic [ref=e75]: B
+          - generic [ref=e76]: "#"
+          - generic [ref=e77]: ◔
+          - generic [ref=e78]: 布置作业
+          - generic [ref=e79]: ✎ 写文章
+      - generic [ref=e80]:
+        - button "最新" [ref=e81] [cursor=pointer]
+        - button "等我回答" [ref=e82] [cursor=pointer]
+        - button "精华" [ref=e83] [cursor=pointer]
+        - button "只看星主" [ref=e84] [cursor=pointer]
+        - button "问答" [ref=e85] [cursor=pointer]
+        - button "打卡" [ref=e86] [cursor=pointer]
+        - button "作业" [ref=e87] [cursor=pointer]
+        - button "文件" [ref=e88] [cursor=pointer]
+        - button "图片" [ref=e89] [cursor=pointer]
+      - generic [ref=e90]: 这个分类暂时没有内容，或后端还未产出对应数据。
+      - generic [ref=e91]: 没有更多了
+      - generic [ref=e92]: "groupId: grp_review_001"
+    - complementary [ref=e93]:
+      - generic [ref=e94]:
+        - button "最近" [ref=e95] [cursor=pointer]
+        - generic [ref=e96]: "2026"
+      - generic [ref=e100]:
+        - generic [ref=e102]: 星主A
+        - generic [ref=e103]: 创建1天
+        - generic [ref=e104]: 审核流演示星球
+      - generic [ref=e105]:
+        - generic [ref=e106]: ✦
+        - generic [ref=e107]: 当前页面已接后端真实星球数据，后台入口也已连通
+      - button "星球管理后台 New 当前已接通成员活跃、内容活跃、权限设置 ›" [ref=e108] [cursor=pointer]:
+        - generic [ref=e109]:
+          - generic [ref=e110]: 星球管理后台 New
+          - generic [ref=e111]: 当前已接通成员活跃、内容活跃、权限设置
+        - generic [ref=e112]: ›
+      - generic [ref=e113]:
+        - generic [ref=e114]: 向他们提问
+        - generic [ref=e115]: 星主 1 位，成员 3 位
+        - generic [ref=e116]:
+          - generic [ref=e118]: 星主A
+          - button "问" [ref=e119] [cursor=pointer]
+      - generic [ref=e120]:
+        - generic [ref=e121]: 创作灵感
+        - generic [ref=e122]: 优先把后端已接通的真实主题沉淀成内容
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - generic [ref=e125]: "1"
+            - generic [ref=e126]: 内容价值拆解
+          - generic [ref=e127]:
+            - generic [ref=e128]: "2"
+            - generic [ref=e129]: 新成员欢迎帖
+          - generic [ref=e130]:
+            - generic [ref=e131]: "3"
+            - generic [ref=e132]: 精华主题整理
+  - generic [ref=e133]:
+    - button "⟲" [ref=e134] [cursor=pointer]
+    - button "▤" [ref=e135] [cursor=pointer]

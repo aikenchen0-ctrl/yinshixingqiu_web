@@ -1,0 +1,11 @@
+Resolve-Path : 找不到路径“D:\CodeDevelopment\xueyinMiniapp\.env”，因为该路径
+不存在。
+所在位置 D:\CodeDevelopment\xueyinMiniapp\backend\deploy\prepare-openwebui-herm
+es-env.ps1:35 字符: 27
++ $resolvedBackendEnvPath = Resolve-Path $BackendEnvPath
++                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (D:\CodeDevelopment\xueyinMiniap 
+   p\.env:String) [Resolve-Path], ItemNotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.Resol 
+   vePathCommand
+ 

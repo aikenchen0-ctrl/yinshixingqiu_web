@@ -1,0 +1,95 @@
+# Codex Headless Run Context
+
+Current step: 05-admin-web现状盘点与页面优先级
+Current pass: 1
+Project root: D:\CodeDevelopment\xueyinMiniapp
+
+## Execution Rules
+
+- You are running in headless mode.
+- Work directly in the repository instead of only giving advice.
+- Focus on finishing the current prompt requirement.
+- At the end of this pass, provide a clear completion status and quality score.
+- If earlier passes already completed part of the work, continue from there instead of starting over.
+
+## Previous Prompt Summary
+
+# 04-后端一期落地执行 Summary
+
+Source pass: pass-4
+
+DRY RUN
+
+FINAL_STATUS: PARTIAL
+QUALITY_SCORE: 1
+NEXT_ACTIONS:
+- Run the script without -DryRun to invoke Codex.
+CHANGED_FILES:
+- None
+
+## Current Prompt Previous Pass Outputs
+
+None
+
+## Current Prompt Body
+
+# Prompt 05: admin-web 现状盘点与页面优先级
+
+后端一期已经处理完后，现在请聚焦 `admin-web`。
+
+本轮先不要着急写大段 UI，而是要把当前管理后台哪些是“真实页面”、哪些是“壳页面”、哪些需要优先接后端，做成一份顺序清晰的页面开发清单。
+
+## 范围
+
+- 目录：`D:\CodeDevelopment\xueyinMiniapp\admin-web`
+- 重点文件：
+  - `src/App.tsx`
+  - `src/pages`
+  - `src/components`
+  - `src/services`
+  - `src/data/menu.ts`
+
+## 目标
+
+根据当前项目现状和后端一期的输出，决定 admin-web 第一轮具体应该先补哪几页。
+
+## 执行步骤
+
+1. 盘点路由与页面映射。
+2. 区分以下页面状态：
+   - 已接真实接口
+   - 页面存在但主要依赖静态数据
+   - 只有菜单，没有真正页面能力
+3. 对照真实菜单结构，判断第一轮最应该做的后台页。
+4. 输出“最小后台可用集”，建议优先至少覆盖：
+   - 登录页
+   - 首页/星球主页入口
+   - 收入/推广/基础数据页
+   - 基础列表页
+5. 明确每一页依赖哪些后端接口。
+6. 给出 admin-web 第一轮顺序。
+你可以使用SKILL\MCP尝试跑通或获取数据测试
+## 输出要求
+
+输出标题为“admin-web 现状盘点与页面优先级”的 Markdown 文档。
+
+必须包含：
+
+1. 路由与页面总表
+2. 静态占位页清单
+3. 最小后台可用集
+4. 页面优先级排序
+5. 每页依赖接口表
+6. 给 06 号提示词的输入摘要
+
+
+## Required Footer
+
+Append the following machine-readable footer at the end of your final response:
+
+FINAL_STATUS: COMPLETE | PARTIAL | BLOCKED
+QUALITY_SCORE: 1-5
+NEXT_ACTIONS:
+- ...
+CHANGED_FILES:
+- ...

@@ -1,0 +1,11 @@
+{
+  "pass": 2,
+  "type": "pass_finished",
+  "timeout_minutes": 30,
+  "status": "completed",
+  "checked_at": "2026-04-03T00:34:11.7353341+08:00",
+  "pid": 4728,
+  "exit_code": 0,
+  "started_at": "2026-04-03T00:25:55.3383940+08:00",
+  "prompt": "02-后端现状审计与缺口清单"
+}

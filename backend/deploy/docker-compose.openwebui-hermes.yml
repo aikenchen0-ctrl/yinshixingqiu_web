@@ -1,0 +1,34 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: xueyin-open-webui
+    restart: unless-stopped
+    env_file:
+      - .env.openwebui-hermes
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      WEBUI_URL: ${WEBUI_URL}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
+      WEBUI_SESSION_COOKIE_SECURE: ${WEBUI_SESSION_COOKIE_SECURE}
+      WEBUI_AUTH_COOKIE_SECURE: ${WEBUI_AUTH_COOKIE_SECURE}
+      WEBUI_SESSION_COOKIE_SAME_SITE: ${WEBUI_SESSION_COOKIE_SAME_SITE}
+      WEBUI_AUTH_COOKIE_SAME_SITE: ${WEBUI_AUTH_COOKIE_SAME_SITE}
+      ENABLE_SIGNUP: ${ENABLE_SIGNUP}
+      ENABLE_LOGIN_FORM: ${ENABLE_LOGIN_FORM}
+      WEBUI_ADMIN_NAME: ${WEBUI_ADMIN_NAME}
+      WEBUI_ADMIN_EMAIL: ${WEBUI_ADMIN_EMAIL}
+      WEBUI_ADMIN_PASSWORD: ${WEBUI_ADMIN_PASSWORD}
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}
+      OPENAI_API_BASE_URL: ${OPENAI_API_BASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GLOBAL_LOG_LEVEL: ${GLOBAL_LOG_LEVEL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - xueyin-open-webui-data:/app/backend/data
+
+volumes:
+  xueyin-open-webui-data:

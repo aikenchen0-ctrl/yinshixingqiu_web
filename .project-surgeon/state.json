@@ -1,0 +1,288 @@
+{
+  "version": "1.0",
+  "skill": "project-surgeon",
+  "project_name": "xueyinMiniapp",
+  "project_path": "D:/CodeDevelopment/xueyinMiniapp",
+  "created_at": "2026-04-02T23:58:00+08:00",
+  "updated_at": "2026-04-03T00:30:41.5875832+08:00",
+  "current_phase": "review",
+  "phase_history": [
+    {
+      "phase": "analysis",
+      "entered_at": "2026-04-02T23:58:00+08:00",
+      "exited_at": "2026-04-03T00:30:41.5875832+08:00",
+      "exit_reason": "approved"
+    },
+    {
+      "phase": "review",
+      "entered_at": "2026-04-03T00:30:41.5875832+08:00",
+      "exited_at": null,
+      "exit_reason": null
+    }
+  ],
+  "analysis": {
+    "status": "completed",
+    "started_at": "2026-04-02T23:35:00+08:00",
+    "completed_at": "2026-04-02T23:58:00+08:00",
+    "steps_completed": [
+      "discovery",
+      "architecture",
+      "dependencies",
+      "documentation",
+      "report"
+    ],
+    "project_fingerprint": {
+      "root_path": "D:/CodeDevelopment/xueyinMiniapp",
+      "tech_stack": [
+        "Node.js",
+        "CommonJS",
+        "Prisma",
+        "PostgreSQL",
+        "React",
+        "Vite",
+        "TypeScript",
+        "WeChat Mini Program",
+        "WXML",
+        "WXSS",
+        "SCSS"
+      ],
+      "total_files": 241,
+      "total_loc": 60031,
+      "file_breakdown": {
+        "[noext]": 1,
+        ".cjs": 2,
+        ".conf": 3,
+        ".css": 1,
+        ".html": 24,
+        ".jpg": 3,
+        ".js": 12,
+        ".json": 36,
+        ".md": 21,
+        ".mjs": 1,
+        ".png": 3,
+        ".prisma": 1,
+        ".scss": 30,
+        ".svg": 4,
+        ".ts": 54,
+        ".tsx": 15,
+        ".wxml": 29,
+        ".yml": 1
+      },
+      "has_tests": false,
+      "test_framework": null,
+      "has_ci": false,
+      "has_docker": true
+    },
+    "architecture_analysis": {
+      "pattern": "Monorepo",
+      "entry_points": [
+        "backend/src/server.js",
+        "admin-web/src/main.tsx",
+        "miniprogram/app.ts"
+      ],
+      "key_abstractions": [
+        "backend/src/services/*",
+        "admin-web/src/services/*",
+        "miniprogram/utils/*"
+      ],
+      "module_count": 3
+    },
+    "dependency_health": {
+      "total_dependencies": 14,
+      "audit_results": {
+        "critical": 0,
+        "high": 0,
+        "moderate": 0,
+        "low": 0
+      },
+      "outdated_major": 0,
+      "potentially_unused": 0
+    },
+    "documentation_inventory": {
+      "files": [
+        {
+          "path": "docs/rebuild-workflow.md",
+          "last_modified": null,
+          "type": "guide"
+        },
+        {
+          "path": "docs/backend-architecture-plan.md",
+          "last_modified": null,
+          "type": "guide"
+        },
+        {
+          "path": "docs/backend-data-model.md",
+          "last_modified": null,
+          "type": "api"
+        },
+        {
+          "path": "docs/admin-rebuild-plan.md",
+          "last_modified": null,
+          "type": "guide"
+        },
+        {
+          "path": "docs/planet-dev-record.md",
+          "last_modified": null,
+          "type": "guide"
+        },
+        {
+          "path": "docs/serial-prompts/01-项目盘点与范围冻结.md",
+          "last_modified": null,
+          "type": "guide"
+        }
+      ],
+      "config_approach": "env-files",
+      "has_docker": true,
+      "has_iac": false,
+      "ci_platform": null
+    },
+    "report_file": ".project-surgeon/analysis-report.md",
+    "user_objective": {
+      "type": "custom",
+      "description": "盘点 backend、admin-web、miniprogram、docs 的真实现状，冻结第一轮范围，为 02-10 串行提示词提供输入；优先级 backend > admin-web > miniprogram。",
+      "confirmed_at": "2026-04-02T23:58:00+08:00"
+    }
+  },
+  "review": {
+    "status": "completed",
+    "started_at": "2026-04-03T00:13:00+08:00",
+    "completed_at": "2026-04-03T00:30:41.5875832+08:00",
+    "scope": "targeted",
+    "dimensions_completed": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D5",
+      "D6",
+      "D7"
+    ],
+    "findings": {
+      "total": 9,
+      "by_severity": {
+        "critical": 2,
+        "high": 4,
+        "medium": 3,
+        "low": 0,
+        "info": 0
+      },
+      "by_dimension": {
+        "D1": 3,
+        "D2": 4,
+        "D3": 0,
+        "D4": 0,
+        "D5": 1,
+        "D6": 0,
+        "D7": 1
+      }
+    },
+    "hot_spots": [
+      {
+        "file": "backend/src/services/joinFlowService.js",
+        "finding_count": 3
+      },
+      {
+        "file": "backend/src/services/contentService.js",
+        "finding_count": 3
+      },
+      {
+        "file": "backend/src/server.js",
+        "finding_count": 3
+      },
+      {
+        "file": "backend/src/services/authService.js",
+        "finding_count": 1
+      },
+      {
+        "file": "backend/src/services/planetService.js",
+        "finding_count": 1
+      }
+    ],
+    "systemic_issues": [
+      {
+        "pattern": "fragmented_identity_source",
+        "affected_files_count": 4,
+        "finding_ids": [
+          "PSR-D1-001",
+          "PSR-D1-002",
+          "PSR-D7-001"
+        ]
+      },
+      {
+        "pattern": "schema_ahead_of_delivery",
+        "affected_files_count": 3,
+        "finding_ids": [
+          "PSR-D2-002",
+          "PSR-D5-001"
+        ]
+      },
+      {
+        "pattern": "admin_and_ops_placeholders_on_live_surface",
+        "affected_files_count": 3,
+        "finding_ids": [
+          "PSR-D1-003",
+          "PSR-D7-001"
+        ]
+      }
+    ],
+    "report_file": ".project-surgeon/review-report.md",
+    "user_priorities": {
+      "mode": null,
+      "selected_findings": [],
+      "confirmed_at": null
+    }
+  },
+  "brainstorm": {
+    "bs1": {
+      "status": "completed",
+      "completed_at": "2026-04-02T23:58:00+08:00",
+      "artifact": ".project-surgeon/brainstorm/bs-1.md"
+    },
+    "bs2": {
+      "status": "completed",
+      "completed_at": "2026-04-03T00:30:41.5875832+08:00",
+      "audit_score": 4,
+      "artifact": ".project-surgeon/brainstorm/bs-2.md"
+    },
+    "bs3": {
+      "status": "pending",
+      "completed_at": null,
+      "artifact": null
+    },
+    "bs7_count": 0
+  },
+  "planning": {
+    "status": "pending",
+    "total_phases": 0,
+    "total_tasks": 0,
+    "plans_written": {
+      "level_1": false,
+      "level_2_count": 0,
+      "level_3_count": 0
+    }
+  },
+  "execution": {
+    "status": "pending",
+    "current_phase_index": 0,
+    "current_task_index": 0,
+    "total_phases": 0,
+    "phases": {},
+    "test_baseline": {
+      "has_tests": false,
+      "total_tests": 0,
+      "passing": 0,
+      "failing": 0,
+      "failing_test_ids": [],
+      "captured_at": null
+    },
+    "deepwiki_cache": {
+      "phases_researched": [],
+      "cache_dir": ".project-surgeon/deepwiki-cache/"
+    },
+    "error_log": []
+  },
+  "bug_fixer": {
+    "reviews": []
+  },
+  "change_requests": []
+}

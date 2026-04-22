@@ -1,0 +1,70 @@
+services:
+  hermes-gateway:
+    build:
+      context: .
+      dockerfile: hermes-gateway.Dockerfile
+    container_name: xueyin-hermes-gateway
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${HERMES_LLM_API_KEY}
+      HERMES_LLM_BASE_URL: ${HERMES_LLM_BASE_URL}
+      HERMES_LLM_MODEL: ${HERMES_LLM_MODEL}
+      API_SERVER_ENABLED: "true"
+      API_SERVER_KEY: ${HERMES_API_SERVER_KEY}
+      API_SERVER_HOST: 0.0.0.0
+      API_SERVER_PORT: 8642
+    command:
+      - bash
+      - -lc
+      - |
+          : "${HERMES_LLM_BASE_URL:?missing HERMES_LLM_BASE_URL}"
+          : "${HERMES_LLM_MODEL:?missing HERMES_LLM_MODEL}"
+          # Hermes 0.9 reads provider/model/base_url from config.yaml rather than OPENAI_BASE_URL/LLM_MODEL.
+          hermes config set model.default "${HERMES_LLM_MODEL}"
+          hermes config set model.provider custom
+          hermes config set model.base_url "${HERMES_LLM_BASE_URL}"
+          hermes config set model.api_mode chat_completions
+          exec hermes gateway
+    working_dir: /workspace/xueyinMiniapp
+    ports:
+      - "127.0.0.1:8642:8642"
+    volumes:
+      - ../..:/workspace/xueyinMiniapp
+      - hermes-state:/root/.hermes
+      - hermes-cache:/root/.cache
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main-slim
+    container_name: xueyin-open-webui
+    restart: unless-stopped
+    depends_on:
+      - hermes-gateway
+    env_file:
+      - .env.openwebui-hermes-docker
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8080
+      WEBUI_URL: ${WEBUI_URL}
+      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN}
+      WEBUI_SESSION_COOKIE_SECURE: ${WEBUI_SESSION_COOKIE_SECURE}
+      WEBUI_AUTH_COOKIE_SECURE: ${WEBUI_AUTH_COOKIE_SECURE}
+      WEBUI_SESSION_COOKIE_SAME_SITE: ${WEBUI_SESSION_COOKIE_SAME_SITE}
+      WEBUI_AUTH_COOKIE_SAME_SITE: ${WEBUI_AUTH_COOKIE_SAME_SITE}
+      ENABLE_SIGNUP: ${ENABLE_SIGNUP}
+      ENABLE_LOGIN_FORM: ${ENABLE_LOGIN_FORM}
+      WEBUI_ADMIN_NAME: ${WEBUI_ADMIN_NAME}
+      WEBUI_ADMIN_EMAIL: ${WEBUI_ADMIN_EMAIL}
+      WEBUI_ADMIN_PASSWORD: ${WEBUI_ADMIN_PASSWORD}
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}
+      OPENAI_API_BASE_URL: http://hermes-gateway:8642/v1
+      OPENAI_API_KEY: ${HERMES_API_SERVER_KEY}
+      GLOBAL_LOG_LEVEL: ${GLOBAL_LOG_LEVEL}
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - xueyin-open-webui-data:/app/backend/data
+
+volumes:
+  hermes-state:
+  hermes-cache:
+  xueyin-open-webui-data:

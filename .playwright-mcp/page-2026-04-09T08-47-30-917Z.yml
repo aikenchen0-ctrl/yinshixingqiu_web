@@ -1,0 +1,14 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]: C
+    - generic [ref=e7]:
+      - generic [ref=e8]: 知识星球
+      - generic [ref=e9]: admin-web 登录
+  - generic [ref=e10]: 手机号登录
+  - generic [ref=e11]: web 端不提供注册。请输入已在小程序绑定过的手机号。
+  - generic [ref=e12]:
+    - generic [ref=e13]: 账号
+    - textbox "账号" [ref=e14]:
+      - /placeholder: 请输入手机号
+  - button "登录" [disabled] [ref=e15]
+  - generic [ref=e16]: 如果提示手机号未绑定，请先去小程序完成注册和手机号绑定。

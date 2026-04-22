@@ -1,0 +1,11 @@
+{
+  "started_at": "2026-04-03T01:15:18.6909599+08:00",
+  "pass": 2,
+  "checked_at": "2026-04-03T01:15:28.7076287+08:00",
+  "timeout_minutes": 12,
+  "exit_code": 1,
+  "type": "pass_finished",
+  "status": "failed",
+  "prompt": "01-项目盘点与范围冻结",
+  "pid": 7304
+}

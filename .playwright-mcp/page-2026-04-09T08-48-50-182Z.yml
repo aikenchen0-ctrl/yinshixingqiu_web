@@ -1,0 +1,131 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: C
+      - generic [ref=e7]: 知识星球
+      - generic [ref=e8]: 社群工具
+    - button "切换到旧数据后台" [ref=e9] [cursor=pointer]
+  - generic [ref=e10]:
+    - complementary [ref=e11]:
+      - generic [ref=e12]: ‹ 返回星球列表
+      - navigation [ref=e13]:
+        - link "收 收入数据" [ref=e15] [cursor=pointer]:
+          - /url: /income?groupId=grp_empty_001
+          - generic [ref=e16]: 收
+          - generic [ref=e17]: 收入数据
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]: 推
+            - generic [ref=e21]: 推广拉新
+            - generic [ref=e22]: ▾
+          - generic [ref=e23]:
+            - link "推广数据" [ref=e24] [cursor=pointer]:
+              - /url: /promotion/data?groupId=grp_empty_001
+              - generic [ref=e25]: 推广数据
+            - link "新人优惠券" [ref=e26] [cursor=pointer]:
+              - /url: /promotion/new-user-coupons?groupId=grp_empty_001
+              - generic [ref=e27]: 新人优惠券
+            - link "渠道二维码" [ref=e28] [cursor=pointer]:
+              - /url: /promotion/channel-qrcodes?groupId=grp_empty_001
+              - generic [ref=e29]: 渠道二维码
+            - link "付费页优化" [ref=e30] [cursor=pointer]:
+              - /url: /promotion/paywall-optimization?groupId=grp_empty_001
+              - generic [ref=e31]: 付费页优化
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - generic [ref=e34]: 活
+            - generic [ref=e35]: 用户活跃
+            - generic [ref=e36]: ▾
+          - generic [ref=e37]:
+            - link "成员活跃" [ref=e38] [cursor=pointer]:
+              - /url: /activity/members?groupId=grp_empty_001
+              - generic [ref=e39]: 成员活跃
+            - link "内容活跃" [ref=e40] [cursor=pointer]:
+              - /url: /activity/content?groupId=grp_empty_001
+              - generic [ref=e41]: 内容活跃
+            - link "成员积分榜" [ref=e42] [cursor=pointer]:
+              - /url: /activity/scoreboard?groupId=grp_empty_001
+              - generic [ref=e43]: 成员积分榜
+            - link "活跃工具" [ref=e44] [cursor=pointer]:
+              - /url: /activity/tools?groupId=grp_empty_001
+              - generic [ref=e45]: 活跃工具
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - generic [ref=e48]: 续
+            - generic [ref=e49]: 成员续期
+            - generic [ref=e50]: ▾
+          - generic [ref=e51]:
+            - link "续期数据" [ref=e52] [cursor=pointer]:
+              - /url: /renewal/data?groupId=grp_empty_001
+              - generic [ref=e53]: 续期数据
+            - link "续期优惠券" [ref=e54] [cursor=pointer]:
+              - /url: /renewal/coupons?groupId=grp_empty_001
+              - generic [ref=e55]: 续期优惠券
+            - link "分组通知" [ref=e56] [cursor=pointer]:
+              - /url: /renewal/group-notices?groupId=grp_empty_001
+              - generic [ref=e57]: 分组通知
+            - link "续期页优化" [ref=e58] [cursor=pointer]:
+              - /url: /renewal/page-optimization?groupId=grp_empty_001
+              - generic [ref=e59]: 续期页优化
+            - link "续期折扣" [ref=e60] [cursor=pointer]:
+              - /url: /renewal/discounts?groupId=grp_empty_001
+              - generic [ref=e61]: 续期折扣
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: 营
+            - generic [ref=e65]: 运营工具
+            - generic [ref=e66]: ▾
+          - generic [ref=e67]:
+            - link "优惠券" [ref=e68] [cursor=pointer]:
+              - /url: /tools/coupons?groupId=grp_empty_001
+              - generic [ref=e69]: 优惠券
+            - link "分组通知" [ref=e70] [cursor=pointer]:
+              - /url: /tools/group-notices?groupId=grp_empty_001
+              - generic [ref=e71]: 分组通知
+            - link "渠道二维码" [ref=e72] [cursor=pointer]:
+              - /url: /tools/channel-qrcodes?groupId=grp_empty_001
+              - generic [ref=e73]: 渠道二维码
+            - link "付费页优化" [ref=e74] [cursor=pointer]:
+              - /url: /tools/paywall-optimization?groupId=grp_empty_001
+              - generic [ref=e75]: 付费页优化
+            - link "成员积分榜 New" [ref=e76] [cursor=pointer]:
+              - /url: /tools/scoreboard?groupId=grp_empty_001
+              - generic [ref=e77]: 成员积分榜
+              - generic [ref=e78]: New
+            - link "创作灵感" [ref=e79] [cursor=pointer]:
+              - /url: /tools/idea-lab?groupId=grp_empty_001
+              - generic [ref=e80]: 创作灵感
+            - link "视频号直播" [ref=e81] [cursor=pointer]:
+              - /url: /tools/channel-live?groupId=grp_empty_001
+              - generic [ref=e82]: 视频号直播
+            - link "成员身份验证 New" [ref=e83] [cursor=pointer]:
+              - /url: /tools/member-verification?groupId=grp_empty_001
+              - generic [ref=e84]: 成员身份验证
+              - generic [ref=e85]: New
+        - link "权 权限设置" [ref=e87] [cursor=pointer]:
+          - /url: /permissions?groupId=grp_empty_001
+          - generic [ref=e88]: 权
+          - generic [ref=e89]: 权限设置
+    - main [ref=e90]:
+      - generic [ref=e92]:
+        - heading "推广数据" [level=1] [ref=e94]
+        - generic [ref=e95]: 推广拉新
+        - paragraph [ref=e96]: 先对齐真实后台里的推广漏斗、渠道明细和归因订单。
+      - generic [ref=e98]:
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]: grp_empty_001
+            - generic [ref=e102]:
+              - generic [ref=e103]: 星主：-
+              - generic [ref=e104]: groupId：grp_empty_001
+              - generic [ref=e105]: 模式：推广分析
+          - generic [ref=e106]: 推广报表
+        - generic [ref=e108]:
+          - generic [ref=e109]:
+            - generic [ref=e110]: 数据范围
+            - generic [ref=e111]: 先用近 7 / 15 / 30 天快速对齐真实后台节奏。
+          - generic [ref=e112]:
+            - button "近 7 天" [ref=e113] [cursor=pointer]
+            - button "近 15 天" [ref=e114] [cursor=pointer]
+            - button "近 30 天" [ref=e115] [cursor=pointer]
+        - generic [ref=e116]: 加载中...

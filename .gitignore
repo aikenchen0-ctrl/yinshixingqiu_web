@@ -45,6 +45,9 @@ backend/wxpay/
 backend/uploads/
 backend/server.log
 backend/server.err.log
+backend/xueyinaAgent.zip
+backend/xueyinaAgent/*.zip
+backend/xueyinaAgent/kb/data/*.sqlite
 
 # Test output
 minitest/minitest-*.json

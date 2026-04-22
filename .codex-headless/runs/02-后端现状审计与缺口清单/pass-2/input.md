@@ -1,0 +1,160 @@
+# Codex Headless Run Context
+
+Current step: 02-后端现状审计与缺口清单
+Current pass: 2
+Project root: D:\CodeDevelopment\xueyinMiniapp
+
+## Execution Rules
+
+- You are running in headless mode.
+- Work directly in the repository instead of only giving advice.
+- Focus on finishing the current prompt requirement.
+- At the end of this pass, provide a clear completion status and quality score.
+- If earlier passes already completed part of the work, continue from there instead of starting over.
+
+## Previous Prompt Summary
+
+# 01-项目盘点与范围冻结 Summary
+
+Source pass: pass-4
+
+DRY RUN
+
+FINAL_STATUS: PARTIAL
+QUALITY_SCORE: 1
+NEXT_ACTIONS:
+- Run the script without -DryRun to invoke Codex.
+CHANGED_FILES:
+- None
+
+## Current Prompt Previous Pass Outputs
+
+## pass-1
+
+已完成 `backend` 审计，报告已写入 [02-后端现状审计与缺口清单-审计报告.md](D:/CodeDevelopment/xueyinMiniapp/docs/serial-prompts/02-后端现状审计与缺口清单-审计报告.md)。
+
+核心结论是：后端已经有认证、建星球、帖子/评论/点赞、加入下单、会员回写这条半成品主干，但真正卡闭环的是 3 个 P0：身份来源还没统一到 session、内容读接口缺少付费访问控制、支付仍停留在 mock callback。P1 主要是 admin 统计仍为静态数据、券/渠道码缺最小管理接口、调试/订单接口权限边界不足。`npm run verify:join-flow` 也试了，但本地 PostgreSQL 未启动，`localhost:5432` 不可达，所以本轮结论是静态代码审计，不是运行态验收。
+
+FINAL_STATUS: COMPLETE
+QUALITY_SCORE: 4
+NEXT_ACTIONS:
+- 以新报告为 03 号提示词输入，先按“身份统一 -> 内容读权限 -> 真实支付 -> admin 统计 -> 运营接口”排一期阶段。
+- 如果下一轮需要跑通验流，先在 `backend` 目录执行 `npm run db:start`，再重跑 `npm run verify:join-flow`。
+CHANGED_FILES:
+- docs/serial-prompts/02-后端现状审计与缺口清单-审计报告.md
+
+## pass-2
+
+DRY RUN
+
+FINAL_STATUS: PARTIAL
+QUALITY_SCORE: 1
+NEXT_ACTIONS:
+- Run the script without -DryRun to invoke Codex.
+CHANGED_FILES:
+- None
+
+
+## pass-3
+
+DRY RUN
+
+FINAL_STATUS: PARTIAL
+QUALITY_SCORE: 1
+NEXT_ACTIONS:
+- Run the script without -DryRun to invoke Codex.
+CHANGED_FILES:
+- None
+
+
+## pass-4
+
+DRY RUN
+
+FINAL_STATUS: PARTIAL
+QUALITY_SCORE: 1
+NEXT_ACTIONS:
+- Run the script without -DryRun to invoke Codex.
+CHANGED_FILES:
+- None
+
+## Current Prompt Body
+
+# Prompt 02: 后端现状审计与缺口清单
+
+你现在只聚焦 `backend`。请把 01 号提示词的结论作为前置输入，如果 01 号结论缺失，就先自行重建最小结论再继续。
+
+本轮目标是把后端“已经能跑的能力”和“还没补齐的能力”拆成一份可执行缺口清单，为 03-04 号提示词提供依据。
+
+## 范围
+
+- 目录：`D:\CodeDevelopment\xueyinMiniapp\backend`
+- 重点关注：
+  - `src/server.js`
+  - `src/services`
+  - `prisma/schema.prisma`
+  - `scripts`
+
+## 对标能力
+
+请重点按以下能力审计：
+
+1. 认证登录
+2. 星球创建与发现
+3. 加入星球与订单支付
+4. 星球主页与帖子流
+5. 发帖/改帖/删帖
+6. 评论与点赞
+7. 我的星球/我的帖子
+8. 管理后台所需统计数据
+9. 优惠券/渠道码/续期/通知
+10. 可用于联调的调试与运维接口
+
+## 执行步骤
+
+1. 列出已存在的 HTTP 路由清单。
+2. 列出每个路由实际调用的 service。
+3. 对每个 service 判断：
+   - 是否完成核心业务
+   - 是否只返回静态数据
+   - 是否缺少权限判断
+   - 是否缺少异常分支
+   - 是否缺少真实数据回写
+4. 对 Prisma schema 做一次“落地度审计”：
+   - 已经被真实 service 用到的模型
+   - schema 中定义了但几乎没落地的模型
+5. 识别后端当前最关键的缺口。
+6. 将缺口按优先级排序：
+   - P0：不补就无法形成闭环
+   - P1：影响后台可用性
+   - P2：可放到第二轮
+
+## 输出要求
+
+输出一份 Markdown 报告，标题为“后端现状审计与缺口清单”。
+
+必须包含以下内容：
+
+1. 已有接口总表
+2. 已落地 service 能力清单
+3. schema 落地度分析
+4. P0/P1/P2 缺口清单
+5. 最建议先补的 3-5 个后端能力
+6. 给 03 号提示词的输入摘要
+
+## 额外要求
+
+- 每个结论后尽量带文件路径证据
+- 明确写出“不是没表，而是没接口”还是“有接口，但没前端消费”
+
+
+## Required Footer
+
+Append the following machine-readable footer at the end of your final response:
+
+FINAL_STATUS: COMPLETE | PARTIAL | BLOCKED
+QUALITY_SCORE: 1-5
+NEXT_ACTIONS:
+- ...
+CHANGED_FILES:
+- ...

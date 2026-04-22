@@ -22,9 +22,16 @@
     ]
   },
   "include": [
-    "./**/*.ts"
+    "./miniprogram/**/*.ts",
+    "./miniprogram/**/*.d.ts",
+    "./typings/**/*.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "admin-web",
+    "backend",
+    "scripts",
+    "temp",
+    "ai-finish-plan"
   ]
 }

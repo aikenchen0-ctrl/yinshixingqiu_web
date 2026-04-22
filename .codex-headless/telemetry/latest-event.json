@@ -1,0 +1,8 @@
+{
+  "received_at": "2026-04-02T17:15:28.721Z",
+  "prompt": "01-项目盘点与范围冻结",
+  "pass": 2,
+  "checked_at": "2026-04-03T01:15:28.7193015+08:00",
+  "message": "Codex execution failed with exit code 1. Check D:\\CodeDevelopment\\xueyinMiniapp\\.codex-headless\\runs\\01-项目盘点与范围冻结\\pass-2\\stderr.log",
+  "type": "pass_failed"
+}
