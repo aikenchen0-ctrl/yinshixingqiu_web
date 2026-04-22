@@ -3,7 +3,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { defaultReferencePath, referencePageMap } from '../../data/referencePages'
 
 const titleRouteMap: Record<string, string> = {
-  收入数据: '/income',
   权限设置: '/permissions',
 }
 
@@ -13,7 +12,7 @@ const subtitleRouteEntries = [
   { label: '渠道二维码', path: '/promotion/channel-qrcodes' },
   { label: '付费页优化', path: '/promotion/paywall-optimization' },
   { label: '成员活跃', path: '/activity/members' },
-  { label: '内容活跃', path: '/activity/content' },
+  { label: '文章管理', path: '/activity/content' },
   { label: '成员积分榜', path: '/activity/scoreboard' },
   { label: '活跃工具', path: '/activity/tools' },
   { label: '续期数据', path: '/renewal/data' },
@@ -31,11 +30,21 @@ const subtitleRouteEntries = [
   { label: '成员身份验证', path: '/tools/member-verification' },
 ]
 
+const hiddenSubtitleLabels = new Set(['活跃工具', '创作灵感', '渠道二维码', '视频号直播', '分组通知', '续期页优化'])
+const hiddenTitleLabels = new Set(['收入数据'])
+
 export function ReferenceFramePage() {
   const location = useLocation()
   const navigate = useNavigate()
   const frameRef = useRef<HTMLIFrameElement | null>(null)
   const frameSource = referencePageMap[location.pathname]
+
+  function navigateWithCurrentSearch(path: string) {
+    navigate({
+      pathname: path,
+      search: location.search,
+    })
+  }
 
   useEffect(() => {
     const frame = frameRef.current
@@ -49,24 +58,33 @@ export function ReferenceFramePage() {
       const titleNodes = Array.from(frameDocument.querySelectorAll<HTMLElement>('.navigation .title'))
       titleNodes.forEach((node) => {
         const label = node.innerText.trim()
+        if (hiddenTitleLabels.has(label)) {
+          node.style.display = 'none'
+          return
+        }
         const targetPath = titleRouteMap[label]
         if (!targetPath) return
         node.style.cursor = 'pointer'
         node.onclick = (event) => {
           event.preventDefault()
-          navigate(targetPath)
+          navigateWithCurrentSearch(targetPath)
         }
       })
 
       const subtitleNodes = Array.from(frameDocument.querySelectorAll<HTMLElement>('.navigation .subtitle'))
       subtitleNodes.forEach((node, index) => {
         const label = node.innerText.replace(/\nnew$/i, '').trim()
+        if (hiddenSubtitleLabels.has(label)) {
+          node.style.display = 'none'
+          return
+        }
+
         const entry = subtitleRouteEntries[index]
         if (!entry || entry.label !== label) return
         node.style.cursor = 'pointer'
         node.onclick = (event) => {
           event.preventDefault()
-          navigate(entry.path)
+          navigateWithCurrentSearch(entry.path)
         }
       })
     }
@@ -77,7 +95,7 @@ export function ReferenceFramePage() {
     return () => {
       frame.removeEventListener('load', bindNavigation)
     }
-  }, [location.pathname, navigate])
+  }, [location.pathname, location.search, navigate])
 
   if (!frameSource) {
     return <Navigate to={defaultReferencePath} replace />

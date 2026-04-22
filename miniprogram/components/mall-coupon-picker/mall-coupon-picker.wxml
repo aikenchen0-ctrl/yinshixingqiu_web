@@ -1,0 +1,56 @@
+<block wx:if="{{visible}}">
+  <view class="mall-coupon-picker-overlay" style="z-index: {{overlayZIndex}};" bindtap="onClose">
+    <view class="mall-coupon-picker-sheet mall-coupon-picker-sheet-{{theme}}" catchtap="noop">
+      <view class="mall-coupon-picker-handle"></view>
+
+      <view class="mall-coupon-picker-head">
+        <view class="mall-coupon-picker-copy">
+          <text class="mall-coupon-picker-title">{{title}}</text>
+          <text wx:if="{{subtitle}}" class="mall-coupon-picker-subtitle">{{subtitle}}</text>
+        </view>
+        <text class="mall-coupon-picker-close" bindtap="onClose">{{closeText}}</text>
+      </view>
+
+      <scroll-view class="mall-coupon-picker-scroll" scroll-y="{{true}}">
+        <view wx:if="{{options.length}}" class="mall-coupon-picker-list">
+          <view
+            wx:for="{{options}}"
+            wx:key="id"
+            class="mall-coupon-picker-option {{item.selected ? 'mall-coupon-picker-option-active' : ''}}"
+            data-selection-mode="{{item.selectionMode}}"
+            data-coupon-code="{{item.couponCode}}"
+            bindtap="onSelect"
+          >
+            <view class="mall-coupon-picker-option-head">
+              <view class="mall-coupon-picker-option-copy">
+                <view class="mall-coupon-picker-option-title-row">
+                  <text class="mall-coupon-picker-option-title">{{item.title}}</text>
+                  <text
+                    wx:if="{{item.badgeText}}"
+                    class="mall-coupon-picker-option-badge {{item.selected ? 'mall-coupon-picker-option-badge-active' : (item.recommended ? 'mall-coupon-picker-option-badge-recommended' : '')}}"
+                  >
+                    {{item.badgeText}}
+                  </text>
+                </view>
+                <text class="mall-coupon-picker-option-caption">{{item.caption}}</text>
+              </view>
+
+              <view class="mall-coupon-picker-option-side">
+                <text class="mall-coupon-picker-option-discount">
+                  {{item.discountAmount > 0 ? ('-' + item.discountAmountText) : '不抵扣'}}
+                </text>
+                <text class="mall-coupon-picker-option-action">
+                  {{item.selected ? '已选' : (item.optionType === 'COUPON' ? '点击使用' : '点击切换')}}
+                </text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view wx:else class="mall-coupon-picker-empty">
+          <text class="mall-coupon-picker-empty-text">{{emptyText}}</text>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</block>

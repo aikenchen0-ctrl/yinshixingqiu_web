@@ -1,0 +1,116 @@
+<navigation-bar back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
+
+<!-- 月份选择器覆盖层 -->
+<view class="month-picker-overlay">
+  <picker mode="date" fields="month" value="{{pickerValue}}" bindchange="onPickerChange">
+    <view class="month-picker-overlay-hit"></view>
+  </picker>
+</view>
+
+<scroll-view class="checkin-record-page" scroll-y="{{true}}">
+  <view class="checkin-record-shell">
+    <view class="record-topbar">
+      <page-back-button
+        extClass="record-back-button"
+        color="#22c1a4"
+        text="返回"
+        showText="{{true}}"
+        fallbackUrl="/pages/planet/checkin-detail?id={{challengeId}}&groupId={{groupId}}"
+        fallbackMode="redirect"
+      ></page-back-button>
+    </view>
+
+    <!-- 年月标题 -->
+    <view class="year-month-header">
+      <text class="year-month-text">{{year}}年{{month}}月</text>
+    </view>
+
+    <!-- 日历卡片 -->
+    <view class="calendar-card">
+      <view class="calendar-weekdays">
+        <text wx:for="{{weekdayLabels}}" wx:key="*this" class="weekday-label">{{item}}</text>
+      </view>
+
+      <view class="calendar-grid">
+        <view
+          wx:for="{{calendarDays}}"
+          wx:key="index"
+          class="calendar-cell {{item.isEmpty ? 'calendar-cell-empty' : ''}} {{item.isSelected ? 'calendar-cell-selected' : ''}} {{item.isMarked ? 'calendar-cell-marked' : ''}}"
+          data-day="{{item.day}}"
+          bindtap="onSelectDay"
+        >
+          <view class="calendar-cell-inner">
+            <text wx:if="{{!item.isEmpty}}" class="calendar-cell-day">{{item.day}}</text>
+            <view wx:if="{{item.isMarked && !item.isSelected}}" class="calendar-cell-dot"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="day-info-card">
+      <view class="day-info-header">
+        <view class="day-info-date">
+          <text class="day-info-date-number">{{selectedDay}}</text>
+          <text class="day-info-date-unit">日</text>
+        </view>
+        <view class="day-info-status {{selectedDayChecked ? 'day-info-status-checked' : 'day-info-status-unchecked'}}">
+          <text class="day-info-status-text">{{selectedDayChecked ? '已打卡' : '未打卡'}}</text>
+        </view>
+      </view>
+
+      <view class="day-info-progress">
+        <view class="progress-row">
+          <text class="progress-label">本月进度</text>
+          <text class="progress-value">{{progressPercent}}%</text>
+        </view>
+        <view class="progress-bar">
+          <view class="progress-fill" style="width: {{progressPercent}}%;"></view>
+        </view>
+        <view class="progress-stats">
+          <view class="stat-item">
+            <text class="stat-value">{{streakDays}}</text>
+            <text class="stat-label">连续打卡</text>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <text class="stat-value">{{totalDays}}</text>
+            <text class="stat-label">累计打卡</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="day-info-actions">
+        <button class="action-btn" wx:if="{{!selectedDayChecked}}" disabled>去打卡</button>
+        <button class="action-btn" disabled="{{!selectedDayChecked}}">去分享</button>
+      </view>
+    </view>
+
+    <view class="posts-section">
+      <view class="posts-header" bindtap="onToggleAllPosts">
+        <text class="posts-title">当天打卡动态</text>
+        <view class="posts-toggle">
+          <text class="posts-toggle-text">{{showAllPosts ? '收起' : '查看全部'}}</text>
+          <text class="posts-toggle-arrow {{showAllPosts ? 'posts-toggle-arrow-open' : ''}}">›</text>
+        </view>
+      </view>
+
+      <view wx:if="{{showAllPosts}}" class="posts-list">
+        <view wx:for="{{allPosts}}" wx:key="id" class="post-item">
+          <view class="post-item-head">
+            <image class="post-avatar" src="{{item.author.avatarUrl}}" mode="aspectFill"></image>
+            <view class="post-meta">
+              <text class="post-name">{{item.author.name}}</text>
+              <text class="post-time">{{item.createdAt}}</text>
+            </view>
+          </view>
+          <text class="post-content">{{item.content}}</text>
+        </view>
+
+        <view wx:if="{{!allPosts.length}}" class="empty-state">
+          <view class="empty-icon">📝</view>
+          <text class="empty-text">这一天还没有人打卡</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</scroll-view>

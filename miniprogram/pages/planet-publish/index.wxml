@@ -1,4 +1,4 @@
-<navigation-bar title="{{isEditMode ? '编辑主题' : '发表主题'}}" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
+<navigation-bar title="{{isEditMode ? '编辑内容' : pageTitle}}" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
 
 <view class="page planet-publish-page">
   <scroll-view class="planet-publish-scroll" scroll-y="{{true}}">
@@ -8,41 +8,139 @@
           <text class="planet-publish-label">发布到</text>
           <text class="planet-publish-name">{{planetName}}</text>
         </view>
-        <text class="planet-publish-tip">原生富文本编辑</text>
+        <text class="planet-publish-tip">
+          {{isQuestionMode ? '问答表单' : (isCheckinMode ? '打卡记录' : (isHomeworkMode ? '作业提交' : '普通发帖'))}}
+        </text>
+      </view>
+
+      <view wx:if="{{moderationNotice.visible}}" class="planet-publish-moderation planet-publish-moderation-{{moderationNotice.tone}}">
+        <text class="planet-publish-moderation-title">{{moderationNotice.title}}</text>
+        <text wx:if="{{moderationNotice.meta}}" class="planet-publish-moderation-meta">{{moderationNotice.meta}}</text>
+        <text class="planet-publish-moderation-text">{{moderationNotice.message}}</text>
       </view>
 
       <view class="planet-publish-card">
+        <view wx:if="{{!isQuestionMode && !isCheckinMode && !isHomeworkMode}}" class="planet-publish-ask-banner planet-publish-ask-banner-normal">
+          <text class="planet-publish-ask-banner-title">普通帖子适合自由分享</text>
+          <text class="planet-publish-ask-banner-text">可以发观点、经验、近况、案例或资源，不需要按问答格式来写。</text>
+        </view>
+
+        <view wx:if="{{isQuestionMode}}" class="planet-publish-ask-banner">
+          <text class="planet-publish-ask-banner-title">问题会更快被看见</text>
+          <text class="planet-publish-ask-banner-text">先选回答对象，再把背景、尝试过程和你想得到的帮助写清楚。</text>
+        </view>
+
+        <view wx:if="{{isCheckinMode}}" class="planet-publish-ask-banner planet-publish-ask-banner-checkin">
+          <text class="planet-publish-ask-banner-title">打卡更适合记录进度</text>
+          <text class="planet-publish-ask-banner-text">简单写清楚今天做了什么、推进到了哪里、接下来怎么继续就够用了。</text>
+        </view>
+
+        <view wx:if="{{isHomeworkMode}}" class="planet-publish-ask-banner planet-publish-ask-banner-homework">
+          <text class="planet-publish-ask-banner-title">作业重点看过程和结果</text>
+          <text class="planet-publish-ask-banner-text">把作业目标、你的解法和最终产出整理清楚，老师和同学会更容易看懂。</text>
+        </view>
+
+        <view wx:if="{{isQuestionMode}}" class="planet-publish-field">
+          <view class="planet-publish-field-head">
+            <text class="planet-publish-field-title">选择被提问成员</text>
+            <text class="planet-publish-field-value">{{selectedQuestionTargetName}}</text>
+          </view>
+          <view class="planet-publish-member-trigger" bindtap="onOpenQuestionTargetPopup">
+            <view class="planet-publish-member-trigger-main">
+              <text class="planet-publish-member-trigger-name">{{selectedQuestionTargetName || '请选择成员'}}</text>
+              <text class="planet-publish-member-trigger-desc">点击从成员列表中选择，可搜索</text>
+            </view>
+            <text class="planet-publish-member-trigger-arrow">></text>
+          </view>
+        </view>
+
         <input
           class="planet-publish-title-input"
           maxlength="40"
-          placeholder="给主题起个标题，更容易被成员看到"
+          placeholder="{{titlePlaceholder}}"
           placeholder-class="planet-publish-input-placeholder"
           value="{{title}}"
           bindinput="onTitleInput"
         />
 
+        <view class="planet-publish-field">
+          <view class="planet-publish-field-head">
+            <text class="planet-publish-field-title">分享封面</text>
+            <view
+              class="planet-publish-section-button {{uploadingCover ? 'planet-publish-section-button-disabled' : ''}}"
+              bindtap="onChooseCoverImage"
+            >
+              {{uploadingCover ? '上传中...' : (coverImageUrl ? '更换封面' : '选择封面')}}
+            </view>
+          </view>
+          <text class="planet-publish-cover-hint">分享文章时优先显示这里的封面；不设置时默认取正文第一张图片。</text>
+          <view wx:if="{{coverImageUrl}}" class="planet-publish-cover-card">
+            <image class="planet-publish-cover-image" src="{{coverImageUrl}}" mode="aspectFill"></image>
+            <view class="planet-publish-cover-actions">
+              <view class="planet-publish-cover-action" bindtap="onChooseCoverImage">更换</view>
+              <view class="planet-publish-cover-action planet-publish-cover-action-danger" bindtap="onRemoveCoverImage">移除</view>
+            </view>
+          </view>
+          <view wx:else class="planet-publish-cover-empty" bindtap="onChooseCoverImage">
+            <text class="planet-publish-cover-empty-title">添加分享封面</text>
+            <text class="planet-publish-cover-empty-text">支持从相册或相机选择一张图片，编辑帖子时也可以随时更换。</text>
+          </view>
+        </view>
+
+        <view wx:if="{{isCheckinMode}}" class="planet-publish-inline-grid">
+          <view class="planet-publish-field planet-publish-field-grid">
+            <text class="planet-publish-field-title">今日状态</text>
+            <input
+              class="planet-publish-inline-input"
+              maxlength="20"
+              placeholder="例如 正常推进 / 卡住了"
+              placeholder-class="planet-publish-input-placeholder"
+              value="{{checkinStatus}}"
+              bindinput="onCheckinStatusInput"
+            />
+          </view>
+          <view class="planet-publish-field planet-publish-field-grid">
+            <text class="planet-publish-field-title">完成进度</text>
+            <input
+              class="planet-publish-inline-input"
+              maxlength="20"
+              placeholder="例如 60% / 第5天"
+              placeholder-class="planet-publish-input-placeholder"
+              value="{{checkinProgress}}"
+              bindinput="onCheckinProgressInput"
+            />
+          </view>
+        </view>
+
+        <view wx:if="{{isHomeworkMode}}" class="planet-publish-inline-grid">
+          <view class="planet-publish-field planet-publish-field-grid">
+            <text class="planet-publish-field-title">交付物</text>
+            <input
+              class="planet-publish-inline-input"
+              maxlength="30"
+              placeholder="例如 方案文档 / 页面原型 / 视频作业"
+              placeholder-class="planet-publish-input-placeholder"
+              value="{{homeworkDeliverable}}"
+              bindinput="onHomeworkDeliverableInput"
+            />
+          </view>
+          <view class="planet-publish-field planet-publish-field-grid">
+            <text class="planet-publish-field-title">截止时间</text>
+            <input
+              class="planet-publish-inline-input"
+              maxlength="20"
+              placeholder="例如 今天 22:00 / 4月6日"
+              placeholder-class="planet-publish-input-placeholder"
+              value="{{homeworkDeadline}}"
+              bindinput="onHomeworkDeadlineInput"
+            />
+          </view>
+        </view>
+
         <view class="planet-publish-toolbar">
-          <view
-            class="planet-publish-tool {{toolbarStatus.bold ? 'planet-publish-tool-active' : ''}}"
-            data-command="bold"
-            bindtap="onToolbarTap"
-          >
-            B
-          </view>
-          <view
-            class="planet-publish-tool {{toolbarStatus.italic ? 'planet-publish-tool-active' : ''}}"
-            data-command="italic"
-            bindtap="onToolbarTap"
-          >
-            I
-          </view>
-          <view
-            class="planet-publish-tool {{toolbarStatus.underline ? 'planet-publish-tool-active' : ''}}"
-            data-command="underline"
-            bindtap="onToolbarTap"
-          >
-            U
-          </view>
+          <view wx:if="{{!isQuestionMode}}" class="planet-publish-tool {{toolbarStatus.bold ? 'planet-publish-tool-active' : ''}}" data-command="bold" bindtap="onToolbarTap">B</view>
+          <view wx:if="{{!isQuestionMode}}" class="planet-publish-tool {{toolbarStatus.italic ? 'planet-publish-tool-active' : ''}}" data-command="italic" bindtap="onToolbarTap">I</view>
+          <view wx:if="{{!isQuestionMode}}" class="planet-publish-tool {{toolbarStatus.underline ? 'planet-publish-tool-active' : ''}}" data-command="underline" bindtap="onToolbarTap">U</view>
           <view
             class="planet-publish-tool {{toolbarStatus.heading ? 'planet-publish-tool-active' : ''}}"
             data-command="header"
@@ -59,15 +157,15 @@
           >
             列表
           </view>
-          <view class="planet-publish-tool" data-command="insertDivider" bindtap="onToolbarTap">分隔</view>
-          <view class="planet-publish-tool" data-command="removeFormat" bindtap="onToolbarTap">去样式</view>
+          <view wx:if="{{isHomeworkMode}}" class="planet-publish-tool" data-command="insertDivider" bindtap="onToolbarTap">分隔</view>
+          <view wx:if="{{!isQuestionMode}}" class="planet-publish-tool" data-command="removeFormat" bindtap="onToolbarTap">去样式</view>
           <view class="planet-publish-tool" data-command="clear" bindtap="onToolbarTap">清空</view>
         </view>
 
         <editor
           id="planet-editor"
           class="planet-publish-editor"
-          placeholder="分享你的主题、观点或近况，支持标题、列表和正文插图"
+          placeholder="{{editorPlaceholder}}"
           show-img-size="{{false}}"
           show-img-toolbar="{{false}}"
           show-img-resize="{{false}}"
@@ -79,6 +177,22 @@
         <view class="planet-publish-counter">
           <text>标题 {{title.length}}/40</text>
           <text>正文 {{editorText.length}}/5000</text>
+        </view>
+
+        <view wx:if="{{isQuestionMode}}" class="planet-publish-question-notice">
+          <text class="planet-publish-question-notice-text">建议把现象、上下文和你已经排除过的方向一次写清，回答会更聚焦。</text>
+        </view>
+
+        <view wx:if="{{isCheckinMode}}" class="planet-publish-question-notice">
+          <text class="planet-publish-question-notice-text">打卡不需要太复杂，重点是连续记录、能看出变化，以及留下明天继续做的线索。</text>
+        </view>
+
+        <view wx:if="{{isHomeworkMode}}" class="planet-publish-question-notice">
+          <text class="planet-publish-question-notice-text">作业建议至少包含目标、思路、过程截图和最后结果，方便后续点评。</text>
+        </view>
+
+        <view wx:if="{{!isQuestionMode && !isCheckinMode && !isHomeworkMode}}" class="planet-publish-question-notice">
+          <text class="planet-publish-question-notice-text">普通帖子没有固定格式，标题说明白、正文写完整，再配几张图就够用了。</text>
         </view>
       </view>
 
@@ -92,7 +206,7 @@
             {{uploadingImages ? '上传中...' : '本地选图'}}
           </view>
         </view>
-        <text class="planet-publish-section-helper">正文里只保留文字内容，图片作为帖子附件展示，更符合论坛发帖习惯。</text>
+        <text class="planet-publish-section-helper">{{sectionHelperText}}</text>
         <view wx:if="{{imagePreviewList.length}}" class="planet-publish-preview-list">
           <view wx:for="{{imagePreviewList}}" wx:key="*this" class="planet-publish-preview-item">
             <image class="planet-publish-preview-image" src="{{item}}" mode="aspectFill"></image>
@@ -105,19 +219,106 @@
       </view>
 
       <view class="planet-publish-section">
+        <view class="planet-publish-section-head">
+          <text class="planet-publish-section-title">文件附件</text>
+          <view
+            class="planet-publish-section-button {{uploadingFiles ? 'planet-publish-section-button-disabled' : ''}}"
+            bindtap="onChooseFiles"
+          >
+            {{uploadingFiles ? '上传中...' : '选择文件'}}
+          </view>
+        </view>
+        <text class="planet-publish-section-helper">支持上传文档、表格、压缩包等常见文件；带文件附件的帖子会自动进入星球的「文件」分栏。</text>
+        <view wx:if="{{fileAttachmentList.length}}" class="planet-publish-file-list">
+          <view wx:for="{{fileAttachmentList}}" wx:key="url" class="planet-publish-file-item">
+            <view class="planet-publish-file-icon">文</view>
+            <view class="planet-publish-file-copy">
+              <text class="planet-publish-file-name">{{item.name}}</text>
+              <text class="planet-publish-file-meta">{{item.sizeText}}</text>
+            </view>
+            <view class="planet-publish-file-remove" data-index="{{index}}" bindtap="onRemoveFile">删除</view>
+          </view>
+        </view>
+        <view wx:else class="planet-publish-empty-images">
+          <text class="planet-publish-empty-images-text">还没有添加文件，支持从微信会话或本机选择文档</text>
+        </view>
+      </view>
+
+      <view class="planet-publish-section">
         <text class="planet-publish-section-title">标签</text>
         <input
           class="planet-publish-inline-input"
-          placeholder="例如 AI副业, 运营, 复盘"
+          placeholder="例如 AI学习, 内容策划, 复盘"
           placeholder-class="planet-publish-input-placeholder"
           value="{{tagInput}}"
           bindinput="onTagInput"
         />
       </view>
+
+      <view wx:if="{{columnOptions.length > 0}}" class="planet-publish-section">
+        <view class="planet-publish-field-head">
+          <text class="planet-publish-field-title">选择专栏</text>
+          <text class="planet-publish-field-value">{{selectedColumnTitle}}</text>
+        </view>
+        <picker mode="selector" range="{{columnOptions}}" range-key="title" value="{{selectedColumnIndex}}" bindchange="onColumnChange">
+          <view class="planet-publish-member-trigger">
+            <view class="planet-publish-member-trigger-main">
+              <text class="planet-publish-member-trigger-name">{{selectedColumnTitle || '选择专栏（可选）'}}</text>
+              <text class="planet-publish-member-trigger-desc">将帖子归类到指定专栏，方便成员查找</text>
+            </view>
+            <text class="planet-publish-member-trigger-arrow">></text>
+          </view>
+        </picker>
+      </view>
     </view>
   </scroll-view>
 
   <view class="planet-publish-footer">
-    <button class="planet-publish-submit" loading="{{submitting}}" bindtap="onSubmit">{{isEditMode ? '保存修改' : '发布主题'}}</button>
+    <button class="planet-publish-submit" loading="{{submitting}}" bindtap="onSubmit">{{isEditMode ? '保存修改' : submitButtonText}}</button>
+  </view>
+
+  <view wx:if="{{questionTargetPopupVisible}}" class="planet-publish-popup-mask" bindtap="onCloseQuestionTargetPopup">
+    <view class="planet-publish-popup-sheet" catchtap="onQuestionTargetPopupTap">
+      <view class="planet-publish-popup-handle"></view>
+      <view class="planet-publish-popup-head">
+        <text class="planet-publish-popup-title">选择被提问成员</text>
+        <text class="planet-publish-popup-close" bindtap="onCloseQuestionTargetPopup">取消</text>
+      </view>
+
+      <view class="planet-publish-popup-search">
+        <text class="planet-publish-popup-search-icon">⌕</text>
+        <input
+          class="planet-publish-popup-search-input"
+          value="{{questionTargetSearchValue}}"
+          placeholder="搜索成员昵称 / 角色"
+          placeholder-class="planet-publish-popup-search-placeholder"
+          bindinput="onQuestionTargetSearchInput"
+        />
+      </view>
+
+      <scroll-view class="planet-publish-popup-list" scroll-y="{{true}}">
+        <view
+          wx:for="{{filteredQuestionTargetMembers}}"
+          wx:key="id"
+          class="planet-publish-popup-item {{selectedQuestionTargetId === item.id ? 'planet-publish-popup-item-active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onQuestionTargetSelect"
+        >
+          <image class="planet-publish-popup-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          <view class="planet-publish-popup-copy">
+            <view class="planet-publish-popup-name-row">
+              <text class="planet-publish-popup-name">{{item.name}}</text>
+              <text class="planet-publish-popup-role">{{item.roleLabel}}</text>
+              <text wx:if="{{item.isOwner}}" class="planet-publish-popup-owner-tag">星主置顶</text>
+            </view>
+            <text class="planet-publish-popup-desc">{{item.description}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{!filteredQuestionTargetMembers.length}}" class="planet-publish-popup-empty">
+          <text class="planet-publish-popup-empty-text">没有找到相关成员，换个关键词试试</text>
+        </view>
+      </scroll-view>
+    </view>
   </view>
 </view>

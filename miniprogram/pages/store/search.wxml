@@ -1,0 +1,172 @@
+<navigation-bar
+  title="{{pageTitle}}"
+  back="{{true}}"
+  color="#333333"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="mall-search-page">
+  <view wx:if="{{pageMode !== 'member_zone'}}" class="mall-search-topbar">
+    <view class="mall-search-toolbar mall-search-toolbar-plain">
+      <view class="mall-search-input-shell">
+        <view class="mall-search-icon"></view>
+        <input
+          class="mall-search-input"
+          value="{{searchValue}}"
+          placeholder="{{searchPlaceholder}}"
+          confirm-type="search"
+          bindinput="onInput"
+          bindconfirm="onSearchConfirm"
+        />
+        <text wx:if="{{searchValue}}" class="mall-search-clear" bindtap="onClearSearch">×</text>
+      </view>
+      <button class="mall-search-submit" bindtap="onSearchTap">搜索</button>
+    </view>
+  </view>
+
+  <view wx:if="{{pageMode === 'member_zone'}}" class="mall-member-zone-hero">
+    <view class="mall-member-zone-badge-row">
+      <text class="mall-member-zone-badge">{{memberZoneConfig.badgeText}}</text>
+      <text wx:if="{{memberZoneSummary}}" class="mall-member-zone-status">
+        {{memberZoneSummary.membershipActive ? '会员权益已解锁' : '开通后可解锁专区权益'}}
+      </text>
+    </view>
+    <text class="mall-member-zone-title">{{memberZoneConfig.title}}</text>
+    <text class="mall-member-zone-subtitle">{{memberZoneConfig.subtitle}}</text>
+
+    <view wx:if="{{memberZoneSummary}}" class="mall-member-zone-metrics">
+      <view class="mall-member-zone-metric">
+        <text class="mall-member-zone-metric-value">{{memberZoneSummary.totalCount}}</text>
+        <text class="mall-member-zone-metric-label">权益商品</text>
+      </view>
+      <view class="mall-member-zone-metric">
+        <text class="mall-member-zone-metric-value">{{memberZoneSummary.memberExclusiveCount}}</text>
+        <text class="mall-member-zone-metric-label">会员专享</text>
+      </view>
+      <view class="mall-member-zone-metric">
+        <text class="mall-member-zone-metric-value">{{memberZoneSummary.memberPriceCount}}</text>
+        <text class="mall-member-zone-metric-label">会员价</text>
+      </view>
+    </view>
+
+    <text wx:if="{{memberZoneConfig.highlightText}}" class="mall-member-zone-note">{{memberZoneConfig.highlightText}}</text>
+
+    <button
+      wx:if="{{memberZoneSummary && !memberZoneSummary.membershipActive && memberZoneSummary.totalCount}}"
+      class="mall-member-zone-action"
+      bindtap="onOpenMembershipFromMemberZone"
+    >
+      去开会员解锁权益价
+    </button>
+  </view>
+
+  <view wx:if="{{pageMode !== 'member_zone' && (hotKeywords.length || historyKeywords.length)}}" class="mall-search-guide-grid">
+    <view wx:if="{{historyKeywords.length}}" class="mall-search-section mall-search-guide-card mall-search-guide-card-history">
+      <view class="mall-search-section-head">
+        <text class="mall-search-section-title">搜索历史</text>
+        <text class="mall-search-section-link" bindtap="onClearHistory">清空</text>
+      </view>
+      <view class="mall-search-chip-list">
+        <view
+          wx:for="{{historyKeywords}}"
+          wx:key="*this"
+          class="mall-search-chip"
+          data-keyword="{{item}}"
+          bindtap="onKeywordTap"
+        >
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{hotKeywords.length}}" class="mall-search-section mall-search-guide-card mall-search-guide-card-hot">
+      <view class="mall-search-section-head">
+        <view class="mall-search-hot-title">
+          <view class="mall-search-hot-icon"></view>
+          <text class="mall-search-section-title">热门搜索</text>
+        </view>
+      </view>
+      <view class="mall-search-chip-list">
+        <view
+          wx:for="{{hotKeywords}}"
+          wx:key="*this"
+          class="mall-search-chip mall-search-chip-hot"
+          data-keyword="{{item}}"
+          bindtap="onKeywordTap"
+        >
+          {{item}}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{pageMode === 'member_zone' || loading || searching || appliedKeyword || products.length}}" class="mall-search-section mall-search-result-section">
+    <view class="mall-search-section-head">
+      <view class="mall-search-result-head-main">
+        <text class="mall-search-section-title">
+          {{pageMode === 'member_zone' ? memberZoneConfig.badgeText : (appliedKeyword ? ('“' + appliedKeyword + '” 的结果') : '搜索结果')}}
+        </text>
+        <text class="mall-search-section-subtitle mall-search-section-subtitle-block">
+          {{searching ? (pageMode === 'member_zone' ? '正在整理会员权益商品...' : '正在筛选商品...') : (products.length ? ('共 ' + products.length + ' 件，按当前条件展示。') : (pageMode === 'member_zone' ? '当前暂无会员权益商品' : '先输入关键词再搜索'))}}
+        </text>
+      </view>
+      <view wx:if="{{pageMode !== 'member_zone' && appliedKeyword}}" class="mall-search-result-keyword-pill">
+        {{appliedKeyword}}
+      </view>
+    </view>
+
+    <view wx:if="{{loading || searching}}" class="mall-search-empty">
+      <text class="mall-search-empty-title">{{loading ? (pageMode === 'member_zone' ? '会员专区加载中...' : '搜索页加载中...') : (pageMode === 'member_zone' ? '会员商品整理中...' : '搜索中...')}}</text>
+      <text class="mall-search-empty-subtitle">
+        {{pageMode === 'member_zone' ? '稍等一下，正在从真实商城数据里整理会员权益商品。' : '稍等一下，正在从真实商城数据里筛选商品。'}}
+      </text>
+    </view>
+
+    <view wx:elif="{{products.length}}" class="mall-search-result-list">
+      <view
+        wx:for="{{products}}"
+        wx:key="id"
+        class="mall-search-result-card"
+        data-id="{{item.id}}"
+        bindtap="onOpenProduct"
+      >
+        <view class="mall-search-result-cover">
+          <image
+            wx:if="{{item.coverImageUrl}}"
+            class="mall-search-result-image"
+            mode="aspectFill"
+            src="{{item.coverImageUrl}}"
+            binderror="onProductImageError"
+            data-index="{{index}}"
+            data-product-id="{{item.id}}"
+          ></image>
+          <text wx:else class="mall-search-result-fallback">{{item.coverFallbackText}}</text>
+        </view>
+
+        <view class="mall-search-result-body">
+          <view class="mall-search-result-tag-row">
+            <text class="mall-search-result-tag">{{item.categoryName}}</text>
+            <text wx:if="{{item.memberBenefitType !== 'NONE'}}" class="mall-search-result-inline-member-tag">{{item.memberBenefitLabel}}</text>
+          </view>
+          <text class="mall-search-result-title">{{item.title}}</text>
+          <text class="mall-search-result-subtitle">{{item.subtitle}}</text>
+          <view wx:if="{{item.memberBenefitType !== 'NONE'}}" class="mall-search-result-member-row">
+            <text wx:if="{{item.memberPromptText}}" class="mall-search-result-member-prompt">{{item.memberPromptText}}</text>
+          </view>
+          <view class="mall-search-result-foot">
+            <view class="mall-search-result-price-group">
+              <text class="mall-search-result-price">{{item.priceText}}</text>
+              <text wx:if="{{item.originalPriceText}}" class="mall-search-result-original">{{item.originalPriceText}}</text>
+            </view>
+            <text class="mall-search-result-stock">{{item.stockText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="mall-search-empty">
+      <text class="mall-search-empty-title">{{emptyTitle}}</text>
+      <text class="mall-search-empty-subtitle">{{emptySubtitle}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,255 @@
+.checkin-compose-page {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.checkin-compose-topbar {
+  height: 88rpx;
+  padding: 0 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.checkin-compose-topbar-placeholder {
+  width: 72rpx;
+  height: 32rpx;
+  flex-shrink: 0;
+}
+
+.checkin-compose-top-title {
+  color: #222222;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.checkin-compose-top-action {
+  color: #666666;
+  font-size: 32rpx;
+}
+
+.checkin-compose-body {
+  padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
+}
+
+.checkin-compose-challenge-card {
+  margin: 24rpx 26rpx 0;
+  padding: 24rpx 24rpx 22rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #eef9f6 0%, #f8fffd 100%);
+}
+
+.checkin-compose-challenge-label {
+  display: block;
+  color: #6f8a82;
+  font-size: 22rpx;
+  letter-spacing: 2rpx;
+}
+
+.checkin-compose-challenge-title {
+  display: block;
+  margin-top: 10rpx;
+  color: #1d2a31;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.checkin-compose-challenge-tip {
+  display: block;
+  margin-top: 10rpx;
+  color: #6f7c82;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.checkin-compose-textarea {
+  width: 100%;
+  min-height: 520rpx;
+  padding: 34rpx 26rpx 20rpx;
+  color: #222222;
+  font-size: 30rpx;
+  line-height: 1.8;
+  box-sizing: border-box;
+}
+
+.checkin-compose-placeholder {
+  color: #c8c8c8;
+}
+
+.checkin-compose-images {
+  padding: 0 26rpx 10rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18rpx;
+}
+
+.checkin-compose-image-item {
+  position: relative;
+}
+
+.checkin-compose-image {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 12rpx;
+  background: #eef2f6;
+}
+
+.checkin-compose-image-remove {
+  position: absolute;
+  right: 8rpx;
+  top: 8rpx;
+  min-width: 64rpx;
+  height: 36rpx;
+  padding: 0 10rpx;
+  border-radius: 999rpx;
+  background: rgba(0, 0, 0, 0.56);
+  color: #ffffff;
+  font-size: 20rpx;
+  line-height: 36rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.checkin-compose-counter {
+  padding: 0 26rpx;
+  color: #bdbdbd;
+  font-size: 24rpx;
+  line-height: 1.8;
+}
+
+.checkin-compose-toolbar {
+  margin-top: 20rpx;
+  padding: 0 26rpx;
+  height: 94rpx;
+  display: flex;
+  align-items: center;
+  gap: 38rpx;
+  border-top: 1rpx solid #f1f1f1;
+}
+
+.checkin-compose-tool {
+  width: 44rpx;
+  height: 44rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #434d61;
+  font-size: 58rpx;
+  line-height: 44rpx;
+  text-align: center;
+}
+
+.checkin-compose-tool::before,
+.checkin-compose-tool::after {
+  content: '';
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.checkin-compose-tool-image::before {
+  inset: 4rpx;
+  border: 4rpx solid #4a5062;
+  border-radius: 8rpx;
+}
+
+.checkin-compose-tool-image::after {
+  left: 12rpx;
+  bottom: 12rpx;
+  width: 18rpx;
+  height: 12rpx;
+  border-left: 4rpx solid #4a5062;
+  border-bottom: 4rpx solid #4a5062;
+  transform: skewX(-24deg);
+}
+
+.checkin-compose-tool-folder::before {
+  left: 5rpx;
+  top: 12rpx;
+  width: 34rpx;
+  height: 24rpx;
+  border: 4rpx solid #4a5062;
+  border-radius: 8rpx;
+}
+
+.checkin-compose-tool-folder::after {
+  left: 10rpx;
+  top: 6rpx;
+  width: 14rpx;
+  height: 8rpx;
+  border: 4rpx solid #4a5062;
+  border-bottom: none;
+  border-top-left-radius: 8rpx;
+  border-top-right-radius: 8rpx;
+}
+
+.checkin-compose-tool-smile::before {
+  inset: 4rpx;
+  border: 4rpx solid #4a5062;
+  border-radius: 50%;
+}
+
+.checkin-compose-tool-topic {
+  font-size: 72rpx;
+  line-height: 40rpx;
+}
+
+.checkin-compose-tool-plus::before {
+  left: 20rpx;
+  top: 6rpx;
+  width: 4rpx;
+  height: 32rpx;
+  background: #4a5062;
+}
+
+.checkin-compose-tool-plus::after {
+  left: 6rpx;
+  top: 20rpx;
+  width: 32rpx;
+  height: 4rpx;
+  background: #4a5062;
+}
+
+.checkin-compose-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.98);
+  box-sizing: border-box;
+}
+
+.checkin-compose-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.checkin-compose-cancel-button,
+.checkin-compose-submit-button {
+  height: 92rpx;
+  border-radius: 999rpx;
+  font-size: 34rpx;
+  font-weight: 700;
+  line-height: 92rpx;
+}
+
+.checkin-compose-cancel-button {
+  flex: 0 0 220rpx;
+  background: #eef4f7;
+  color: #6d7884;
+}
+
+.checkin-compose-submit-button {
+  flex: 1;
+  background: #22c1a4;
+  color: #ffffff;
+}
+
+.checkin-compose-cancel-button::after,
+.checkin-compose-submit-button::after {
+  border: none;
+}

@@ -1,80 +1,38 @@
 <navigation-bar
   title=""
   back="{{false}}"
-  back-url="/pages/planet/index"
   color="#ffffff"
   background="#ffffff"
+  animated="{{false}}"
+  show="{{false}}"
 ></navigation-bar>
 
-<view class="page planet-mine-page">
-  <view class="planet-mine-shell">
-    <view class="planet-mine-profile-card">
-      <view class="planet-mine-hero" bindtap="onLoginTap">
-        <view class="planet-mine-ring ring-outer"></view>
-        <view class="planet-mine-ring ring-middle"></view>
-        <view class="planet-mine-ring ring-inner"></view>
-        <image class="planet-mine-avatar" src="{{avatarUrl}}" mode="aspectFill"></image>
-      </view>
+<view class="page mine-page" style="padding-bottom: {{pageBottomPadding}};">
+  <mine-profile-panel
+    statusBarHeight="{{statusBarHeight}}"
+    avatarUrl="{{avatarUrl}}"
+    avatarFallbackText="momo"
+    showAvatarEditChip="{{isLoggedIn}}"
+    avatarEditText="{{avatarUpdating ? '上传中' : '编辑头像'}}"
+    nickname="{{nickname}}"
+    subtitle="{{subtitle}}"
+    panelCompact="{{panelCompact}}"
+    panelTitle="{{panelTitle}}"
+    panelDesc="{{panelDesc}}"
+    panelButtonText="{{panelButtonText}}"
+    panelButtonOpenType="{{panelButtonOpenType}}"
+    panelButtonGhost="{{panelButtonGhost}}"
+    panelButtonLoading="{{loginLoading}}"
+    menuItems="{{menuItems}}"
+    showTipCard="{{showTipCard}}"
+    tipTitle="{{tipTitle}}"
+    tipDesc="{{tipDesc}}"
+    bindhero="onHeroTap"
+    bindavatarerror="onAvatarError"
+    bindpanelaction="onPanelAction"
+    bindpanelgetphonenumber="onGetPhoneNumber"
+    bindmenu="onMenuTap"
+  ></mine-profile-panel>
 
-      <text class="planet-mine-name">{{nickname}}</text>
-      <text class="planet-mine-subtitle">{{subtitle}}</text>
-
-      <view wx:if="{{!isLoggedIn}}" class="planet-mine-login-panel">
-        <text class="planet-mine-login-title">先连接微信身份</text>
-        <text class="planet-mine-login-desc">进入知识星球会先自动登录，失败时可点击按钮手动重试。</text>
-        <button class="planet-mine-auth-button" loading="{{loginLoading}}" bindtap="onLoginTap">
-          微信快速登录
-        </button>
-      </view>
-
-      <view wx:elif="{{!mobile}}" class="planet-mine-login-panel planet-mine-login-panel-compact">
-        <text class="planet-mine-login-title">补充手机号完成一键登录</text>
-        <text class="planet-mine-login-desc">手机号将用于关键操作校验，点一次即可完成，不需要手动输入。</text>
-        <button
-          class="planet-mine-auth-button"
-          loading="{{loginLoading}}"
-          open-type="getPhoneNumber"
-          bindgetphonenumber="onGetPhoneNumber"
-        >
-          手机号一键登录
-        </button>
-      </view>
-
-      <view wx:else class="planet-mine-login-panel planet-mine-login-panel-compact">
-        <text class="planet-mine-login-title">已连接微信账号</text>
-        <text class="planet-mine-login-desc">现在可以继续创建星球、查看余额和使用你的知识星球功能。</text>
-        <button class="planet-mine-auth-button planet-mine-auth-button-ghost" bindtap="onLogoutTap">
-          退出登录
-        </button>
-      </view>
-    </view>
-
-    <view class="planet-mine-card-list">
-      <view
-        class="planet-mine-card"
-        wx:for="{{menuItems}}"
-        wx:key="id"
-        data-id="{{item.id}}"
-        bindtap="onMenuTap"
-      >
-        <view class="planet-mine-card-left">
-          <view class="planet-mine-icon planet-mine-icon-{{item.iconType}}"></view>
-          <text class="planet-mine-card-title">
-            {{item.title}}<text wx:if="{{item.value}}">: {{item.value}}</text>
-          </text>
-        </view>
-        <view class="planet-mine-card-right">
-          <text wx:if="{{item.actionText}}" class="planet-mine-card-action">{{item.actionText}}</text>
-          <text class="planet-mine-card-arrow">›</text>
-        </view>
-      </view>
-
-      <view wx:if="{{!isLoggedIn}}" class="planet-mine-tip-card">
-        <text class="planet-mine-tip-title">为什么这里还保留“我的”</text>
-        <text class="planet-mine-tip-desc">知识星球是子模块，登录入口放在这里，避免你被带去外层页面来回跳。</text>
-      </view>
-    </view>
-  </view>
-
-  <planet-bottom-nav active-key="mine" bindchange="onPlanetTabChange"></planet-bottom-nav>
+  <planet-bottom-nav wx:if="{{showPlanetBottomNav}}" active-key="mine" bindchange="onPlanetTabChange"></planet-bottom-nav>
 </view>

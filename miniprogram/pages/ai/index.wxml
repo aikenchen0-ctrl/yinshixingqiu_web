@@ -8,14 +8,60 @@
 <view class="page grid-bg">
   <view class="section card ai-hero">
     <text class="ai-hero-title">血饮本人训练 AI智能体</text>
-    <text class="ai-hero-sub">为金融安全场景提供咨询与策略建议</text>
+    <text class="ai-hero-sub">基于600+篇历史文章的知识库检索</text>
+    <view class="ai-prompt-row">
+      <button
+        class="ai-prompt-chip"
+        wx:for="{{quickPrompts}}"
+        wx:key="index"
+        data-question="{{item}}"
+        bindtap="onQuickPromptTap"
+        disabled="{{loading}}"
+      >
+        {{item}}
+      </button>
+    </view>
   </view>
 
-  <scroll-view class="message-scroll" scroll-y>
+  <scroll-view class="message-scroll" scroll-y scroll-into-view="{{scrollIntoView}}">
     <view class="message-list">
-      <view class="message-item {{item.role}}" wx:for="{{messages}}" wx:key="id">
+      <view class="message-item {{item.role}}" wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}">
         <view class="message-bubble">
-          <text>{{item.content}}</text>
+          <!-- AI消息使用rich-text渲染Markdown -->
+          <rich-text class="message-text rich-md" nodes="{{item.htmlNodes}}" wx:if="{{item.role === 'ai' && item.htmlNodes}}"></rich-text>
+          <text class="message-text" wx:if="{{item.role === 'user'}}">{{item.content}}</text>
+          <view class="message-mode-tip" wx:if="{{item.modeLabel}}">
+            <text>{{item.modeLabel}}</text>
+          </view>
+          <view class="message-coverage-tip" wx:if="{{item.coverageHint}}">
+            <text>{{item.coverageHint}}</text>
+          </view>
+          <view class="message-suggestion-list" wx:if="{{item.suggestions && item.suggestions.length > 0}}">
+            <button
+              class="message-suggestion-chip"
+              wx:for="{{item.suggestions}}"
+              wx:for-item="question"
+              wx:key="index"
+              data-question="{{question}}"
+              bindtap="onSuggestionTap"
+              disabled="{{loading}}"
+            >
+              {{question}}
+            </button>
+          </view>
+          <view class="message-sources" wx:if="{{item.sources && item.sources.length > 0}}">
+            <view class="source-divider">参考来源</view>
+            <view class="source-item" wx:for="{{item.sources}}" wx:for-item="src" wx:key="index">
+              <text class="source-title">{{src.title}}</text>
+              <text class="source-date">{{src.date}}</text>
+              <text class="source-snippet" wx:if="{{src.snippet}}">{{src.snippet}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="message-item ai" wx:if="{{loading}}">
+        <view class="message-bubble loading-bubble">
+          <text>正在结合知识库思考中...</text>
         </view>
       </view>
     </view>
@@ -24,12 +70,13 @@
   <view class="chat-input safe-bottom">
     <input
       class="chat-field"
-      placeholder="输入你的问题"
+      placeholder="例如：怎么看美联储加息和A股？"
       value="{{inputValue}}"
+      disabled="{{loading}}"
       confirm-type="send"
       bindinput="onInput"
       bindconfirm="onSend"
     />
-    <button class="btn btn-primary" bindtap="onSend">发送</button>
+    <button class="btn btn-primary {{loading ? 'btn-disabled' : ''}}" bindtap="onSend">{{loading ? '思考中' : '发送'}}</button>
   </view>
 </view>

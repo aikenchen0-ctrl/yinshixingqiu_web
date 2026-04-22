@@ -1,0 +1,115 @@
+<navigation-bar
+  title="我的订单"
+  back="{{true}}"
+  color="#333333"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page mall-orders-page">
+  <view class="mall-orders-hero-card">
+    <text class="mall-orders-hero-title">订单中心</text>
+    <text class="mall-orders-hero-subtitle">这里展示你在商城里已经提交的真实订单，待支付、待发货和已发货都会在这里更新。</text>
+  </view>
+
+  <view wx:if="{{loading}}" class="mall-orders-empty-card">
+    <text class="mall-orders-empty-title">{{emptyText}}</text>
+    <text class="mall-orders-empty-copy">正在从真实订单接口读取数据。</text>
+  </view>
+
+  <block wx:elif="{{allOrders.length}}">
+    <view class="mall-orders-filter-row">
+      <view
+        wx:for="{{filterOptions}}"
+        wx:key="key"
+        class="mall-orders-filter-chip {{filterKey === item.key ? 'is-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onChangeFilter"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view wx:if="{{orders.length}}" class="mall-orders-list">
+      <view wx:for="{{orders}}" wx:for-item="order" wx:for-index="orderIndex" wx:key="id" class="mall-orders-card" data-id="{{order.id}}" bindtap="onOpenOrderDetail">
+        <view class="mall-orders-card-head">
+          <view class="mall-orders-order-copy">
+            <text class="mall-orders-order-no">{{order.orderNo}}</text>
+            <text class="mall-orders-order-time">{{order.createdAtText}}</text>
+          </view>
+
+          <view class="mall-orders-status-stack">
+            <text class="mall-orders-status-pill">{{order.statusLabel}}</text>
+            <text class="mall-orders-status-pill mall-orders-status-pill-soft">{{order.shippingStatusLabel}}</text>
+            <text wx:if="{{order.refundStatusLabel}}" class="mall-orders-status-pill mall-orders-status-pill-refund">{{order.refundStatusLabel}}</text>
+          </view>
+        </view>
+
+        <view class="mall-orders-preview-list">
+          <view wx:for="{{order.items}}" wx:for-item="orderItem" wx:for-index="itemIndex" wx:key="id" class="mall-orders-preview-item">
+            <view class="mall-orders-preview-cover">
+              <image
+                wx:if="{{orderItem.coverImageUrl}}"
+                class="mall-orders-preview-image"
+                src="{{orderItem.coverImageUrl}}"
+                mode="aspectFill"
+                binderror="onOrderItemImageError"
+                data-order-index="{{orderIndex}}"
+                data-item-index="{{itemIndex}}"
+                data-order-id="{{order.id}}"
+                data-item-id="{{orderItem.id}}"
+              ></image>
+              <text wx:else class="mall-orders-preview-fallback">{{orderItem.coverFallbackText}}</text>
+            </view>
+
+            <view class="mall-orders-preview-copy">
+              <text class="mall-orders-preview-title">{{orderItem.title}}</text>
+            </view>
+
+            <text class="mall-orders-preview-quantity">{{orderItem.quantityText}}</text>
+          </view>
+        </view>
+
+        <text wx:if="{{order.hasMoreItems}}" class="mall-orders-more-copy">还有更多商品，点击查看完整订单详情</text>
+
+        <view class="mall-orders-card-foot">
+          <view class="mall-orders-total-copy">
+            <text class="mall-orders-item-count">{{order.itemCountText}}</text>
+            <text class="mall-orders-shipping-note">{{order.shippingNote}}</text>
+            <text wx:if="{{order.commissionRecipientText}}" class="mall-orders-shipping-note">{{order.commissionRecipientText}}</text>
+          </view>
+
+          <view class="mall-orders-total-side">
+            <text class="mall-orders-total-label">合计</text>
+            <text class="mall-orders-total-price">{{order.totalAmountText}}</text>
+          </view>
+        </view>
+
+        <view wx:if="{{order.canPay}}" class="mall-orders-card-actions">
+          <button
+            class="mall-orders-pay-button"
+            data-id="{{order.id}}"
+            catchtap="onPayOrder"
+            loading="{{payingOrderId === order.id}}"
+            disabled="{{payingOrderId === order.id}}"
+          >
+            去支付
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="mall-orders-empty-card">
+      <text class="mall-orders-empty-title">{{emptyText}}</text>
+      <text class="mall-orders-empty-copy">可以切换上面的筛选条件，查看不同状态的订单。</text>
+    </view>
+  </block>
+
+  <view wx:else class="mall-orders-empty-card">
+    <text class="mall-orders-empty-title">{{emptyText}}</text>
+    <text class="mall-orders-empty-copy">{{loginRequired ? '登录成功后就能查看你真实提交过的订单。' : '先去商城选商品并提交订单，列表会自动展示在这里。'}}</text>
+    <view class="mall-orders-empty-actions">
+      <button wx:if="{{loginRequired}}" class="mall-orders-primary" bindtap="onOpenLogin">去登录</button>
+      <button wx:else class="mall-orders-primary" bindtap="onRetry">刷新看看</button>
+    </view>
+  </view>
+</view>

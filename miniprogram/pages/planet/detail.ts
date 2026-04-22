@@ -1,4 +1,5 @@
 import { loadPlanets, PlanetProfile } from '../../utils/planet'
+import { rememberActivePlanetId } from '../../utils/planet-route'
 
 Page({
   data: {
@@ -45,9 +46,13 @@ Page({
   },
 
   onPlanetTap(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id || 'planet_1'
-    const name = e.currentTarget.dataset.name || 'Datawhale'
-    const creator = e.currentTarget.dataset.creator || 'Datawhale 团队'
+    const id = rememberActivePlanetId(String(e.currentTarget.dataset.id || ''))
+    if (!id) {
+      return
+    }
+
+    const name = e.currentTarget.dataset.name || 'Datawhale AI成长星球'
+    const creator = e.currentTarget.dataset.creator || '星主A'
 
     wx.navigateTo({
       url: `/pages/planet/home?id=${id}&name=${encodeURIComponent(name)}&creator=${encodeURIComponent(creator)}`,

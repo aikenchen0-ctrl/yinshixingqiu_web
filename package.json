@@ -2,12 +2,28 @@
   "name": "miniprogram-ts-sass-quickstart",
   "version": "1.0.0",
   "description": "",
-  "scripts": {},
+  "scripts": {
+    "check:miniprogram": "npx -y -p typescript@5.6.3 tsc --noEmit --pretty false -p tsconfig.json",
+    "check:backend": "node --check backend/src/server.js && node --check backend/src/services/planetService.js && node --check backend/src/services/checkinService.js && node --check backend/src/services/contentService.js && node --check backend/src/services/articleModelService.js && node --check backend/src/services/articleReadService.js && node --check backend/src/services/articleUnlockService.js && node --check backend/src/services/articleService.js && node --check backend/src/services/courseService.js && node --check backend/src/services/columnService.js && node --check backend/src/services/adminService.js && node --check backend/src/services/authService.js && node --check backend/src/services/aiService.js && node --check backend/src/services/kbService.js",
+    "build:admin": "npm --prefix admin-web run build",
+    "check:all": "npm run check:miniprogram && npm run check:backend && npm run build:admin",
+    "smoke:api": "node scripts/smoke-api.js",
+    "verify:content-moderation-link": "node scripts/verify-content-moderation-link.js",
+    "verify:ai-ask": "node scripts/verify-ai-ask.js",
+    "verify:idea-lab-kb": "node scripts/verify-idea-lab-kb.js",
+    "test:relay-api": "node scripts/test-relay-api.js"
+  },
   "keywords": [],
   "author": "",
   "license": "",
   "devDependencies": {
     "miniprogram-api-typings": "^2.8.3-1",
     "miniprogram-automator": "^0.12.1"
+  },
+  "dependencies": {
+    "chrome-remote-interface": "^0.34.0",
+    "pg": "^8.20.0",
+    "playwright": "^1.59.1",
+    "redis": "^5.11.0"
   }
 }

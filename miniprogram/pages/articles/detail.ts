@@ -1,150 +1,308 @@
-interface ArticlePlanetCard {
-  id: string
-  name: string
-  creator?: string
-  avatar: string
-  intro: string
-  meta: string
+import { getArticleById, getArticleReadPresentation } from '../../utils/article-data'
+import {
+  buildRemoteArticleDetail,
+  buildStaticArticleDetail,
+  createEmptyArticleDetailViewModel,
+  type ArticleDetailViewModel,
+} from '../../utils/article-view'
+import { clearSession, getStoredSession, shouldClearSessionByError } from '../../utils/auth'
+import { createArticleUnlockOrder, fetchArticleDetail, fetchOrderDetail, mockArticleUnlockPayment } from '../../utils/planet-api'
+import { rememberActivePlanetId } from '../../utils/planet-route'
+import { ensureWechatSession } from '../../utils/wechat-login'
+
+type ContentSource = 'wechat' | 'planet'
+type ArticleUnlockWechatPaymentRequest = {
+  timeStamp: string
+  nonceStr: string
+  package: string
+  signType: string
+  paySign: string
 }
 
-interface ArticleDetail {
-  id: string
-  title: string
-  author: string
-  authorTag?: string
-  authorAvatar: string
-  time: string
-  summary: string
-  coverImage: string
-  likeCount: number
-  commentCount: number
-  hiddenHint: string
-  actionText: string
-  recommendTitle: string
-  planetCard: ArticlePlanetCard
+const waitFor = (duration = 0) =>
+  new Promise<void>((resolve) => {
+    setTimeout(() => resolve(), duration)
+  })
+
+const requestWechatPayment = (paymentRequest: ArticleUnlockWechatPaymentRequest) =>
+  new Promise<void>((resolve, reject) => {
+    const { timeStamp, nonceStr, package: packageValue, signType, paySign } = paymentRequest
+
+    wx.requestPayment({
+      timeStamp,
+      nonceStr,
+      package: packageValue,
+      signType: signType as WechatMiniprogram.RequestPaymentOption['signType'],
+      paySign,
+      success: () => resolve(),
+      fail: reject,
+    })
+  })
+
+const isPaymentCancelled = (error: unknown) => {
+  if (!error || typeof error !== 'object') {
+    return false
+  }
+
+  const errMsg = 'errMsg' in error ? String((error as { errMsg?: string }).errMsg || '') : ''
+  return errMsg.indexOf('cancel') >= 0
 }
 
-const articleMap: Record<string, ArticleDetail> = {
-  a1: {
-    id: 'a1',
-    title: '【2026年全球网络安全展望报告】',
-    author: '丁利',
-    authorTag: '星主',
-    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80',
-    time: '2026/03/25 09:12',
-    summary:
-      '94%的受访者认为人工智能是未来一年最关键的变革驱动力，较之2025年显著提升。同时，组织对AI安全的评估能力正在提升，相关流程覆盖率由37...',
-    coverImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80',
-    likeCount: 0,
-    commentCount: 0,
-    hiddenHint: '部分内容已隐藏',
-    actionText: '查看更多内容',
-    recommendTitle: '喜欢TA就加入TA的星球',
-    planetCard: {
-      id: 'planet_199it',
-      name: '199IT数据交流群',
-      creator: '丁利',
-      avatar: 'https://images.unsplash.com/photo-1611095973763-414019e72400?auto=format&fit=crop&w=240&q=80',
-      intro:
-        '“数据驱动未来”是199IT的核心理念，作为投资、研究、产业、传播价值兼具的综合性平台，199IT已成为新经济生态圈投资者、经营者及数据...',
-      meta: '丁利创建，已有18664名成员',
-    },
-  },
-  a2: {
-    id: 'a2',
-    title: '《AI Agent 场景应用 - ai draw.io》第4-0节：ai + draw.io 产品设计',
-    author: '小馒哥',
-    authorAvatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=240&q=80',
-    time: '2026/03/24 21:18',
-    summary:
-      '从画图到需求梳理，拆解 AI Agent 在产品设计链路中的真实落地方式，本文节选了产品框架与几个关键设计片段。',
-    coverImage: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
-    likeCount: 3,
-    commentCount: 1,
-    hiddenHint: '部分内容已隐藏',
-    actionText: '查看更多内容',
-    recommendTitle: '喜欢TA就加入TA的星球',
-    planetCard: {
-      id: 'planet_2',
-      name: '码农会馆',
-      creator: '小馒哥',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80',
-      intro: '专注 AI 编程、独立开发与工具链实践，持续更新落地案例和实战方法。',
-      meta: '小馒哥创建，已有2680名成员',
-    },
-  },
-  a3: {
-    id: 'a3',
-    title: '把私域内容做成可持续复利系统',
-    author: '顾城',
-    authorAvatar: 'https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=240&q=80',
-    time: '2026/03/22 11:20',
-    summary:
-      '如何设计一套能长期更新的主题栏目、社群分层和转化节奏。这里展示的是公开预览内容，完整版本在星球中继续展开。',
-    coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80',
-    likeCount: 6,
-    commentCount: 2,
-    hiddenHint: '部分内容已隐藏',
-    actionText: '查看更多内容',
-    recommendTitle: '喜欢TA就加入TA的星球',
-    planetCard: {
-      id: 'planet_growth',
-      name: '增长笔记',
-      creator: '顾城',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=240&q=80',
-      intro: '围绕增长、转化、私域设计和可持续内容系统，沉淀可复用的方法和模板。',
-      meta: '顾城创建，已有6241名成员',
-    },
-  },
-  a4: {
-    id: 'a4',
-    title: '一人公司如何搭建自己的知识产品矩阵',
-    author: '启明',
-    authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=240&q=80',
-    time: '2026/03/20 18:08',
-    summary:
-      '从选题、交付到会员体系，拆最小可行的内容产品组合方式。文章提供了公开摘要和图示预览。',
-    coverImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
-    likeCount: 2,
-    commentCount: 0,
-    hiddenHint: '部分内容已隐藏',
-    actionText: '查看更多内容',
-    recommendTitle: '喜欢TA就加入TA的星球',
-    planetCard: {
-      id: 'planet_long',
-      name: '长期主义实验室',
-      creator: '启明',
-      avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=240&q=80',
-      intro: '聚焦长期主义、知识产品设计与个体品牌建设，适合想慢慢做成体系的人。',
-      meta: '启明创建，已有3190名成员',
-    },
-  },
+const isDevelopEnv = () => {
+  try {
+    const accountInfo = wx.getAccountInfoSync()
+    const miniProgram = accountInfo && accountInfo.miniProgram ? accountInfo.miniProgram : null
+    return !miniProgram || miniProgram.envVersion === 'develop'
+  } catch {
+    return true
+  }
 }
 
 Page({
   data: {
-    article: articleMap.a1 as ArticleDetail,
+    article: createEmptyArticleDetailViewModel() as ArticleDetailViewModel,
+    articleId: '',
+    source: 'wechat' as ContentSource,
+    loading: true,
+    error: '',
+    unlocking: false,
   },
 
   onLoad(options: Record<string, string>) {
-    const id = options.id || 'a1'
-    const article = articleMap[id] || articleMap.a1
+    const articleId = String(options.id || '').trim() || 'a1'
+    const source = options.source === 'planet' ? 'planet' : 'wechat'
 
     this.setData({
-      article,
+      articleId,
+      source,
     })
+
+    void this.loadArticle(articleId, source)
+  },
+
+  async loadArticle(articleId: string, source: ContentSource) {
+    this.setData({
+      loading: true,
+      error: '',
+    })
+
+    if (source === 'planet') {
+      const storedSession = getStoredSession()
+      const sessionToken = storedSession && storedSession.sessionToken ? storedSession.sessionToken : ''
+
+      try {
+        let response
+
+        try {
+          response = await fetchArticleDetail(articleId, true, sessionToken || undefined)
+        } catch (error) {
+          if (sessionToken) {
+            if (shouldClearSessionByError(error)) {
+              clearSession()
+            }
+            response = await fetchArticleDetail(articleId, true)
+          } else {
+            throw error
+          }
+        }
+
+        this.setData({
+          article: buildRemoteArticleDetail(response.data),
+          loading: false,
+          error: '',
+        })
+        return
+      } catch (error) {
+        this.setData({
+          loading: false,
+          error: error instanceof Error ? error.message : '加载文章详情失败',
+        })
+        return
+      }
+    }
+
+    const article = buildStaticArticleDetail(getArticleById(articleId))
+    this.setData({
+      article,
+      loading: false,
+      error: '',
+    })
+  },
+
+  onReload() {
+    if (!this.data.articleId) {
+      return
+    }
+
+    void this.loadArticle(this.data.articleId, this.data.source)
   },
 
   onOpenMoreContent() {
-    wx.showToast({
-      title: '跳转星球详情查看',
-      icon: 'none',
+    void this.openMoreContent()
+  },
+
+  async openMoreContent() {
+    const presentation = getArticleReadPresentation({
+      access: this.data.article.access,
+      updated: false,
     })
+
+    if (this.data.unlocking) {
+      return
+    }
+
+    if (presentation.canReadFull) {
+      wx.showToast({
+        title: '当前已可阅读全文',
+        icon: 'none',
+      })
+      return
+    }
+
+    if (this.data.source !== 'planet' || this.data.article.access.accessType !== 'paid') {
+      wx.showToast({
+        title: '当前文章无需解锁',
+        icon: 'none',
+      })
+      return
+    }
+
+    this.setData({
+      unlocking: true,
+    })
+
+    try {
+      wx.showLoading({
+        title: '创建支付订单',
+        mask: true,
+      })
+
+      const session = await ensureWechatSession()
+      const orderResponse = await createArticleUnlockOrder({
+        articleId: this.data.articleId,
+        userId: session.id,
+        paymentChannel: 'WECHAT',
+        sessionToken: session.sessionToken,
+      })
+
+      if (!orderResponse.ok || !orderResponse.data || !orderResponse.data.order) {
+        throw new Error(orderResponse.message || '创建文章解锁订单失败')
+      }
+
+      const orderNo = orderResponse.data.order.orderNo
+      const payment = orderResponse.data.payment
+      const paymentRequest = payment && payment.request ? payment.request : null
+      const alreadyUnlocked = !!(orderResponse.data.unlock && orderResponse.data.unlock.isUnlocked)
+
+      if (alreadyUnlocked || orderResponse.data.idempotent) {
+        const latestArticle = await fetchArticleDetail(this.data.articleId, false, session.sessionToken)
+        this.setData({
+          article: buildRemoteArticleDetail(latestArticle.data),
+          error: '',
+        })
+        wx.hideLoading()
+        wx.showToast({
+          title: '已解锁全文',
+          icon: 'success',
+        })
+        return
+      }
+
+      if (payment && payment.required) {
+        if (!paymentRequest) {
+          throw new Error('未获取到微信支付参数，请稍后重试')
+        }
+
+        wx.hideLoading()
+
+        try {
+          await requestWechatPayment(paymentRequest)
+        } catch (error) {
+          if (isPaymentCancelled(error)) {
+            wx.showToast({
+              title: '已取消支付',
+              icon: 'none',
+            })
+            return
+          }
+
+          if (!isDevelopEnv()) {
+            throw new Error('微信支付未完成，请稍后重试')
+          }
+
+          wx.showLoading({
+            title: '开发态模拟支付',
+            mask: true,
+          })
+
+          await mockArticleUnlockPayment({
+            orderNo,
+            transactionNo: `MOCK_ARTICLE_${Date.now()}`,
+            success: true,
+          })
+        }
+      }
+
+      wx.showLoading({
+        title: '确认解锁结果',
+        mask: true,
+      })
+
+      let unlockedDetail = null as Awaited<ReturnType<typeof fetchArticleDetail>> | null
+      for (let index = 0; index < 15; index += 1) {
+        try {
+          await fetchOrderDetail({
+            orderNo,
+            sessionToken: session.sessionToken,
+            userId: session.id,
+          })
+        } catch {}
+
+        try {
+          const response = await fetchArticleDetail(this.data.articleId, false, session.sessionToken)
+          if (response.data && response.data.canReadFull) {
+            unlockedDetail = response
+            break
+          }
+        } catch {}
+
+        await waitFor(index < 4 ? 600 : 1000)
+      }
+
+      if (!unlockedDetail || !unlockedDetail.data || !unlockedDetail.data.canReadFull) {
+        throw new Error('支付结果确认中，请稍后刷新页面查看')
+      }
+
+      this.setData({
+        article: buildRemoteArticleDetail(unlockedDetail.data),
+        error: '',
+      })
+
+      wx.hideLoading()
+      wx.showToast({
+        title: '已解锁全文',
+        icon: 'success',
+      })
+    } catch (error) {
+      wx.hideLoading()
+      wx.showToast({
+        title: error instanceof Error ? error.message : '解锁全文失败',
+        icon: 'none',
+      })
+    } finally {
+      this.setData({
+        unlocking: false,
+      })
+    }
   },
 
   onPlanetCardTap(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id || 'planet_1'
-    const name = e.currentTarget.dataset.name || 'CEO管理笔记'
+    const id = rememberActivePlanetId(String(e.currentTarget.dataset.id || ''))
+    if (!id) {
+      return
+    }
+
+    const name = e.currentTarget.dataset.name || '知识星球'
     const creator = e.currentTarget.dataset.creator || ''
 
     wx.navigateTo({

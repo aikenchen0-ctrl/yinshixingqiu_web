@@ -14,6 +14,29 @@
   color: rgba(230, 240, 255, 0.7);
 }
 
+.ai-prompt-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 8rpx;
+}
+
+.ai-prompt-chip {
+  margin: 0;
+  padding: 0 20rpx;
+  height: 52rpx;
+  line-height: 52rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+  color: #e6f0ff;
+  font-size: 20rpx;
+}
+
+.ai-prompt-chip::after {
+  border: 0;
+}
+
 .message-scroll {
   flex: 1;
   min-height: 0;
@@ -48,9 +71,102 @@
   line-height: 1.6;
 }
 
+.loading-bubble {
+  color: rgba(230, 240, 255, 0.5);
+  font-style: italic;
+}
+
 .message-item.user .message-bubble {
   background: rgba(47, 245, 180, 0.15);
   border-color: rgba(47, 245, 180, 0.4);
+}
+
+.message-text {
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+.message-mode-tip {
+  margin-top: 12rpx;
+  padding: 8rpx 12rpx;
+  border-radius: 12rpx;
+  background: rgba(47, 245, 180, 0.08);
+  color: rgba(47, 245, 180, 0.82);
+  font-size: 18rpx;
+}
+
+.message-coverage-tip {
+  margin-top: 10rpx;
+  padding: 10rpx 12rpx;
+  border-radius: 12rpx;
+  background: rgba(118, 167, 255, 0.08);
+  color: rgba(200, 220, 255, 0.82);
+  font-size: 18rpx;
+  line-height: 1.5;
+}
+
+.message-suggestion-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 12rpx;
+}
+
+.message-suggestion-chip {
+  margin: 0;
+  padding: 0 18rpx;
+  height: 50rpx;
+  line-height: 50rpx;
+  border-radius: 999rpx;
+  background: rgba(118, 167, 255, 0.1);
+  border: 1rpx solid rgba(118, 167, 255, 0.22);
+  color: #d8e7ff;
+  font-size: 20rpx;
+}
+
+.message-suggestion-chip::after {
+  border: 0;
+}
+
+/* rich-text Markdown 样式 - 通过 rich-text 组件的内置样式处理 */
+
+.message-sources {
+  margin-top: 12rpx;
+  padding-top: 12rpx;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.08);
+}
+
+.source-divider {
+  font-size: 18rpx;
+  color: rgba(230, 240, 255, 0.4);
+  margin-bottom: 8rpx;
+}
+
+.source-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+  padding: 6rpx 0;
+}
+
+.source-title {
+  font-size: 18rpx;
+  color: rgba(47, 245, 180, 0.8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.source-date {
+  font-size: 16rpx;
+  color: rgba(230, 240, 255, 0.35);
+}
+
+.source-snippet {
+  font-size: 18rpx;
+  color: rgba(230, 240, 255, 0.58);
+  line-height: 1.5;
 }
 
 .chat-input {
@@ -69,4 +185,13 @@
   border: 1rpx solid rgba(255, 255, 255, 0.08);
   color: #e6f0ff;
   font-size: 22rpx;
+}
+
+.chat-field[disabled] {
+  opacity: 0.5;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  pointer-events: none;
 }

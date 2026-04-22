@@ -26,6 +26,22 @@
         <text class="planet-debug-summary-label">Session</text>
         <text class="planet-debug-summary-token">{{sessionTokenDisplay}}</text>
       </view>
+      <view class="planet-debug-summary-row">
+        <text class="planet-debug-summary-label">调试星球</text>
+        <text class="planet-debug-summary-value">{{debugGroupTitle}}</text>
+      </view>
+      <view class="planet-debug-summary-row">
+        <text class="planet-debug-summary-label">星球ID</text>
+        <text class="planet-debug-summary-token">{{debugGroupId || '尚未解析'}}</text>
+      </view>
+      <view class="planet-debug-summary-row">
+        <text class="planet-debug-summary-label">调试挑战</text>
+        <text class="planet-debug-summary-value">{{debugChallengeTitle}}</text>
+      </view>
+      <view class="planet-debug-summary-row">
+        <text class="planet-debug-summary-label">挑战ID</text>
+        <text class="planet-debug-summary-token">{{debugChallengeId || '尚未解析'}}</text>
+      </view>
     </view>
 
     <view class="planet-debug-card">

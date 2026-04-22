@@ -1,0 +1,155 @@
+<navigation-bar
+  title="{{challenge ? challenge.title : '打卡挑战'}}"
+  back="{{true}}"
+  color="#ffffff"
+  background="#24c2a7"
+></navigation-bar>
+
+<view wx:if="{{challenge}}" class="checkin-detail-page">
+  <scroll-view class="checkin-detail-scroll" scroll-y="{{true}}">
+    <view class="checkin-detail-hero">
+      <view class="checkin-detail-topbar">
+        <page-back-button
+          extClass="checkin-detail-back-button"
+          color="#ffffff"
+          fallbackUrl="/pages/planet/home?id={{groupId}}"
+          fallbackMode="redirect"
+        ></page-back-button>
+
+        <view class="checkin-detail-hero-actions">
+          <view class="checkin-detail-top-icon" bindtap="onCalendarTap"></view>
+          <view class="checkin-detail-top-icon checkin-detail-top-icon-share" bindtap="onShareTap"></view>
+        </view>
+      </view>
+
+      <text class="checkin-detail-title">{{challenge.title}}</text>
+      <view class="checkin-detail-stats">
+        <view class="checkin-detail-stat">
+          <text class="checkin-detail-stat-icon">人</text>
+          <text>{{challenge.currentJoinedCount}}人参加</text>
+        </view>
+        <view class="checkin-detail-stat">
+          <text class="checkin-detail-stat-icon">历</text>
+          <text>{{challenge.checkinCount}}次打卡</text>
+        </view>
+        <view class="checkin-detail-stat">
+          <text class="checkin-detail-stat-icon">成</text>
+          <text>{{challenge.completedCount}}人已完成挑战</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="checkin-detail-overlap-card">
+      <view class="checkin-detail-rule-brief" bindtap="onPreviewRule">
+        <text class="checkin-detail-rule-text">{{challenge.description}}</text>
+        <text class="checkin-detail-arrow">></text>
+      </view>
+
+      <view class="checkin-detail-shortcuts">
+        <view class="checkin-detail-shortcut" bindtap="onRankTap">
+          <view class="checkin-detail-shortcut-label">
+            <text class="checkin-detail-shortcut-icon">冠</text>
+            <text>打卡排行榜</text>
+          </view>
+          <text class="checkin-detail-arrow">></text>
+        </view>
+        <view class="checkin-detail-shortcut" bindtap="onTotalTap">
+          <view class="checkin-detail-shortcut-label">
+            <text class="checkin-detail-shortcut-icon checkin-detail-shortcut-icon-secondary">记</text>
+            <text>累计打卡</text>
+          </view>
+          <text class="checkin-detail-arrow">></text>
+        </view>
+      </view>
+
+      <view class="checkin-detail-avatar-row">
+        <image
+          wx:for="{{challenge.joinedAvatarUrls}}"
+          wx:key="*this"
+          class="checkin-detail-join-avatar"
+          src="{{item}}"
+          mode="aspectFill"
+        ></image>
+        <text class="checkin-detail-muted">{{challenge.isJoined ? '已报名，可继续打卡' : '暂未打卡'}}</text>
+      </view>
+    </view>
+
+    <view class="checkin-detail-today-card" bindtap="onTodayTap">
+      <text>今日共有{{challenge.todayCount}}人打卡，占比{{challenge.todayPercent}}%</text>
+      <text class="checkin-detail-arrow">></text>
+    </view>
+
+    <view class="checkin-detail-post-list">
+      <view wx:for="{{challenge.posts}}" wx:key="id" class="checkin-detail-post-card">
+        <view class="checkin-detail-post-head">
+          <image class="checkin-detail-post-avatar" src="{{item.author.avatarUrl}}" mode="aspectFill"></image>
+          <view class="checkin-detail-post-copy">
+            <view class="checkin-detail-post-name-row">
+              <text class="checkin-detail-post-name">{{item.author.name}}</text>
+              <text wx:if="{{item.author.isOwner}}" class="checkin-detail-owner-tag">星主</text>
+            </view>
+            <view class="checkin-detail-post-time-row">
+              <text class="checkin-detail-post-time">{{item.createdAt}}</text>
+              <text wx:if="{{item.author.location}}" class="checkin-detail-post-time">{{item.author.location}}</text>
+            </view>
+          </view>
+          <text class="checkin-detail-post-caret">⌄</text>
+        </view>
+
+        <text class="checkin-detail-post-content">{{item.content}}</text>
+
+        <view wx:if="{{item.images.length}}" class="checkin-detail-post-images">
+          <image
+            wx:for="{{item.images}}"
+            wx:key="*this"
+            class="checkin-detail-post-image"
+            src="{{item}}"
+            mode="aspectFill"
+            data-url="{{item}}"
+            bindtap="onImageTap"
+          ></image>
+        </view>
+
+        <view class="checkin-detail-post-actions">
+          <view class="checkin-detail-post-action" data-id="{{item.id}}" bindtap="onLikeTap">
+            <view class="checkin-detail-bottom-icon checkin-detail-bottom-icon-like"></view>
+            <text>{{item.likeCount}}</text>
+          </view>
+          <view class="checkin-detail-post-action" data-id="{{item.id}}" bindtap="onCommentTap">
+            <view class="checkin-detail-bottom-icon checkin-detail-bottom-icon-comment"></view>
+            <text>{{item.commentCount}}</text>
+          </view>
+          <button class="checkin-detail-share-button" open-type="share">
+            <view class="checkin-detail-bottom-icon checkin-detail-bottom-icon-share"></view>
+          </button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="checkin-detail-footer">
+    <button
+      class="checkin-detail-primary-button {{challenge.primaryActionDisabled ? 'checkin-detail-primary-button-disabled' : ''}}"
+      bindtap="onPrimaryActionTap"
+      disabled="{{challenge.primaryActionDisabled}}"
+    >
+      {{challenge.primaryActionText || (challenge.isJoined ? '发打卡' : '去报名')}}
+    </button>
+  </view>
+
+  <view wx:if="{{showSignupSheet}}" class="checkin-detail-mask" bindtap="onCloseSignupSheet">
+    <view class="checkin-detail-sheet" catchtap="noop">
+      <view class="checkin-detail-sheet-close" bindtap="onCloseSignupSheet">×</view>
+      <view class="checkin-detail-sheet-chip">21天打卡挑战</view>
+
+      <view class="checkin-detail-sheet-card">
+        <text class="checkin-detail-sheet-title">{{challenge.title}}</text>
+        <text class="checkin-detail-sheet-rule-label">打卡规则</text>
+        <text class="checkin-detail-sheet-rule-text">{{challenge.description}}</text>
+        <text class="checkin-detail-sheet-rule-text">有什么用？当你要秀肌肉的时候，要写复盘的时候，过来这里爬楼。</text>
+      </view>
+
+      <button class="checkin-detail-sheet-button" bindtap="onConfirmSignup">我已准备好</button>
+    </view>
+  </view>
+</view>

@@ -192,71 +192,39 @@
 }
 
 .free-entry {
-  margin-top: 84rpx;
+  margin-top: 40rpx;
   text-align: center;
   font-size: 28rpx;
   color: #667085;
 }
 
-.create-card-free {
-  padding-bottom: 40rpx;
+.free-mode-card {
+  margin-top: 24rpx;
 }
 
-.free-card-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 10rpx;
-}
-
-.free-card-title {
-  font-size: 44rpx;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #111111;
-}
-
-.free-card-desc {
-  font-size: 28rpx;
-  line-height: 1.6;
-  color: #667085;
-}
-
-.free-rule-title {
-  font-size: 34rpx;
-  line-height: 1.5;
-  font-weight: 700;
-  color: #111111;
-}
-
-.free-rule-panel {
-  margin-top: 28rpx;
+.free-mode-panel {
+  margin-top: 24rpx;
   padding: 26rpx 24rpx;
   border-radius: 14rpx;
   background: #f6f6f6;
 }
 
-.free-rule-question-row {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  margin-bottom: 14rpx;
-}
-
-.free-rule-icon {
-  font-size: 26rpx;
-  color: #6682a2;
-}
-
-.free-rule-question {
-  font-size: 30rpx;
-  color: #1f2937;
-}
-
-.free-rule-item {
+.free-mode-text {
   display: block;
   font-size: 28rpx;
   line-height: 1.8;
-  color: #7d8594;
+  color: #667085;
+}
+
+.free-mode-text + .free-mode-text {
+  margin-top: 10rpx;
+}
+
+.free-reset-entry {
+  margin-top: 28rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #20b8a9;
 }
 
 .create-footer {

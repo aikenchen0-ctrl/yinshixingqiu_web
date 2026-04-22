@@ -1,49 +1,80 @@
 <navigation-bar
   title="付费文章"
   back="{{false}}"
-  color="#e6f0ff"
-  background="rgba(10, 18, 32, 0.96)"
+  color="#22160d"
+  background="#fff7f4"
 ></navigation-bar>
 
-<view class="page grid-bg">
-    <view class="section">
-      <view class="section-title">文章目录</view>
-      <view class="section-subtitle">完全兼容微信文章的富文本排版</view>
-      <scroll-view class="tab-scroll" scroll-x>
-        <view class="tab-row">
-          <view
-            class="tab-item {{activeCategory === item.id ? 'tab-active' : ''}}"
-            wx:for="{{categories}}"
-            wx:key="id"
-            data-id="{{item.id}}"
-            bindtap="onCategoryChange"
-          >
-            <text>{{item.label}}</text>
-          </view>
-        </view>
-      </scroll-view>
+<scroll-view class="article-channel-page" scroll-y="{{true}}">
+  <view class="article-channel-shell">
+    <view class="article-source-switch">
+      <view
+        class="article-source-item {{activeContentSource === 'wechat' ? 'is-active' : ''}}"
+        data-source="wechat"
+        bindtap="onContentSourceChange"
+      >
+        <text class="article-source-name">微信文章</text>
+        <text class="article-source-meta">{{wechatArticles.length}}篇</text>
+      </view>
+      <view class="article-source-divider"></view>
+      <view
+        class="article-source-item {{activeContentSource === 'planet' ? 'is-active' : ''}}"
+        data-source="planet"
+        bindtap="onContentSourceChange"
+      >
+        <text class="article-source-name">知识星球</text>
+        <text class="article-source-meta">{{planetArticles.length}}篇</text>
+      </view>
     </view>
 
-    <view class="section card">
-      <view class="article-list">
-        <view class="article-card" wx:for="{{filteredArticles}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
-          <view class="article-header">
-            <text class="article-title">{{item.title}}</text>
-            <view class="article-price">
-              <text class="chip chip-warning">{{item.price}}</text>
+    <view wx:if="{{displayArticles.length}}" class="article-list">
+      <view class="article-card" wx:for="{{displayArticles}}" wx:key="id" data-id="{{item.id}}" data-source="{{item.contentSource}}" bindtap="goDetail">
+        <view class="article-card-top">
+          <view class="article-card-copy">
+            <view class="article-tag-row">
+              <text wx:if="{{activeContentSource === 'planet'}}" class="article-tag article-tag-source">{{item.planetCard.name}}</text>
+              <text class="article-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
             </view>
+            <text class="article-card-title">{{item.title}}</text>
+            <text class="article-card-summary">{{item.summary}}</text>
           </view>
-          <text class="article-summary">{{item.summary}}</text>
-          <view class="article-footer">
-            <text class="muted">{{item.author}}</text>
-            <text class="muted">{{item.time}}</text>
-            <text class="article-lock {{item.locked ? 'locked' : 'unlocked'}}">
-              {{item.locked ? '需解锁' : '已解锁'}}
-            </text>
+          <view class="article-price-box {{item.primaryMarkClass}}">
+            <text class="article-price-value {{item.primaryMarkClass}}">{{item.primaryMarkText}}</text>
+            <text wx:if="{{item.originPriceLabel}}" class="article-origin-price">{{item.originPriceLabel}}</text>
           </view>
+        </view>
+
+        <view class="article-meta-row">
+          <text>{{item.author}}</text>
+          <text>{{item.time}}</text>
+          <text>{{item.readDuration}}</text>
+          <text>{{item.wordCount}}</text>
+        </view>
+
+        <view class="article-card-bottom">
+          <view class="article-status-chip {{item.statusClass}}">
+            <view wx:if="{{item.updated}}" class="article-status-dot"></view>
+            <text>{{item.statusLabel}}</text>
+          </view>
+
+          <text class="article-unlock-label">{{item.unlockLabel}}</text>
+          <text class="article-sales-label">{{item.salesCount}}人读过</text>
         </view>
       </view>
     </view>
 
-  <view class="section safe-bottom"></view>
-</view>
+    <view wx:elif="{{activeContentSource === 'planet' && loadingPlanetArticles}}" class="article-empty-card">
+      <text class="article-empty-title">正在加载星球文章</text>
+      <text class="article-empty-subtitle">正在从真实后台读取知识星球文章，请稍候。</text>
+    </view>
+
+    <view wx:else class="article-empty-card">
+      <text class="article-empty-title">
+        {{activeContentSource === 'wechat' ? '暂无微信文章' : (planetError ? '星球文章加载失败' : '暂无星球内容')}}
+      </text>
+      <text class="article-empty-subtitle">
+        {{activeContentSource === 'wechat' ? '当前暂无可展示文章，稍后再来看。' : (planetError || '当前暂无可展示星球文章，稍后再来看。')}}
+      </text>
+    </view>
+  </view>
+</scroll-view>

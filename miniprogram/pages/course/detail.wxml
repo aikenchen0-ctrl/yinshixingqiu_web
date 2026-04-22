@@ -1,0 +1,70 @@
+<navigation-bar
+  title="课程详情"
+  back="{{true}}"
+  color="#f8efe9"
+  background="rgba(18, 11, 14, 0.96)"
+></navigation-bar>
+
+<scroll-view class="course-detail-page" scroll-y="{{true}}">
+  <view class="course-detail-shell">
+    <block wx:if="{{hasCourse}}">
+      <view class="course-detail-hero">
+        <image class="course-detail-cover" src="{{coverImage}}" mode="aspectFill"></image>
+        <view class="course-detail-mask"></view>
+
+        <view class="course-detail-copy">
+          <text class="course-detail-badge">{{category}}</text>
+          <text class="course-detail-title">{{title}}</text>
+          <text class="course-detail-subtitle">{{subtitle}}</text>
+          <text class="course-detail-summary">{{summary}}</text>
+
+          <view class="course-detail-meta">
+            <text>{{lessonCountLabel}}</text>
+            <text wx:if="{{completedLessonCountLabel}}">已学 {{completedLessonCountLabel}}</text>
+            <text>{{difficulty}}</text>
+            <text>{{updatedAt}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="course-detail-panel">
+        <view class="section-title">课程章节</view>
+        <view class="section-subtitle">按顺序学完即可完成一轮最小学习闭环</view>
+
+        <view class="course-lesson-list">
+          <view
+            class="course-lesson-card"
+            wx:for="{{lessons}}"
+            wx:key="id"
+            data-lesson-id="{{item.id}}"
+            bindtap="goContent"
+          >
+            <view class="course-lesson-index">{{item.orderLabel}}</view>
+
+            <view class="course-lesson-copy">
+              <view class="course-lesson-header">
+                <text class="course-lesson-title">{{item.title}}</text>
+                <text class="course-lesson-type {{item.type === 'video' ? 'is-video' : 'is-article'}}">{{item.typeLabel}}</text>
+              </view>
+
+              <text class="course-lesson-summary">{{item.summary}}</text>
+
+              <view class="course-lesson-meta">
+                <text>{{item.duration}}</text>
+                <text>进入学习</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="course-detail-empty">
+      <text class="course-detail-empty-title">课程加载失败</text>
+      <text class="course-detail-empty-subtitle">{{errorText}}</text>
+      <button class="course-detail-empty-button" bindtap="goList">返回课程列表</button>
+    </view>
+
+    <view class="safe-bottom"></view>
+  </view>
+</scroll-view>

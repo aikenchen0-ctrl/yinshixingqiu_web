@@ -1,15 +1,10 @@
-export type MenuGroupKey =
-  | 'income'
-  | 'promotion'
-  | 'activity'
-  | 'renewal'
-  | 'tools'
-  | 'permissions'
+export type MenuGroupKey = string
 
 export interface MenuLeaf {
   label: string
   path: string
   badge?: string
+  badgeTone?: 'default' | 'usable'
 }
 
 export interface MenuGroup {
@@ -17,6 +12,8 @@ export interface MenuGroup {
   label: string
   icon: string
   path?: string
+  badge?: string
+  badgeTone?: 'default' | 'usable'
   children?: MenuLeaf[]
 }
 

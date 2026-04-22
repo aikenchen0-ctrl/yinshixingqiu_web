@@ -10,7 +10,7 @@
       <view class="hero-title">金融安全智库</view>
       <view class="hero-sub">AI驱动的情报聚合、风险洞察与资产防护</view>
       <view class="hero-actions">
-        <button class="btn btn-primary" bindtap="goPlanet">进入知识星球</button>
+        <button class="btn btn-primary" bindtap="goPlanet">进入饮视星球</button>
         <button class="btn btn-ghost" bindtap="goAI">AI问血饮</button>
       </view>
       <view class="hero-metrics">
@@ -19,7 +19,7 @@
           <text class="metric-value">128</text>
         </view>
         <view class="metric">
-          <text class="metric-label">课程排期</text>
+          <text class="metric-label">课程内容</text>
           <text class="metric-value">06</text>
         </view>
         <view class="metric">
@@ -33,9 +33,9 @@
       <view class="section-title">核心入口</view>
       <view class="section-subtitle">一键进入关键功能与资产安全服务</view>
       <view class="quick-grid">
-        <view class="quick-card" data-action="calendar" bindtap="onQuickAction">
-          <text class="quick-title">课程日历</text>
-          <text class="quick-desc">最新排期与直播提醒</text>
+        <view class="quick-card" data-action="course" bindtap="onQuickAction">
+          <text class="quick-title">课程中心</text>
+          <text class="quick-desc">视频与图文完整学习闭环</text>
         </view>
         <view class="quick-card" data-action="articles" bindtap="onQuickAction">
           <text class="quick-title">付费文章</text>
@@ -53,7 +53,7 @@
     </view>
 
     <view class="section card">
-      <view class="section-title">知识星球动态</view>
+      <view class="section-title">饮视星球动态</view>
       <view class="section-subtitle">血饮智库社区最新洞察</view>
       <view class="planet-list">
         <view class="planet-item" wx:for="{{planetUpdates}}" wx:key="id">

@@ -1,4 +1,5 @@
 import { addPost } from '../../utils/planet'
+import { navigateToPlanetIndex, resolvePlanetIdFromOptions } from '../../utils/planet-route'
 
 interface EditorStatusPayload {
   bold?: boolean
@@ -77,10 +78,10 @@ const buildSummary = (title: string, text: string) => {
   return (title || normalizedText).slice(0, 120)
 }
 
-Page<PublishPageData>({
+Page({
   data: {
-    planetId: 'planet_1',
-    planetName: '知识星球',
+    planetId: '',
+    planetName: '饮视星球',
     title: '',
     imageInput: '',
     tagInput: '',
@@ -96,13 +97,19 @@ Page<PublishPageData>({
       bulletList: false,
     },
     submitting: false,
-  },
+  } as PublishPageData,
 
   onLoad(options: Record<string, string>) {
     editorCtx = null
+    const planetId = resolvePlanetIdFromOptions(options, ['planetId', 'id', 'groupId'])
+    if (!planetId) {
+      navigateToPlanetIndex('请先选择星球')
+      return
+    }
+
     this.setData({
-      planetId: options.planetId || 'planet_1',
-      planetName: options.planetName ? decodeURIComponent(options.planetName) : '知识星球',
+      planetId,
+      planetName: options.planetName ? decodeURIComponent(options.planetName) : '饮视星球',
     })
   },
 
@@ -204,7 +211,6 @@ Page<PublishPageData>({
       return
     }
 
-    editorCtx.focus()
     editorCtx.format(command, value)
   },
 

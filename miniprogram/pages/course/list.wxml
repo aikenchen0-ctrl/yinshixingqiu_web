@@ -1,0 +1,90 @@
+<navigation-bar
+  title="课程"
+  back="{{false}}"
+  color="#2b1719"
+  background="#f7eee8"
+></navigation-bar>
+
+<scroll-view class="course-list-page" scroll-y="{{true}}">
+  <view class="course-list-shell">
+    <view class="course-search-card">
+      <view class="course-search-icon"></view>
+      <input
+        class="course-search-input"
+        value="{{keyword}}"
+        placeholder="搜索课程、节标题或关键词"
+        placeholder-class="course-search-placeholder"
+        confirm-type="search"
+        bindinput="onSearchInput"
+      />
+      <text wx:if="{{keyword}}" class="course-search-clear" bindtap="onClearSearch">清空</text>
+    </view>
+
+    <view class="course-calendar-entry" bindtap="goCalendar">
+      <view class="course-calendar-entry-copy">
+        <text class="course-calendar-entry-label">课程视图</text>
+        <text class="course-calendar-entry-title">课程日历</text>
+        <text class="course-calendar-entry-subtitle">按后端课程更新时间查看内容，不再展示本地静态数据。</text>
+      </view>
+      <text class="course-calendar-entry-action">查看</text>
+    </view>
+
+    <view wx:if="{{errorText}}" class="course-api-fallback">
+      <text>{{errorText}}</text>
+    </view>
+
+    <scroll-view class="course-tabs" scroll-x="{{true}}" enable-flex="{{true}}">
+      <view class="course-tabs-row">
+        <view
+          class="course-tab {{activeCategory === item.key ? 'is-active' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="key"
+          data-category="{{item.key}}"
+          bindtap="onCategoryChange"
+        >
+          <text class="course-tab-label">{{item.label}}</text>
+          <text class="course-tab-count">{{item.count}}</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{loading}}" class="course-empty-state">
+      <text class="course-empty-title">课程同步中</text>
+      <text class="course-empty-subtitle">正在从后端读取最新课程。</text>
+    </view>
+
+    <view wx:elif="{{courses.length}}" class="course-card-list">
+      <view class="course-card" wx:for="{{courses}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
+        <view class="course-card-top">
+          <view class="course-card-copy">
+            <view class="course-card-badges">
+              <text class="course-card-badge">{{item.category}}</text>
+              <text wx:if="{{item.hasVideoLesson}}" class="course-card-badge course-card-badge-video">视频</text>
+              <text wx:if="{{item.hasArticleLesson}}" class="course-card-badge course-card-badge-article">图文</text>
+            </view>
+
+            <text class="course-card-title">{{item.title}}</text>
+            <text class="course-card-subtitle">{{item.subtitle}}</text>
+          </view>
+
+          <image class="course-card-cover" src="{{item.coverImage}}" mode="aspectFill"></image>
+        </view>
+
+        <text class="course-card-summary">{{item.summary}}</text>
+
+        <view class="course-card-meta">
+          <text>{{item.lessonCountLabel}}</text>
+          <text>{{item.difficulty}}</text>
+          <text>{{item.updatedAt}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="course-empty-state">
+      <text class="course-empty-title">{{emptyTitle}}</text>
+      <text class="course-empty-subtitle">{{errorText || emptySubtitle}}</text>
+    </view>
+
+    <view class="safe-bottom"></view>
+  </view>
+</scroll-view>

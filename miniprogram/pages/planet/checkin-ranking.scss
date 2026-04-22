@@ -1,0 +1,137 @@
+.checkin-ranking-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #22c1a4 0%, #22c1a4 420rpx, #f6f8fa 421rpx, #f6f8fa 100%);
+}
+
+.checkin-ranking-hero {
+  padding: 42rpx 36rpx 220rpx;
+}
+
+.checkin-ranking-back {
+  min-height: 44rpx;
+  margin-bottom: 22rpx;
+}
+
+.checkin-ranking-title {
+  display: block;
+  color: #ffffff;
+  font-size: 84rpx;
+  font-weight: 700;
+}
+
+.checkin-ranking-subtitle {
+  display: block;
+  margin-top: 20rpx;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 34rpx;
+}
+
+.checkin-ranking-card {
+  margin: -120rpx 28rpx 0;
+  border-radius: 32rpx;
+  background: #ffffff;
+  box-shadow: 0 18rpx 40rpx rgba(18, 80, 72, 0.14);
+  overflow: hidden;
+}
+
+.checkin-ranking-tabs {
+  display: flex;
+  background: rgba(34, 193, 164, 0.08);
+}
+
+.checkin-ranking-tab {
+  flex: 1;
+  height: 116rpx;
+  color: #8f989f;
+  font-size: 38rpx;
+  line-height: 116rpx;
+  text-align: center;
+}
+
+.checkin-ranking-tab-active {
+  background: #ffffff;
+  color: #22c1a4;
+  font-weight: 700;
+}
+
+.checkin-ranking-list {
+  padding: 6rpx 28rpx 20rpx;
+}
+
+.checkin-ranking-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  min-height: 128rpx;
+  border-bottom: 1rpx solid #f1f3f5;
+}
+
+.checkin-ranking-rank {
+  width: 64rpx;
+  color: #7f8790;
+  font-size: 42rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.checkin-ranking-rank-top {
+  color: #d4a13b;
+  font-weight: 700;
+}
+
+.checkin-ranking-avatar {
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 50%;
+  background: #edf2f5;
+  flex-shrink: 0;
+}
+
+.checkin-ranking-avatar-placeholder {
+  background: linear-gradient(135deg, #eef3f6 0%, #dce5eb 100%);
+}
+
+.checkin-ranking-name {
+  flex: 1;
+  min-width: 0;
+  color: #222222;
+  font-size: 42rpx;
+}
+
+.checkin-ranking-value {
+  color: #7f8790;
+  font-size: 42rpx;
+}
+
+.checkin-ranking-empty {
+  padding: 80rpx 0 90rpx;
+  color: #9aa3aa;
+  font-size: 30rpx;
+  text-align: center;
+}
+
+.checkin-ranking-viewer-card {
+  margin: 28rpx 28rpx 0;
+  padding: 28rpx 32rpx calc(28rpx + env(safe-area-inset-bottom));
+  border-radius: 28rpx 28rpx 0 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.checkin-ranking-viewer-label {
+  color: #8f989f;
+  font-size: 36rpx;
+}
+
+.checkin-ranking-viewer-name {
+  flex: 1;
+  color: #222222;
+  font-size: 40rpx;
+}
+
+.checkin-ranking-viewer-value {
+  color: #8f989f;
+  font-size: 40rpx;
+}

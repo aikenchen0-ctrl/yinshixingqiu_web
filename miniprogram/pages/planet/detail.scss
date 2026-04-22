@@ -99,7 +99,7 @@
 }
 
 .planet-unread {
-  color: #21cdb9;
+  color: var(--theme-accent);
   font-size: 26rpx;
 }
 
@@ -113,7 +113,7 @@
   margin-top: 34rpx;
   height: 228rpx;
   border-radius: 18rpx;
-  background: linear-gradient(180deg, #f7fbfb, #fbfdfd);
+  background: linear-gradient(180deg, var(--theme-accent-surface), var(--theme-accent-surface-soft));
   position: relative;
   overflow: hidden;
   display: flex;
@@ -157,7 +157,7 @@
   min-width: 212rpx;
   height: 74rpx;
   border-radius: 999rpx;
-  background: linear-gradient(90deg, #1fd3c1, #20b8aa);
+  background: linear-gradient(90deg, var(--theme-accent), var(--theme-accent-soft));
   color: #ffffff;
   font-size: 28rpx;
   font-weight: 700;

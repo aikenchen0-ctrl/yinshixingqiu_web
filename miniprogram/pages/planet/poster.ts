@@ -1,4 +1,12 @@
 import { getPlanetById, getPinnedPostById, getPostById } from '../../utils/planet'
+import { getStoredSession } from '../../utils/auth'
+import { fetchPlanetHome, fetchPlanetPostDetail } from '../../utils/planet-api'
+import {
+  navigateToPlanetIndex,
+  normalizePlanetId,
+  rememberActivePlanetId,
+  resolvePlanetIdFromOptions,
+} from '../../utils/planet-route'
 
 interface PosterPlanetView {
   id: string
@@ -14,17 +22,35 @@ interface PosterPostView {
 }
 
 const fallbackPlanet: PosterPlanetView = {
-  id: 'planet_2',
-  name: '易安AI编程·出海赚钱',
-  ownerName: '易安',
+  id: 'grp_datawhale_001',
+  name: 'Datawhale AI成长星球',
+  ownerName: '星主A',
 }
 
 const fallbackPost: PosterPostView = {
   id: 'seed_2',
-  author: '易安',
-  time: '2024/8/2 20:02',
+  author: '活跃成员李雷',
+  time: '2026/03/30 21:10',
   content:
-    '新来的朋友，大家好，欢迎来到我的领空！\n\n正如其名，这里是记录AI副业的一个地方，大家可以下载一下「知识星球」APP，使用体验会更加好！\n\n易安最新产品清单：\nhttps://ziby0nwxdov.feishu.cn/sheets/DoWEs1UmohKiwvvtQeh1cF4rLnH1\n\n这是我创建的免费星球，但是我也会认真的去对待，为大家提供物超所值的干货，希望有机会一起探索第二曲线，一起搞事情。',
+    '成员提问：如何把一个选题拆成连续 7 天内容？\n\n我想把 AI 工具测评拆成一周连载，当前卡在主题拆分、节奏安排和每天输出粒度上。\n\n这个长图兜底内容主要用于在接口失败时继续验证帖子详情、分享和长图生成链路。',
+}
+
+const formatPosterTime = (value?: string) => {
+  if (!value) {
+    return ''
+  }
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
+
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const day = `${date.getDate()}`.padStart(2, '0')
+  const hour = `${date.getHours()}`.padStart(2, '0')
+  const minute = `${date.getMinutes()}`.padStart(2, '0')
+  return `${year}/${month}/${day} ${hour}:${minute}`
 }
 
 const wrapTextByWidth = (
@@ -72,7 +98,12 @@ Page({
 
   onLoad(options: Record<string, string>) {
     const postId = options.id || ''
-    const planetId = options.planetId || 'planet_2'
+    const planetId = resolvePlanetIdFromOptions(options, ['planetId', 'groupId'], false)
+    if (!postId) {
+      navigateToPlanetIndex('帖子参数缺失')
+      return
+    }
+
     const post = this.resolvePost(postId)
     const planet = this.resolvePlanet(planetId)
 
@@ -85,6 +116,8 @@ Page({
         this.generatePoster()
       },
     )
+
+    void this.syncPosterData(postId, planetId)
   },
 
   resolvePost(postId: string): PosterPostView {
@@ -124,6 +157,72 @@ Page({
     }
   },
 
+  async syncPosterData(postId: string, planetId: string) {
+    if (!postId) {
+      return
+    }
+
+    const session = getStoredSession()
+    const sessionToken = session && session.sessionToken ? session.sessionToken : ''
+    let resolvedPlanetId = String(planetId || '').trim()
+    let nextPost = this.resolvePost(postId)
+
+    try {
+      const postResponse = await fetchPlanetPostDetail(postId, false, sessionToken)
+      if (postResponse.ok && postResponse.data) {
+        const postData = postResponse.data
+        nextPost = {
+          id: String(postData.id || postId),
+          author:
+            postData.author && typeof postData.author === 'object' && typeof postData.author.nickname === 'string'
+              ? postData.author.nickname
+              : nextPost.author,
+          time: formatPosterTime(postData.publishedAt || postData.createdAt || '') || nextPost.time,
+          content: String(postData.contentText || postData.summary || postData.title || '').trim() || nextPost.content,
+        }
+
+        if (postData.groupId) {
+          resolvedPlanetId = normalizePlanetId(postData.groupId)
+          rememberActivePlanetId(resolvedPlanetId)
+        }
+      }
+    } catch {
+      // 长图页面在帖子详情失败时保留本地帖子兜底
+    }
+
+    let nextPlanet = this.resolvePlanet(resolvedPlanetId)
+
+    if (resolvedPlanetId) {
+      try {
+        const homeResponse = await fetchPlanetHome({
+          groupId: resolvedPlanetId,
+          sessionToken,
+          userId: session && session.id ? session.id : '',
+        })
+
+        if (homeResponse.ok && homeResponse.data && homeResponse.data.group && homeResponse.data.owner) {
+          nextPlanet = {
+            id: resolvedPlanetId,
+            name: String(homeResponse.data.group.name || nextPlanet.name || fallbackPlanet.name),
+            ownerName: String(homeResponse.data.owner.nickname || nextPlanet.ownerName || fallbackPlanet.ownerName).replace(/老师$/, ''),
+          }
+        }
+      } catch {
+        // 长图页面在星球概览失败时保留本地星球兜底
+      }
+    }
+
+    this.setData(
+      {
+        post: nextPost,
+        planet: nextPlanet,
+      },
+      () => {
+        this.generatePoster()
+      },
+    )
+  },
+
   generatePoster() {
     wx.showLoading({
       title: '生成中',
@@ -131,7 +230,7 @@ Page({
     })
 
     const { post } = this.data
-    const systemInfo = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync()
+    const systemInfo = wx.getSystemInfoSync()
     const canvasWidth = Math.min(systemInfo.windowWidth - 32, 708)
     const contentWidth = canvasWidth - 96
     const baseFontSize = 24

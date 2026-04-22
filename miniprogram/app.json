@@ -1,17 +1,35 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/calendar/index",
+    "pages/course/list",
+    "pages/course/calendar",
+    "pages/course/detail",
+    "pages/course/content",
     "pages/articles/index",
     "pages/store/index",
+    "pages/store/detail",
+    "pages/store/search",
+    "pages/store/address",
+    "pages/store/orders",
+    "pages/store/commission",
+    "pages/store/order-detail",
+    "pages/store/shipping",
     "pages/profile/index",
+    "pages/profile/service",
     "pages/planet/index",
     "pages/planet/lobby",
     "pages/planet/mine",
+    "pages/planet/refunds",
+    "pages/planet/shipping",
     "pages/planet/debug",
     "pages/planet/detail",
     "pages/planet/home",
     "pages/planet/checkin",
+    "pages/planet/checkin-create",
+    "pages/planet/checkin-detail",
+    "pages/planet/checkin-ranking",
+    "pages/planet/checkin-record",
+    "pages/planet/checkin-compose",
     "pages/planet/columns",
     "pages/planet/profile",
     "pages/planet/beans",
@@ -43,7 +61,7 @@
         "text": "首页"
       },
       {
-        "pagePath": "pages/calendar/index",
+        "pagePath": "pages/course/list",
         "text": "课程"
       },
       {
@@ -65,7 +83,6 @@
     "skyline": {
       "defaultDisplayBlock": true,
       "defaultContentBox": true,
-      "tagNameStyleIsolation": "legacy",
       "disableABTest": true,
       "sdkVersionBegin": "3.0.0",
       "sdkVersionEnd": "15.255.255"

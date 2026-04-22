@@ -1,82 +1,275 @@
-.tab-scroll {
-  margin-top: 16rpx;
-  white-space: nowrap;
+.article-channel-page {
+  position: relative;
+  height: calc(100vh - 88rpx);
+  background:
+    linear-gradient(180deg, #fff7f4 0%, #fffdfc 32%, #fffaf8 100%);
 }
 
-.tab-row {
+.article-channel-shell {
+  padding: 18rpx 24rpx 72rpx;
+  box-sizing: border-box;
+}
+
+.article-source-switch {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin-top: 6rpx;
+  border-radius: 24rpx;
+  background: #fffaf8;
+  border: 1rpx solid #f0ded9;
+  box-shadow: 0 12rpx 28rpx rgba(188, 99, 80, 0.05);
+  overflow: hidden;
+}
+
+.article-source-item {
+  min-width: 0;
+  padding: 22rpx 24rpx 20rpx;
   display: flex;
-  gap: 12rpx;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8rpx;
+  background: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.tab-item {
-  padding: 10rpx 20rpx;
-  border-radius: 999rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.1);
-  color: rgba(230, 240, 255, 0.7);
+.article-source-item.is-active {
+  background: linear-gradient(135deg, #fff1ec 0%, #ffe4dc 100%);
+}
+
+.article-source-divider {
+  position: absolute;
+  top: 18rpx;
+  bottom: 18rpx;
+  left: 50%;
+  width: 1rpx;
+  background: #f0ddd7;
+  transform: translateX(-50%);
+}
+
+.article-source-name {
+  color: #2b1914;
+  font-size: 32rpx;
+  line-height: 40rpx;
+  font-weight: 700;
+}
+
+.article-source-meta {
+  color: #bf5a4b;
   font-size: 22rpx;
+  line-height: 32rpx;
 }
 
-.tab-active {
-  background: rgba(47, 245, 180, 0.16);
-  border-color: rgba(47, 245, 180, 0.5);
-  color: #2ff5b4;
+.article-source-item.is-active .article-source-name {
+  color: #23120e;
+}
+
+.article-source-item.is-active .article-source-meta {
+  color: #d04f3f;
 }
 
 .article-list {
   display: flex;
   flex-direction: column;
   gap: 18rpx;
+  margin-top: 18rpx;
 }
 
 .article-card {
-  padding: 20rpx;
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1rpx solid rgba(255, 255, 255, 0.06);
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #fffdfb;
+  border: 1rpx solid #f0ded9;
+  box-shadow: 0 14rpx 34rpx rgba(188, 99, 80, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  gap: 16rpx;
 }
 
-.article-header {
+.article-card-top {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12rpx;
+  gap: 18rpx;
+  align-items: flex-start;
 }
 
-.article-title {
-  font-size: 26rpx;
-  font-weight: 700;
+.article-card-copy {
+  min-width: 0;
   flex: 1;
 }
 
-.article-summary {
-  font-size: 22rpx;
-  color: rgba(230, 240, 255, 0.7);
-}
-
-.article-footer {
+.article-tag-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 20rpx;
-  color: rgba(230, 240, 255, 0.55);
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-bottom: 12rpx;
 }
 
-.article-lock {
-  padding: 4rpx 12rpx;
+.article-tag {
+  padding: 6rpx 14rpx;
   border-radius: 999rpx;
-  font-size: 18rpx;
+  background: #fff1ee;
+  color: #d45d4d;
+  font-size: 20rpx;
+  line-height: 28rpx;
+}
+
+.article-tag-source {
+  background: #f4f0ff;
+  color: #7a56cf;
+}
+
+.article-card-title {
+  display: block;
+  color: #241511;
+  font-size: 30rpx;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.article-card-summary {
+  display: block;
+  margin-top: 12rpx;
+  color: #705950;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.article-price-box {
+  min-width: 132rpx;
+  padding: 14rpx 16rpx;
+  border-radius: 20rpx;
   border: 1rpx solid transparent;
+  text-align: right;
+  box-sizing: border-box;
 }
 
-.locked {
-  border-color: rgba(246, 194, 74, 0.4);
-  color: #f6c24a;
+.article-price-box.is-paid {
+  background: linear-gradient(180deg, #fff7f4 0%, #fff0eb 100%);
+  border-color: #f3ddd7;
+  box-shadow: inset 0 1rpx 0 rgba(255, 255, 255, 0.4);
 }
 
-.unlocked {
-  border-color: rgba(47, 245, 180, 0.35);
-  color: #2ff5b4;
+.article-price-box.is-free {
+  min-width: 120rpx;
+  background: linear-gradient(180deg, #f2fdf8 0%, #e5f8f0 100%);
+  border-color: #b9e7d6;
+  text-align: center;
+}
+
+.article-price-value {
+  display: block;
+  color: #d55342;
+  font-size: 30rpx;
+  line-height: 38rpx;
+  font-weight: 700;
+}
+
+.article-price-value.is-paid {
+  color: #d55342;
+}
+
+.article-price-value.is-free {
+  color: #1f9a78;
+}
+
+.article-origin-price {
+  display: block;
+  margin-top: 6rpx;
+  color: #b89a92;
+  font-size: 20rpx;
+  line-height: 28rpx;
+  text-decoration: line-through;
+}
+
+.article-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx 18rpx;
+  color: #a0887d;
+  font-size: 20rpx;
+  line-height: 30rpx;
+}
+
+.article-card-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10rpx 12rpx;
+}
+
+.article-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  min-height: 44rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid transparent;
+  font-size: 20rpx;
+  box-sizing: border-box;
+}
+
+.article-status-chip.is-locked {
+  border-color: #f2c58f;
+  background: #fff8ef;
+  color: #d88a25;
+}
+
+.article-status-chip.is-unlocked {
+  border-color: #efc8c1;
+  background: #fff2ef;
+  color: #d75b4a;
+}
+
+.article-status-chip.is-updated {
+  border-color: #f1c4bd;
+  background: #fff0ed;
+  color: #d75546;
+}
+
+.article-status-chip.is-free {
+  border-color: #b8e6d8;
+  background: #eefcf7;
+  color: #17886a;
+}
+
+.article-status-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: #e14f3d;
+}
+
+.article-unlock-label,
+.article-sales-label {
+  color: #9f897f;
+  font-size: 20rpx;
+  line-height: 30rpx;
+}
+
+
+.article-empty-card {
+  margin-top: 18rpx;
+  padding: 48rpx 32rpx;
+  border-radius: 24rpx;
+  background: #fffdfb;
+  border: 1rpx dashed #f0d8d2;
+  text-align: center;
+}
+
+.article-empty-title {
+  display: block;
+  color: #412b24;
+  font-size: 30rpx;
+  line-height: 40rpx;
+  font-weight: 600;
+}
+
+.article-empty-subtitle {
+  display: block;
+  margin-top: 12rpx;
+  color: #aa9187;
+  font-size: 22rpx;
+  line-height: 34rpx;
 }

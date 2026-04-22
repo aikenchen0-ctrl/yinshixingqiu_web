@@ -14,6 +14,39 @@
   color: rgba(230, 240, 255, 0.7);
 }
 
+.membership-context-card {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(47, 245, 180, 0.14), transparent 28%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.membership-context-title {
+  display: block;
+  margin-top: 14rpx;
+  color: #f6c24a;
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.membership-context-desc {
+  display: block;
+  margin-top: 10rpx;
+  color: rgba(230, 240, 255, 0.72);
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.membership-context-button {
+  margin-top: 18rpx;
+  height: 72rpx;
+  border-radius: 999rpx;
+  background: rgba(47, 245, 180, 0.12);
+  color: #2ff5b4;
+  font-size: 24rpx;
+  line-height: 72rpx;
+}
+
 .plan-list {
   margin-top: 16rpx;
   display: flex;

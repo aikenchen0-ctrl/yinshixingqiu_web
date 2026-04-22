@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "mall-coupon-picker": "/components/mall-coupon-picker/mall-coupon-picker"
+  },
+  "enableShareAppMessage": true,
+  "enableShareTimeline": true
+}

@@ -95,7 +95,7 @@ Component({
       if (backUrl) {
         const tabBarPages = [
           '/pages/index/index',
-          '/pages/calendar/index',
+          '/pages/course/list',
           '/pages/articles/index',
           '/pages/store/index',
           '/pages/profile/index',

@@ -10,14 +10,24 @@
     <view class="columns-head-icon"></view>
     <view class="columns-head-copy">
       <view class="columns-title-row">
-        <text class="columns-title">程序员创业之路</text>
-        <text class="columns-title-suffix">✚ 20133213</text>
+        <text class="columns-title">{{groupName}}</text>
       </view>
-      <text class="columns-subtitle">共 20 个专栏</text>
+      <text class="columns-subtitle">共 {{totalColumnsText}} 个专栏</text>
+    </view>
+    <view wx:if="{{canCreateColumn}}" class="columns-create-trigger" bindtap="onOpenCreatePopup">
+      <text class="columns-create-trigger-text">新建专栏</text>
     </view>
   </view>
 
-  <view class="columns-list">
+  <view wx:if="{{loading}}" class="columns-status-card">
+    <text class="columns-status-text">专栏加载中...</text>
+  </view>
+
+  <view wx:elif="{{!columns.length}}" class="columns-status-card">
+    <text class="columns-status-text">这个星球还没有专栏内容</text>
+  </view>
+
+  <view wx:else class="columns-list">
     <view class="columns-group" wx:for="{{columns}}" wx:for-item="column" wx:key="id">
       <view class="columns-row" data-id="{{column.id}}" bindtap="onToggleColumn">
         <view class="columns-row-left">
@@ -28,12 +38,43 @@
         <text class="columns-row-arrow {{column.expanded ? 'columns-row-arrow-expanded' : ''}}">⌃</text>
       </view>
 
-      <view wx:if="{{column.expanded && column.items.length}}" class="columns-panel">
-        <view wx:for="{{column.items}}" wx:for-item="entry" wx:key="*this" class="columns-panel-item">
-          <text class="columns-panel-dot">•</text>
-          <text class="columns-panel-text">{{entry}}</text>
+      <view wx:if="{{column.expanded}}" class="columns-panel">
+        <view wx:if="{{column.loading}}" class="columns-panel-loading">
+          <text class="columns-panel-loading-text">专栏内容加载中...</text>
+        </view>
+
+        <block wx:elif="{{column.items.length}}">
+          <view wx:for="{{column.items}}" wx:for-item="entry" wx:key="*this" class="columns-panel-item">
+            <text class="columns-panel-dot">•</text>
+            <text class="columns-panel-text">{{entry}}</text>
+          </view>
+        </block>
+
+        <view wx:else class="columns-panel-empty">
+          <text class="columns-panel-empty-text">这个专栏还在整理内容</text>
         </view>
       </view>
     </view>
   </view>
 </scroll-view>
+
+<view wx:if="{{createPopupVisible}}" class="columns-popup-mask" bindtap="onCloseCreatePopup">
+  <view class="columns-popup-panel" catchtap="onCreatePopupTap">
+    <text class="columns-popup-title">新建专栏</text>
+    <text class="columns-popup-desc">给这个星球创建一个新的专栏目录，后续可继续往里面沉淀内容。</text>
+    <input
+      class="columns-popup-input"
+      type="text"
+      maxlength="24"
+      placeholder="输入专栏标题，例如 精华答疑 / AI实战"
+      value="{{createTitle}}"
+      bindinput="onCreateTitleInput"
+      confirm-type="done"
+      cursor-spacing="24"
+    />
+    <view class="columns-popup-actions">
+      <view class="columns-popup-action columns-popup-action-cancel" bindtap="onCloseCreatePopup">取消</view>
+      <view class="columns-popup-action columns-popup-action-confirm" bindtap="onCreateColumnConfirm">创建</view>
+    </view>
+  </view>
+</view>

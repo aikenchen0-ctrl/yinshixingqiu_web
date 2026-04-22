@@ -3,245 +3,342 @@
   background: #ffffff;
 }
 
-.article-detail-shell {
-  padding: 28rpx 38rpx 80rpx;
-  box-sizing: border-box;
+.article-detail-page-wechat {
+  background: #ffffff;
 }
 
-.article-author {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
+.article-detail-page-planet {
+  background: #ffffff;
 }
 
-.article-author-avatar {
-  width: 62rpx;
-  height: 62rpx;
-  border-radius: 50%;
-  background: #eef1f4;
-  flex-shrink: 0;
-}
-
-.article-author-copy {
+.article-detail-state-card {
+  margin: 32rpx 28rpx;
+  padding: 36rpx 30rpx;
+  border-radius: 24rpx;
+  background: #fffdfb;
+  border: 1rpx solid #f0ded9;
+  box-shadow: 0 14rpx 34rpx rgba(188, 99, 80, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
-}
-
-.article-author-head {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.article-author-tag {
-  color: #ff9a4c;
-  font-size: 24rpx;
-  line-height: 32rpx;
-}
-
-.article-author-name {
-  color: #ff9a4c;
-  font-size: 31rpx;
-  line-height: 40rpx;
-}
-
-.article-author-time {
-  color: #98a2ad;
-  font-size: 22rpx;
-  line-height: 30rpx;
-}
-
-.article-title {
-  display: block;
-  margin-top: 34rpx;
-  color: #1f2733;
-  font-size: 47rpx;
-  line-height: 1.42;
-  font-weight: 500;
-}
-
-.article-summary {
-  display: block;
-  margin-top: 18rpx;
-  color: #212a36;
-  font-size: 29rpx;
-  line-height: 1.72;
-}
-
-.article-cover {
-  margin-top: 24rpx;
-  width: 184rpx;
-  height: 324rpx;
-  border-radius: 2rpx;
-  background: #eef1f4;
-}
-
-.article-action-row {
-  margin-top: 26rpx;
-  display: flex;
-  align-items: center;
-  gap: 26rpx;
-}
-
-.article-action-item {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.article-icon {
-  width: 30rpx;
-  height: 30rpx;
-  position: relative;
-}
-
-.article-icon-like::before,
-.article-icon-comment::before,
-.article-icon-comment::after {
-  content: '';
-  position: absolute;
-  box-sizing: border-box;
-}
-
-.article-icon-like::before {
-  left: 6rpx;
-  top: 4rpx;
-  width: 18rpx;
-  height: 20rpx;
-  border: 2rpx solid #bcc4cc;
-  border-top-left-radius: 8rpx;
-  border-top-right-radius: 8rpx;
-  border-bottom-left-radius: 4rpx;
-  transform: rotate(180deg);
-}
-
-.article-icon-comment::before {
-  left: 4rpx;
-  top: 4rpx;
-  width: 22rpx;
-  height: 16rpx;
-  border: 2rpx solid #bcc4cc;
-  border-radius: 8rpx;
-}
-
-.article-icon-comment::after {
-  left: 10rpx;
-  top: 18rpx;
-  width: 8rpx;
-  height: 8rpx;
-  border-left: 2rpx solid #bcc4cc;
-  border-bottom: 2rpx solid #bcc4cc;
-  transform: rotate(-45deg);
-}
-
-.article-action-count {
-  color: #99a4af;
-  font-size: 24rpx;
-  line-height: 32rpx;
-}
-
-.article-hidden-hint {
-  margin-left: auto;
-  color: #1fc8ae;
-  font-size: 28rpx;
-  line-height: 40rpx;
-}
-
-.article-more-button {
-  margin-top: 26rpx;
-  height: 84rpx;
-  border-radius: 8rpx;
-  background: #27c2a4;
-  color: #ffffff;
-  font-size: 35rpx;
-  line-height: 84rpx;
-}
-
-.article-more-button::after {
-  border: none;
-}
-
-.article-divider-title {
-  margin-top: 66rpx;
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-}
-
-.article-divider-line {
-  flex: 1;
-  height: 1rpx;
-  background: #e6e9ed;
-}
-
-.article-divider-text {
-  color: #a4acb6;
-  font-size: 26rpx;
-  line-height: 34rpx;
-}
-
-.article-planet-card {
-  margin-top: 24rpx;
-  padding: 26rpx 24rpx;
-  border: 1rpx solid #e0e3e7;
-  border-radius: 4rpx;
-  background: #fafafa;
-  display: flex;
-  align-items: flex-start;
-  gap: 20rpx;
-}
-
-.article-planet-avatar {
-  width: 108rpx;
-  height: 108rpx;
-  border-radius: 50%;
-  background: #eef1f4;
-  flex-shrink: 0;
-}
-
-.article-planet-copy {
-  min-width: 0;
-  flex: 1;
-}
-
-.article-planet-head {
-  display: flex;
-  align-items: center;
   gap: 12rpx;
 }
 
-.article-planet-name {
-  color: #1f2733;
-  font-size: 38rpx;
-  line-height: 46rpx;
+.article-detail-state-card.is-error {
+  border-color: #f1d0ca;
+  background: #fff8f6;
 }
 
-.article-planet-enter {
-  min-width: 58rpx;
-  height: 38rpx;
-  padding: 0 10rpx;
-  border: 2rpx solid #2cc8ae;
-  border-radius: 6rpx;
-  color: #2cc8ae;
+.article-detail-state-title {
+  color: #2b1914;
+  font-size: 32rpx;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.article-detail-state-subtitle {
+  color: #876d63;
   font-size: 24rpx;
-  line-height: 34rpx;
-  text-align: center;
+  line-height: 1.8;
+}
+
+.article-detail-state-action {
+  color: #d55342;
+  font-size: 24rpx;
+  line-height: 1.7;
+  font-weight: 600;
+}
+
+.wechat-article-shell {
+  padding: 36rpx 32rpx 110rpx;
   box-sizing: border-box;
 }
 
-.article-planet-intro {
+.wechat-article-title {
   display: block;
-  margin-top: 10rpx;
-  color: #4f5965;
-  font-size: 27rpx;
-  line-height: 1.65;
+  color: #111111;
+  font-size: 50rpx;
+  line-height: 1.34;
+  font-weight: 700;
 }
 
-.article-planet-meta {
-  display: block;
-  margin-top: 12rpx;
-  color: #a4acb6;
+.wechat-article-meta {
+  margin-top: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  flex-wrap: wrap;
+}
+
+.wechat-article-author {
+  color: #576b95;
+  font-size: 28rpx;
+  line-height: 1.4;
+}
+
+.wechat-article-author-tag {
+  min-height: 38rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #f0f6ff;
+  color: #576b95;
+  font-size: 20rpx;
+  line-height: 38rpx;
+}
+
+.wechat-article-time {
+  color: #8c8c8c;
   font-size: 24rpx;
-  line-height: 32rpx;
+  line-height: 1.5;
+}
+
+.wechat-article-summary {
+  display: block;
+  margin-top: 26rpx;
+  padding-left: 20rpx;
+  border-left: 6rpx solid #e9ecef;
+  color: #666666;
+  font-size: 28rpx;
+  line-height: 1.85;
+}
+
+.wechat-article-cover {
+  display: block;
+  width: 100%;
+  margin-top: 30rpx;
+  border-radius: 12rpx;
+  background: #eef1f4;
+}
+
+.wechat-article-content {
+  margin-top: 34rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.wechat-article-rich-text {
+  display: block;
+  margin-top: 34rpx;
+  color: #222222;
+  font-size: 32rpx;
+  line-height: 1.95;
+}
+
+.wechat-article-paragraph {
+  display: block;
+  color: #222222;
+  font-size: 32rpx;
+  line-height: 1.95;
+  text-align: justify;
+}
+
+.wechat-article-paywall-card {
+  position: relative;
+  margin-top: 34rpx;
+  padding: 34rpx 28rpx 30rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  border: 1rpx solid #ebeef2;
+  box-shadow: 0 14rpx 32rpx rgba(17, 17, 17, 0.06);
+  overflow: hidden;
+}
+
+.wechat-article-paywall-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 68rpx;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 1));
+  pointer-events: none;
+}
+
+.wechat-article-paywall-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.wechat-article-paywall-badge {
+  align-self: flex-start;
+  min-height: 40rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #fef3f2;
+  color: #d14836;
+  font-size: 20rpx;
+  line-height: 40rpx;
+}
+
+.wechat-article-paywall-title {
+  color: #111111;
+  font-size: 34rpx;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.wechat-article-paywall-subtitle {
+  color: #5f6368;
+  font-size: 24rpx;
+  line-height: 1.75;
+}
+
+.wechat-article-paywall-hint {
+  color: #8c8c8c;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.wechat-article-paywall-button {
+  position: relative;
+  z-index: 1;
+  margin-top: 24rpx;
+  height: 82rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #ff6d5a 0%, #ff8d54 100%);
+  color: #ffffff;
+  font-size: 30rpx;
+  line-height: 82rpx;
+  font-weight: 700;
+}
+
+.wechat-article-paywall-button::after {
+  border: none;
+}
+
+.wechat-article-footer {
+  margin-top: 52rpx;
+}
+
+.wechat-article-footer-line {
+  height: 1rpx;
+  background: #ebedf0;
+}
+
+.wechat-article-footer-meta {
+  display: block;
+  margin-top: 18rpx;
+  color: #8c8c8c;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.planet-article-shell {
+  padding: 24rpx 28rpx 96rpx;
+  box-sizing: border-box;
+}
+
+.planet-article-title {
+  display: block;
+  color: #241711;
+  font-size: 42rpx;
+  line-height: 1.42;
+  font-weight: 700;
+}
+
+.planet-article-meta {
+  margin-top: 18rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.planet-article-author {
+  color: #8a6258;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.planet-article-cover {
+  display: block;
+  width: 100%;
+  margin-top: 24rpx;
+  border-radius: 16rpx;
+  background: #eef1f4;
+}
+
+.planet-article-content {
+  margin-top: 28rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.planet-article-rich-text {
+  display: block;
+  margin-top: 28rpx;
+  color: #212a36;
+  font-size: 29rpx;
+  line-height: 1.92;
+}
+
+.planet-article-paragraph {
+  display: block;
+  color: #212a36;
+  font-size: 29rpx;
+  line-height: 1.92;
+}
+
+.planet-article-paywall-card {
+  position: relative;
+  margin-top: 30rpx;
+  padding: 32rpx 28rpx 28rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(180deg, rgba(255, 248, 244, 0.92) 0%, rgba(255, 238, 231, 0.98) 100%);
+  border: 1rpx solid #f1d7cf;
+  box-shadow: 0 18rpx 38rpx rgba(209, 104, 81, 0.12);
+}
+
+.planet-article-paywall-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.planet-article-paywall-badge {
+  align-self: flex-start;
+  min-height: 42rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #fff2ed;
+  color: #d45f4f;
+  font-size: 20rpx;
+  line-height: 42rpx;
+}
+
+.planet-article-paywall-title {
+  color: #2c1812;
+  font-size: 34rpx;
+  line-height: 44rpx;
+  font-weight: 700;
+}
+
+.planet-article-paywall-subtitle {
+  color: #805f54;
+  font-size: 24rpx;
+  line-height: 1.75;
+}
+
+.planet-article-paywall-hint {
+  color: #a07b6f;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.planet-article-paywall-button {
+  margin-top: 22rpx;
+  height: 82rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #ff7d68 0%, #e15342 100%);
+  color: #ffffff;
+  font-size: 30rpx;
+  line-height: 82rpx;
+  box-shadow: 0 12rpx 28rpx rgba(216, 85, 68, 0.2);
+}
+
+.planet-article-paywall-button::after {
+  border: none;
 }

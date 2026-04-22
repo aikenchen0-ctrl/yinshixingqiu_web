@@ -6,27 +6,26 @@ export const menuGroups: MenuGroup[] = [
     label: '收入数据',
     icon: '收',
     path: '/income',
+    badge: '可用',
+    badgeTone: 'usable',
+  },
+  {
+    key: 'article-management',
+    label: '文章管理',
+    icon: '文',
+    path: '/activity/content',
+    badge: '可用',
+    badgeTone: 'usable',
   },
   {
     key: 'promotion',
     label: '推广拉新',
     icon: '推',
     children: [
-      { label: '推广数据', path: '/promotion/data' },
-      { label: '新人优惠券', path: '/promotion/new-user-coupons' },
+      { label: '推广数据', path: '/promotion/data', badge: '可用', badgeTone: 'usable' },
       { label: '渠道二维码', path: '/promotion/channel-qrcodes' },
+      { label: '新人优惠券', path: '/promotion/new-user-coupons', badge: '可用', badgeTone: 'usable' },
       { label: '付费页优化', path: '/promotion/paywall-optimization' },
-    ],
-  },
-  {
-    key: 'activity',
-    label: '用户活跃',
-    icon: '活',
-    children: [
-      { label: '成员活跃', path: '/activity/members' },
-      { label: '内容活跃', path: '/activity/content' },
-      { label: '成员积分榜', path: '/activity/scoreboard' },
-      { label: '活跃工具', path: '/activity/tools' },
     ],
   },
   {
@@ -35,25 +34,26 @@ export const menuGroups: MenuGroup[] = [
     icon: '续',
     children: [
       { label: '续期数据', path: '/renewal/data' },
-      { label: '续期优惠券', path: '/renewal/coupons' },
-      { label: '分组通知', path: '/renewal/group-notices' },
-      { label: '续期页优化', path: '/renewal/page-optimization' },
-      { label: '续期折扣', path: '/renewal/discounts' },
+      { label: '续期优惠券', path: '/renewal/coupons', badge: '可用', badgeTone: 'usable' },
+      { label: '折扣设置', path: '/renewal/discounts' },
+    ],
+  },
+  {
+    key: 'activity',
+    label: '用户活跃',
+    icon: '活',
+    children: [
+      { label: '成员活跃', path: '/activity/members', badge: '可用', badgeTone: 'usable' },
+      { label: '成员积分榜', path: '/activity/scoreboard' },
     ],
   },
   {
     key: 'tools',
     label: '运营工具',
-    icon: '营',
+    icon: '工',
     children: [
-      { label: '优惠券', path: '/tools/coupons' },
-      { label: '分组通知', path: '/tools/group-notices' },
-      { label: '渠道二维码', path: '/tools/channel-qrcodes' },
-      { label: '付费页优化', path: '/tools/paywall-optimization' },
-      { label: '成员积分榜', path: '/tools/scoreboard', badge: 'New' },
-      { label: '创作灵感', path: '/tools/idea-lab' },
-      { label: '视频号直播', path: '/tools/channel-live' },
-      { label: '成员身份验证', path: '/tools/member-verification', badge: 'New' },
+      { label: '成员身份验证', path: '/tools/member-verification', badge: '可用', badgeTone: 'usable' },
+      { label: '视频号直播', path: '/tools/channel-live', badge: '可用', badgeTone: 'usable' },
     ],
   },
   {
@@ -61,6 +61,56 @@ export const menuGroups: MenuGroup[] = [
     label: '权限设置',
     icon: '权',
     path: '/permissions',
+    badge: '可用',
+    badgeTone: 'usable',
+  },
+]
+
+export const mallPlatformMenuGroups: MenuGroup[] = [
+  {
+    key: 'mall-catalog',
+    label: '货架管理',
+    icon: '货',
+    children: [
+      { label: '分类管理', path: '/mall/categories', badge: '可用', badgeTone: 'usable' },
+      { label: '商品管理', path: '/mall/products', badge: '可用', badgeTone: 'usable' },
+    ],
+  },
+  {
+    key: 'mall-orders',
+    label: '订单售后',
+    icon: '单',
+    children: [
+      { label: '订单管理', path: '/mall/orders', badge: '可用', badgeTone: 'usable' },
+      { label: '售后退款', path: '/mall/refunds', badge: '可用', badgeTone: 'usable' },
+    ],
+  },
+  {
+    key: 'mall-shipping',
+    label: '发货工作台',
+    icon: '发',
+    path: '/mall/shipping',
+    badge: '可用',
+    badgeTone: 'usable',
+  },
+]
+
+export const coursePlatformMenuGroups: MenuGroup[] = [
+  {
+    key: 'course-courses',
+    label: '课程管理',
+    icon: '课',
+    path: '/course/courses',
+    badge: '可用',
+    badgeTone: 'usable',
+  },
+  {
+    key: 'course-lessons',
+    label: '课节管理',
+    icon: '节',
+    path: '/course/lessons',
+    badge: '可用',
+    badgeTone: 'usable',
   },
 ]
 
@@ -248,9 +298,9 @@ export const pageDataMap: Record<string, DashboardPageData> = {
     ],
   },
   '/activity/content': {
-    title: '内容活跃',
-    subtitle: '统计发帖、评论、互动和内容更新频率，为内容运营提供依据。',
-    pageTag: '内容分析',
+    title: '文章管理',
+    subtitle: '按文章维度筛选、编辑、查看和上下架，承接微信文章与知识星球文章运营。',
+    pageTag: '内容后台',
     stats: [
       { label: '本周发帖数', value: '1', hint: '当前包含欢迎帖' },
       { label: '本周评论数', value: '0', hint: '暂无成员互动' },

@@ -7,8 +7,15 @@
 
 <view class="page grid-bg">
     <view class="section card membership-hero">
-      <text class="membership-title">血饮智库会员</text>
-      <text class="membership-sub">解锁全量文章、AI听读与情报周报</text>
+      <text class="membership-title">{{headerTitle}}</text>
+      <text class="membership-sub">{{headerSubtitle}}</text>
+    </view>
+
+    <view wx:if="{{fromMall}}" class="section card membership-context-card">
+      <view class="section-title">商城承接</view>
+      <text class="membership-context-title">{{contextTitle}}</text>
+      <text class="membership-context-desc">{{contextDesc}}</text>
+      <button class="btn membership-context-button" bindtap="onContinueStore">先回商城看看</button>
     </view>
 
     <view class="section card">
@@ -26,7 +33,7 @@
           <text class="plan-desc">{{item.desc}}</text>
         </view>
       </view>
-      <button class="btn btn-warn pay-button" bindtap="onPay">立即开通</button>
+      <button class="btn btn-warn pay-button" bindtap="onPay">{{payButtonText}}</button>
     </view>
 
     <view class="section card">

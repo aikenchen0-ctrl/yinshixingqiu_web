@@ -1,0 +1,217 @@
+.mall-coupon-picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 4, 15, 0.42);
+  display: flex;
+  align-items: flex-end;
+}
+
+.mall-coupon-picker-sheet {
+  width: 100%;
+  max-height: 72vh;
+  border-radius: 32rpx 32rpx 0 0;
+  background: #ffffff;
+  padding: 18rpx 24rpx calc(28rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.mall-coupon-picker-handle {
+  width: 72rpx;
+  height: 8rpx;
+  margin: 0 auto 22rpx;
+  border-radius: 999rpx;
+  background: #dddddd;
+}
+
+.mall-coupon-picker-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.mall-coupon-picker-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mall-coupon-picker-title {
+  display: block;
+  color: #121826;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.mall-coupon-picker-subtitle {
+  display: block;
+  margin-top: 10rpx;
+  color: #6b7280;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.mall-coupon-picker-close {
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.mall-coupon-picker-scroll {
+  margin-top: 20rpx;
+  flex: 1;
+  min-height: 0;
+}
+
+.mall-coupon-picker-list {
+  padding-bottom: 8rpx;
+}
+
+.mall-coupon-picker-option {
+  padding: 22rpx;
+  border-radius: 24rpx;
+  background: #f8fafc;
+  box-shadow: inset 0 0 0 1rpx rgba(148, 163, 184, 0.14);
+}
+
+.mall-coupon-picker-option + .mall-coupon-picker-option {
+  margin-top: 18rpx;
+}
+
+.mall-coupon-picker-option-active {
+  background: linear-gradient(135deg, #fff8f1 0%, #fff2f2 100%);
+}
+
+.mall-coupon-picker-option-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.mall-coupon-picker-option-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mall-coupon-picker-option-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.mall-coupon-picker-option-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.mall-coupon-picker-option-badge {
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  background: #e5e7eb;
+  font-size: 20rpx;
+  line-height: 1.4;
+}
+
+.mall-coupon-picker-option-badge-recommended {
+  background: #fff1d6;
+  color: #9a3412;
+}
+
+.mall-coupon-picker-option-caption {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.mall-coupon-picker-option-side {
+  min-width: 132rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8rpx;
+}
+
+.mall-coupon-picker-option-discount {
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.mall-coupon-picker-option-action {
+  color: #9a3412;
+  font-size: 22rpx;
+  line-height: 1.5;
+}
+
+.mall-coupon-picker-empty {
+  padding: 72rpx 24rpx;
+  text-align: center;
+}
+
+.mall-coupon-picker-empty-text {
+  color: #6b7280;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.mall-coupon-picker-sheet-detail .mall-coupon-picker-close {
+  color: #ff5c68;
+}
+
+.mall-coupon-picker-sheet-detail .mall-coupon-picker-option-active {
+  box-shadow: inset 0 0 0 1rpx rgba(255, 92, 104, 0.18);
+}
+
+.mall-coupon-picker-sheet-detail .mall-coupon-picker-option-title {
+  color: #121826;
+}
+
+.mall-coupon-picker-sheet-detail .mall-coupon-picker-option-badge {
+  color: #5b6575;
+}
+
+.mall-coupon-picker-sheet-detail .mall-coupon-picker-option-badge-active {
+  background: #ffede8;
+  color: #c2410c;
+}
+
+.mall-coupon-picker-sheet-detail .mall-coupon-picker-option-caption {
+  color: #6b7280;
+}
+
+.mall-coupon-picker-sheet-detail .mall-coupon-picker-option-discount {
+  color: #ff5c68;
+}
+
+.mall-coupon-picker-sheet-store .mall-coupon-picker-close {
+  color: #2ab795;
+}
+
+.mall-coupon-picker-sheet-store .mall-coupon-picker-option-active {
+  box-shadow: inset 0 0 0 1rpx rgba(251, 0, 23, 0.12);
+}
+
+.mall-coupon-picker-sheet-store .mall-coupon-picker-option-title {
+  color: #253041;
+}
+
+.mall-coupon-picker-sheet-store .mall-coupon-picker-option-badge {
+  color: #677180;
+}
+
+.mall-coupon-picker-sheet-store .mall-coupon-picker-option-badge-active {
+  background: #ffe8ea;
+  color: #c81e3a;
+}
+
+.mall-coupon-picker-sheet-store .mall-coupon-picker-option-caption {
+  color: #6f7883;
+}
+
+.mall-coupon-picker-sheet-store .mall-coupon-picker-option-discount {
+  color: #fb0017;
+}

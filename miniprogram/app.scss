@@ -2,8 +2,8 @@
 $bg: #0a1220;
 $bg-strong: #0f1b2e;
 $bg-glass: rgba(14, 23, 38, 0.72);
-$accent: #2ff5b4;
-$accent-2: #4cc3ff;
+$accent: #8c1f28;
+$accent-2: #c15b63;
 $warning: #f6c24a;
 $text: #e6f0ff;
 $muted: #7c8aa6;
@@ -14,6 +14,16 @@ page {
   color: $text;
   font-family: "DIN Alternate", "Montserrat", "Fira Sans", "Helvetica Neue", sans-serif;
   letter-spacing: 0.2rpx;
+  --theme-accent-strong: #7a1820;
+  --theme-accent: #8c1f28;
+  --theme-accent-soft: #b1464e;
+  --theme-accent-subtle: rgba(140, 31, 40, 0.1);
+  --theme-accent-subtle-strong: rgba(140, 31, 40, 0.14);
+  --theme-accent-subtle-heavy: rgba(140, 31, 40, 0.18);
+  --theme-accent-shadow: rgba(140, 31, 40, 0.12);
+  --theme-accent-glow: rgba(140, 31, 40, 0.2);
+  --theme-accent-surface: #fbf3f2;
+  --theme-accent-surface-soft: #fffafa;
 }
 
 .page {

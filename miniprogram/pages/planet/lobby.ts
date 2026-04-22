@@ -1,6 +1,8 @@
 import { getStoredSession } from '../../utils/auth'
 import { fetchDiscoverFeaturedPosts, fetchDiscoverPlanets } from '../../utils/planet-api'
 import { PlanetRemoteProfile, upsertRemotePlanets } from '../../utils/planet'
+import { rememberActivePlanetId } from '../../utils/planet-route'
+import { normalizeAssetUrl } from '../../utils/request'
 import { ensureWechatSession } from '../../utils/wechat-login'
 
 interface InterestPlanetItem {
@@ -9,6 +11,7 @@ interface InterestPlanetItem {
   meta: string
   summary: string
   image: string
+  imageFallbackText: string
   creator: string
 }
 
@@ -43,12 +46,18 @@ const rotateBatch = <T>(list: T[], batchIndex: number, batchSize: number) => {
 const normalizeSummary = (summary: string, planetName: string) =>
   summary || `欢迎加入「${planetName}」，这里会持续分享精选内容、答疑和社群互动。`
 
+const buildInterestFallbackText = (planetName: string) => {
+  const normalizedName = String(planetName || '').trim()
+  return normalizedName ? normalizedName.slice(0, 1) : '星'
+}
+
 const mapPlanetToInterestItem = (planet: PlanetRemoteProfile): InterestPlanetItem => ({
   id: planet.id,
   name: planet.name,
   meta: `主理人 ${planet.ownerName}`,
   summary: normalizeSummary(planet.intro || '', planet.name),
-  image: planet.avatarImageUrl || planet.coverImageUrl,
+  image: normalizeAssetUrl(planet.coverImageUrl || planet.avatarImageUrl || ''),
+  imageFallbackText: buildInterestFallbackText(planet.name),
   creator: planet.ownerName,
 })
 
@@ -68,7 +77,7 @@ const mapRemoteFeaturedPost = (post: Record<string, any>): FeaturedTopicItem => 
         ? post.author.nickname
         : '当前成员',
     meta: typeof group.name === 'string' && group.name ? group.name : '其他星球',
-    cover: typeof post.coverUrl === 'string' ? post.coverUrl : '',
+    cover: normalizeAssetUrl(typeof post.coverUrl === 'string' ? post.coverUrl : ''),
   }
 }
 
@@ -221,10 +230,25 @@ Page({
     })
   },
 
+  clearInterestImageById(list: InterestPlanetItem[], planetId: string) {
+    return list.map((item) =>
+      item.id === planetId
+        ? {
+            ...item,
+            image: '',
+          }
+        : item
+    )
+  },
+
   onPlanetTap(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id || 'planet_1'
-    const name = e.currentTarget.dataset.name || 'Datawhale'
-    const creator = e.currentTarget.dataset.creator || 'Datawhale 团队'
+    const id = rememberActivePlanetId(String(e.currentTarget.dataset.id || ''))
+    if (!id) {
+      return
+    }
+
+    const name = e.currentTarget.dataset.name || 'Datawhale AI成长星球'
+    const creator = e.currentTarget.dataset.creator || '星主A'
 
     wx.navigateTo({
       url: `/pages/planet/home?id=${id}&name=${encodeURIComponent(name)}&creator=${encodeURIComponent(creator)}&source=discover`,
@@ -233,14 +257,27 @@ Page({
 
   onTopicTap(e: WechatMiniprogram.TouchEvent) {
     const postId = String(e.currentTarget.dataset.postId || '')
-    const planetId = String(e.currentTarget.dataset.planetId || '')
+    const planetId = rememberActivePlanetId(String(e.currentTarget.dataset.planetId || ''))
+    const planetName = String(e.currentTarget.dataset.planetName || '')
 
     if (!postId) {
       return
     }
 
     wx.navigateTo({
-      url: `/pages/planet/post?id=${postId}&planetId=${planetId}`,
+      url: `/pages/planet/post?id=${postId}&planetId=${planetId}&source=discover-featured&planetName=${encodeURIComponent(planetName)}`,
+    })
+  },
+
+  onInterestImageError(e: WechatMiniprogram.CustomEvent) {
+    const planetId = String(e.currentTarget.dataset.id || '')
+    if (!planetId) {
+      return
+    }
+
+    this.setData({
+      interestSource: this.clearInterestImageById(this.data.interestSource, planetId),
+      interestList: this.clearInterestImageById(this.data.interestList, planetId),
     })
   },
 

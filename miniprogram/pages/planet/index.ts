@@ -1,9 +1,28 @@
 import { loadPlanets, PlanetProfile, upsertRemotePlanets } from '../../utils/planet'
 import { getStoredSession } from '../../utils/auth'
 import { fetchJoinedPlanets, fetchMyPlanets } from '../../utils/planet-api'
+import { rememberActivePlanetId } from '../../utils/planet-route'
 import { ensureWechatSession } from '../../utils/wechat-login'
 
-const filterPlanets = (planets: PlanetProfile[], keyword: string) => {
+interface PlanetListItem extends PlanetProfile {
+  avatarText: string
+}
+
+const fallbackAvatarClass = 'avatar-sand'
+
+const buildAvatarText = (name: string) => {
+  const normalizedName = String(name || '').trim()
+  return normalizedName ? normalizedName.slice(0, 1) : '星'
+}
+
+const decoratePlanet = (planet: PlanetProfile): PlanetListItem => ({
+  ...planet,
+  avatarClass: planet.avatarClass || fallbackAvatarClass,
+  avatarImageUrl: typeof planet.avatarImageUrl === 'string' ? planet.avatarImageUrl.trim() : '',
+  avatarText: buildAvatarText(planet.name),
+})
+
+const filterPlanets = (planets: PlanetListItem[], keyword: string) => {
   if (!keyword) {
     return planets
   }
@@ -16,10 +35,10 @@ Page({
     searchValue: '',
     joinedPlanetIds: [] as string[],
     myPlanetIds: [] as string[],
-    allPlanets: [] as PlanetProfile[],
-    joinedPlanets: [] as PlanetProfile[],
-    userPlanets: [] as PlanetProfile[],
-    searchResults: [] as PlanetProfile[],
+    allPlanets: [] as PlanetListItem[],
+    joinedPlanets: [] as PlanetListItem[],
+    userPlanets: [] as PlanetListItem[],
+    searchResults: [] as PlanetListItem[],
   },
 
   onLoad() {
@@ -41,7 +60,7 @@ Page({
     try {
       return await ensureWechatSession()
     } catch {
-      // 知识星球首页不阻塞主流程，静默登录失败时由“我的”页兜底重试
+      // 饮视星球首页不阻塞主流程，静默登录失败时由“我的”页兜底重试
       return null
     }
   },
@@ -100,10 +119,12 @@ Page({
 
   refreshPlanets() {
     const localPlanets = loadPlanets()
-    const joinedPlanetIdSet = new Set(this.data.joinedPlanetIds)
     const myPlanetIdSet = new Set(this.data.myPlanetIds)
-    const joinedPlanets = localPlanets.filter((planet) => joinedPlanetIdSet.has(planet.id))
-    const userPlanets = localPlanets.filter((planet) => myPlanetIdSet.has(planet.id))
+    const userPlanets = localPlanets.filter((planet) => myPlanetIdSet.has(planet.id)).map(decoratePlanet)
+    const joinedPlanetIdSet = new Set(this.data.joinedPlanetIds)
+    const joinedPlanets = localPlanets.filter(
+      (planet) => joinedPlanetIdSet.has(planet.id) && !myPlanetIdSet.has(planet.id)
+    ).map(decoratePlanet)
     const visiblePlanets = [...joinedPlanets]
 
     userPlanets.forEach((planet) => {
@@ -123,6 +144,17 @@ Page({
     })
   },
 
+  clearAvatarById(list: PlanetListItem[], planetId: string) {
+    return list.map((planet) =>
+      planet.id === planetId
+        ? {
+            ...planet,
+            avatarImageUrl: '',
+          }
+        : planet
+    )
+  },
+
   onSearchInput(e: WechatMiniprogram.Input) {
     const searchValue = e.detail.value
     const keyword = searchValue.trim().toLowerCase()
@@ -134,10 +166,28 @@ Page({
     })
   },
 
+  onAvatarError(e: WechatMiniprogram.CustomEvent) {
+    const planetId = String(e.currentTarget.dataset.id || '')
+    if (!planetId) {
+      return
+    }
+
+    this.setData({
+      allPlanets: this.clearAvatarById(this.data.allPlanets, planetId),
+      joinedPlanets: this.clearAvatarById(this.data.joinedPlanets, planetId),
+      userPlanets: this.clearAvatarById(this.data.userPlanets, planetId),
+      searchResults: this.clearAvatarById(this.data.searchResults, planetId),
+    })
+  },
+
   onPlanetTap(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id || 'planet_1'
-    const name = e.currentTarget.dataset.name || 'Datawhale'
-    const creator = e.currentTarget.dataset.creator || 'Datawhale 团队'
+    const id = rememberActivePlanetId(String(e.currentTarget.dataset.id || ''))
+    if (!id) {
+      return
+    }
+
+    const name = e.currentTarget.dataset.name || 'Datawhale AI成长星球'
+    const creator = e.currentTarget.dataset.creator || '星主A'
     const joined = !!e.currentTarget.dataset.joined
     const source = joined ? 'joined' : 'discover'
 

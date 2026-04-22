@@ -1,0 +1,134 @@
+<navigation-bar
+  title="商城发货"
+  back="{{true}}"
+  color="#22160d"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="shipping-page">
+  <view wx:if="{{loading}}" class="shipping-loading">
+    <text class="shipping-loading-text">发货页加载中...</text>
+  </view>
+
+  <view wx:elif="{{loginRequired}}" class="shipping-empty">
+    <text class="shipping-empty-title">请先登录后再发货</text>
+    <text class="shipping-empty-text">这里是独立商城发货台，登录后才会校验商城后台权限。</text>
+  </view>
+
+  <view wx:else class="shipping-shell">
+    <view class="shipping-hero">
+      <text class="shipping-title">商城发货</text>
+      <text class="shipping-subtitle">支付确认可以在 web 商家后台完成，小程序这里专注处理物流录入和更新。</text>
+      <text class="shipping-note">
+        {{storeName ? ('当前店铺：' + storeName + (storeSourceLabel ? (' · ' + storeSourceLabel) : '')) : '当前还没有可用的商城店铺配置。'}}
+      </text>
+    </view>
+
+    <view wx:if="{{storeId}}" class="shipping-summary">
+      <view class="shipping-summary-card">
+        <text class="shipping-summary-value">{{summary.pendingCount}}</text>
+        <text class="shipping-summary-label">待支付</text>
+      </view>
+      <view class="shipping-summary-card">
+        <text class="shipping-summary-value shipping-summary-value-accent">{{summary.readyToShipCount}}</text>
+        <text class="shipping-summary-label">待发货</text>
+      </view>
+      <view class="shipping-summary-card">
+        <text class="shipping-summary-value">{{summary.shippedCount}}</text>
+        <text class="shipping-summary-label">已发货</text>
+      </view>
+      <view class="shipping-summary-card">
+        <text class="shipping-summary-value">¥{{summary.grossAmountText}}</text>
+        <text class="shipping-summary-label">累计订单额</text>
+      </view>
+    </view>
+
+    <view wx:if="{{orders.length}}" class="shipping-list">
+      <view wx:for="{{orders}}" wx:for-item="order" wx:for-index="orderIndex" wx:key="id" class="shipping-card">
+        <view class="shipping-card-head">
+          <view class="shipping-card-copy">
+            <text class="shipping-order-no">{{order.orderNo}}</text>
+            <text class="shipping-order-meta">
+              {{order.buyerName}}{{order.buyerMobile ? (' · ' + order.buyerMobile) : ''}}{{order.createdAtText ? (' · ' + order.createdAtText) : ''}}
+            </text>
+          </view>
+          <view class="shipping-status-stack">
+            <text class="shipping-status {{order.statusClass}}">{{order.statusLabel}}</text>
+            <text class="shipping-status {{order.shippingStatusClass}}">{{order.shippingStatusLabel}}</text>
+          </view>
+        </view>
+
+        <view class="shipping-info-card">
+          <text class="shipping-info-title">收货信息</text>
+          <text class="shipping-info-line">
+            {{order.recipientName || '未填写收件人'}}{{order.recipientPhone ? (' · ' + order.recipientPhone) : ''}}
+          </text>
+          <text class="shipping-info-line shipping-info-line-muted">{{order.fullAddress || '未填写收货地址'}}</text>
+          <text wx:if="{{order.remark}}" class="shipping-info-line shipping-info-line-muted">买家备注：{{order.remark}}</text>
+        </view>
+
+        <view class="shipping-items-card">
+          <text class="shipping-info-title">商品清单</text>
+          <view wx:for="{{order.items}}" wx:for-item="line" wx:key="id" class="shipping-item-row">
+            <text class="shipping-item-title">{{line.title}}</text>
+            <text class="shipping-item-qty">{{line.quantityText}}</text>
+            <text class="shipping-item-total">{{line.totalAmountText}}</text>
+          </view>
+        </view>
+
+        <view class="shipping-form-card">
+          <text class="shipping-info-title">物流信息</text>
+          <text wx:if="{{order.shippedAtText}}" class="shipping-form-note">已发货时间：{{order.shippedAtText}}</text>
+          <text wx:elif="{{order.status === 'PENDING'}}" class="shipping-form-note">请先在 web 管理端确认支付，再回来录入物流。</text>
+          <text wx:elif="{{order.status === 'CLOSED'}}" class="shipping-form-note">订单已关闭，不能继续发货。</text>
+          <text wx:else class="shipping-form-note">录入物流公司和单号后确认发货，已发货订单也可以在这里改物流。</text>
+
+          <block wx:if="{{order.canShip}}">
+            <input
+              class="shipping-input"
+              placeholder="物流公司，例如：顺丰、京东快递"
+              data-index="{{orderIndex}}"
+              data-field="shippingCompanyDraft"
+              value="{{order.shippingCompanyDraft}}"
+              bindinput="onDraftInput"
+            />
+            <input
+              class="shipping-input"
+              placeholder="物流单号"
+              data-index="{{orderIndex}}"
+              data-field="shippingTrackingNoDraft"
+              value="{{order.shippingTrackingNoDraft}}"
+              bindinput="onDraftInput"
+            />
+            <input
+              class="shipping-input"
+              placeholder="发货备注，选填"
+              data-index="{{orderIndex}}"
+              data-field="shippingRemarkDraft"
+              value="{{order.shippingRemarkDraft}}"
+              bindinput="onDraftInput"
+            />
+            <button
+              class="shipping-submit"
+              loading="{{submittingOrderId === order.id}}"
+              data-index="{{orderIndex}}"
+              bindtap="onShipTap"
+            >
+              {{order.isShipped ? '更新物流' : '确认发货'}}
+            </button>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <view wx:elif="{{storeId}}" class="shipping-empty">
+      <text class="shipping-empty-title">暂无商城订单</text>
+      <text class="shipping-empty-text">这个店铺里还没有订单，或者最新订单都还没进入发货环节。</text>
+    </view>
+
+    <view wx:else class="shipping-empty">
+      <text class="shipping-empty-title">商城未配置</text>
+      <text class="shipping-empty-text">请先配置独立商城店铺，或者从页面入口显式传入 storeId。</text>
+    </view>
+  </view>
+</view>

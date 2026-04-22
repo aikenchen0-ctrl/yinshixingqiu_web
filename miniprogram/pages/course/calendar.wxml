@@ -1,0 +1,94 @@
+<navigation-bar
+  title="课程日历"
+  back="{{true}}"
+  color="#f8efe9"
+  background="rgba(18, 11, 14, 0.96)"
+></navigation-bar>
+
+<scroll-view class="course-calendar-page" scroll-y="{{true}}">
+  <view class="course-calendar-shell">
+    <view class="course-calendar-hero">
+      <text class="course-calendar-hero-badge">Course Calendar</text>
+      <text class="course-calendar-hero-title">按日期查看课程更新</text>
+      <text class="course-calendar-hero-subtitle">只读取后端课程数据，根据课程更新时间生成日历，不展示本地静态数据。</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="course-calendar-empty">
+      <text class="course-calendar-empty-title">课程日历同步中</text>
+      <text class="course-calendar-empty-subtitle">正在从后端读取课程数据。</text>
+    </view>
+
+    <view wx:elif="{{errorText}}" class="course-calendar-empty">
+      <text class="course-calendar-empty-title">课程日历加载失败</text>
+      <text class="course-calendar-empty-subtitle">{{errorText}}</text>
+    </view>
+
+    <block wx:else>
+      <view class="course-calendar-panel">
+        <view class="course-calendar-panel-head">
+          <view class="course-calendar-panel-copy">
+            <text class="course-calendar-month">{{monthLabel}}</text>
+            <text class="course-calendar-month-meta">按课程更新时间聚合</text>
+          </view>
+
+          <view class="course-calendar-panel-actions">
+            <view class="course-calendar-month-button {{hasPrevMonth ? '' : 'is-disabled'}}" bindtap="onPrevMonth">上月</view>
+            <view class="course-calendar-month-button {{hasNextMonth ? '' : 'is-disabled'}}" bindtap="onNextMonth">下月</view>
+          </view>
+        </view>
+
+        <view class="course-calendar-weekdays">
+          <text class="course-calendar-weekday" wx:for="{{weekDays}}" wx:key="*this">{{item}}</text>
+        </view>
+
+        <view class="course-calendar-grid">
+          <view
+            class="course-calendar-day {{item.isEmpty ? 'is-empty' : ''}} {{item.isToday ? 'is-today' : ''}} {{item.isSelected ? 'is-selected' : ''}} {{item.hasCourses ? 'has-courses' : ''}}"
+            wx:for="{{calendarDays}}"
+            wx:key="id"
+            data-date="{{item.dateKey}}"
+            bindtap="onDayTap"
+          >
+            <view wx:if="{{!item.isEmpty}}" class="course-calendar-day-inner">
+              <text class="course-calendar-day-label">{{item.dayLabel}}</text>
+              <view wx:if="{{item.hasCourses}}" class="course-calendar-day-dot"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="course-calendar-summary">
+        <text class="course-calendar-summary-title">{{selectedDateLabel}}</text>
+        <text class="course-calendar-summary-subtitle">{{selectedWeekdayLabel}} · {{selectedCourseCountLabel}}</text>
+      </view>
+
+      <view wx:if="{{selectedCourses.length}}" class="course-calendar-course-list">
+        <view
+          class="course-calendar-course-card"
+          wx:for="{{selectedCourses}}"
+          wx:key="id"
+          data-course-id="{{item.id}}"
+          bindtap="goCourse"
+        >
+          <image wx:if="{{item.coverImage}}" class="course-calendar-course-cover" src="{{item.coverImage}}" mode="aspectFill"></image>
+          <view class="course-calendar-course-body">
+            <view class="course-calendar-course-badges">
+              <text class="course-calendar-course-badge">{{item.category}}</text>
+              <text class="course-calendar-course-badge is-type">{{item.lessonCountLabel}}</text>
+            </view>
+            <text class="course-calendar-course-title">{{item.title}}</text>
+            <text class="course-calendar-course-summary">{{item.summary}}</text>
+            <text class="course-calendar-course-link">查看课程详情</text>
+          </view>
+        </view>
+      </view>
+
+      <view wx:else class="course-calendar-empty">
+        <text class="course-calendar-empty-title">这一天没有课程更新</text>
+        <text class="course-calendar-empty-subtitle">切换到带圆点的日期，可以查看对应课程。</text>
+      </view>
+    </block>
+
+    <view class="safe-bottom"></view>
+  </view>
+</scroll-view>

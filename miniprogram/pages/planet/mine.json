@@ -1,6 +1,7 @@
 {
   "usingComponents": {
     "navigation-bar": "/components/navigation-bar/navigation-bar",
+    "mine-profile-panel": "/components/mine-profile-panel/mine-profile-panel",
     "planet-bottom-nav": "/components/planet-bottom-nav/planet-bottom-nav"
   }
 }

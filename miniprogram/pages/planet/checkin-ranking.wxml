@@ -1,0 +1,59 @@
+<navigation-bar title="打卡排行榜" back="{{true}}" color="#ffffff" background="#22c1a4"></navigation-bar>
+
+<view class="checkin-ranking-page">
+  <view class="checkin-ranking-hero">
+    <page-back-button
+      extClass="checkin-ranking-back"
+      color="#ffffff"
+      text="返回"
+      showText="{{true}}"
+      fallbackUrl="/pages/planet/checkin?groupId={{groupId}}"
+      fallbackMode="redirect"
+    ></page-back-button>
+    <text class="checkin-ranking-title">打卡排行榜</text>
+    <text class="checkin-ranking-subtitle">实时更新</text>
+  </view>
+
+  <view class="checkin-ranking-card">
+    <view class="checkin-ranking-tabs">
+      <view
+        class="checkin-ranking-tab {{activeTab === 'streak' ? 'checkin-ranking-tab-active' : ''}}"
+        data-key="streak"
+        bindtap="onTabTap"
+      >
+        连续打卡榜
+      </view>
+      <view
+        class="checkin-ranking-tab {{activeTab === 'total' ? 'checkin-ranking-tab-active' : ''}}"
+        data-key="total"
+        bindtap="onTabTap"
+      >
+        累计打卡榜
+      </view>
+    </view>
+
+    <view class="checkin-ranking-list">
+      <view wx:for="{{currentRanking}}" wx:key="userId" class="checkin-ranking-row">
+        <view class="checkin-ranking-rank {{item.rank <= 3 ? 'checkin-ranking-rank-top' : ''}}">
+          <text wx:if="{{item.rank <= 3}}">{{item.rank}}</text>
+          <text wx:else>{{item.rank}}</text>
+        </view>
+        <image class="checkin-ranking-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+        <text class="checkin-ranking-name">{{item.nickname}}</text>
+        <text class="checkin-ranking-value">{{item.valueText}}</text>
+      </view>
+
+      <view wx:if="{{!currentRanking.length}}" class="checkin-ranking-empty">
+        <text>还没有打卡数据</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="checkin-ranking-viewer-card">
+    <text class="checkin-ranking-viewer-label">{{currentViewerItem ? '我的排名' : '未上榜'}}</text>
+    <image wx:if="{{currentViewerItem}}" class="checkin-ranking-avatar" src="{{currentViewerItem.avatarUrl}}" mode="aspectFill"></image>
+    <view wx:else class="checkin-ranking-avatar checkin-ranking-avatar-placeholder"></view>
+    <text class="checkin-ranking-viewer-name">{{currentViewerItem ? currentViewerItem.nickname : '当前账号'}}</text>
+    <text class="checkin-ranking-viewer-value">{{currentViewerItem ? currentViewerItem.valueText : '0天'}}</text>
+  </view>
+</view>

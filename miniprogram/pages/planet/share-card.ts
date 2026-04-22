@@ -1,26 +1,30 @@
 import { getPlanetById, PlanetProfile } from '../../utils/planet'
+import { getStoredSession } from '../../utils/auth'
+import { fetchPlanetHome } from '../../utils/planet-api'
+import { navigateToPlanetIndex, resolvePlanetIdFromOptions } from '../../utils/planet-route'
+import { normalizeAssetUrl } from '../../utils/request'
 
 const fallbackPlanet: PlanetProfile = {
-  id: 'planet_2',
-  name: '易安AI编程·出海赚钱',
+  id: 'grp_datawhale_001',
+  name: 'Datawhale AI成长星球',
   avatarClass: 'avatar-sunset',
   avatarImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
   coverImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80',
   unread: '',
   badge: '',
-  price: 365,
-  priceLabel: '¥ 365/年',
+  price: 50,
+  priceLabel: '¥ 50/年',
   joinType: 'rolling',
   isFree: false,
   requireInviteCode: false,
-  ownerName: '易安',
-  ownerTagline: 'AI 编程实战',
-  category: '其他',
-  intro: '聚焦 AI 编程、副业出海与项目实操，每周更新案例与方法论。',
-  embedPath: 'pages/topics/topics?group_id=88885121521552',
-  memberCount: 2360,
-  postCount: 512,
-  createdAt: '2026/02/18',
+  ownerName: '星主A',
+  ownerTagline: 'Datawhale 星球主理人',
+  category: 'AI学习',
+  intro: '一个围绕 AI 学习与实践的付费星球',
+  embedPath: 'pages/topics/topics?group_id=grp_datawhale_001',
+  memberCount: 6,
+  postCount: 3,
+  createdAt: '2026/03/01',
 }
 
 type WechatImageInfo = WechatMiniprogram.GetImageInfoSuccessCallbackResult
@@ -28,13 +32,21 @@ type WechatImageInfo = WechatMiniprogram.GetImageInfoSuccessCallbackResult
 Page({
   data: {
     planet: fallbackPlanet,
-    displayOwnerName: '易安',
+    displayOwnerName: '星主A',
+    miniCodeUrl: '',
+    miniCodeDisplayUrl: '',
+    miniCodeLocalPath: '',
     canvasWidth: 708,
     canvasHeight: 956,
   },
 
   onLoad(options: Record<string, string>) {
-    const planetId = options.id || 'planet_2'
+    const planetId = resolvePlanetIdFromOptions(options, ['id', 'planetId', 'groupId'])
+    if (!planetId) {
+      navigateToPlanetIndex('请先选择星球')
+      return
+    }
+
     const planet = getPlanetById(planetId)
     const nextPlanet = planet
       ? {
@@ -46,7 +58,91 @@ Page({
     this.setData({
       planet: nextPlanet,
       displayOwnerName: nextPlanet.ownerName,
+      miniCodeUrl: '',
+      miniCodeDisplayUrl: '',
+      miniCodeLocalPath: '',
     })
+
+    void this.syncPlanetCard(planetId)
+  },
+
+  async syncPlanetCard(planetId: string) {
+    if (!planetId) {
+      return
+    }
+
+    const session = getStoredSession()
+    const localPlanet = getPlanetById(planetId) || this.data.planet || fallbackPlanet
+
+    try {
+      const response = await fetchPlanetHome({
+        groupId: planetId,
+        sessionToken: session && session.sessionToken ? session.sessionToken : '',
+        userId: session && session.id ? session.id : '',
+      })
+
+      if (!response.ok || !response.data || !response.data.group || !response.data.owner) {
+        return
+      }
+
+      const group = response.data.group
+      const owner = response.data.owner
+      const priceAmount = Number(group.priceAmount || localPlanet.price || 0)
+      const ownerName = String(owner.nickname || localPlanet.ownerName || '星主').replace(/老师$/, '')
+      const miniCodeUrl = normalizeAssetUrl(String(group.shareMiniCodeUrl || ''))
+      const nextPlanet: PlanetProfile = {
+        id: planetId,
+        name: String(group.name || localPlanet.name || '饮视星球'),
+        avatarClass: localPlanet.avatarClass || 'avatar-sunset',
+        avatarImageUrl: normalizeAssetUrl(
+          String(group.avatarUrl || owner.avatarUrl || localPlanet.avatarImageUrl || fallbackPlanet.avatarImageUrl)
+        ),
+        coverImageUrl: normalizeAssetUrl(
+          String(group.coverUrl || group.avatarUrl || localPlanet.coverImageUrl || fallbackPlanet.coverImageUrl)
+        ),
+        unread: localPlanet.unread || '',
+        badge: localPlanet.badge || '',
+        price: priceAmount,
+        priceLabel: group.joinType === 'FREE' ? '免费加入' : `¥ ${priceAmount}/年`,
+        joinType: group.billingPeriod === 'YEAR' ? 'rolling' : 'calendar',
+        isFree: group.joinType === 'FREE',
+        requireInviteCode: group.joinType === 'INVITE_ONLY',
+        ownerName,
+        ownerTagline: String(owner.bio || localPlanet.ownerTagline || ''),
+        category: localPlanet.category || fallbackPlanet.category,
+        intro: String(group.intro || localPlanet.intro || ''),
+        embedPath: localPlanet.embedPath || fallbackPlanet.embedPath,
+        memberCount: Number(group.memberCount || localPlanet.memberCount || 0),
+        postCount: Number(group.contentCount || localPlanet.postCount || 0),
+        createdAt: String(group.createdAt || localPlanet.createdAt || '').slice(0, 10),
+        joined: typeof localPlanet.joined === 'boolean' ? localPlanet.joined : false,
+      }
+
+      this.setData({
+        planet: nextPlanet,
+        displayOwnerName: ownerName,
+        miniCodeUrl,
+        miniCodeDisplayUrl: miniCodeUrl,
+        miniCodeLocalPath: '',
+      })
+
+      if (miniCodeUrl) {
+        void this.prepareMiniCodeFile(miniCodeUrl)
+          .then((localPath) => {
+            if (!localPath) {
+              return
+            }
+
+            this.setData({
+              miniCodeDisplayUrl: localPath,
+              miniCodeLocalPath: localPath,
+            })
+          })
+          .catch(() => {})
+      }
+    } catch {
+      // 邀请海报优先保证可保存，资料同步失败时保留本地回退数据
+    }
   },
 
   async onSavePoster() {
@@ -56,12 +152,14 @@ Page({
     })
 
     try {
-      const [coverInfo, avatarInfo] = await Promise.all([
+      const miniCodeSource = await this.ensureMiniCodeCanvasSource()
+      const [coverInfo, avatarInfo, miniCodeInfo] = await Promise.all([
         this.getImageInfo(this.data.planet.coverImageUrl),
         this.getImageInfo(this.data.planet.avatarImageUrl),
+        miniCodeSource ? this.getImageInfo(miniCodeSource).catch(() => null) : Promise.resolve(null),
       ])
 
-      await this.drawPoster(coverInfo, avatarInfo)
+      await this.drawPoster(coverInfo, avatarInfo, miniCodeInfo)
 
       wx.canvasToTempFilePath({
         canvasId: 'sharePosterCanvas',
@@ -97,7 +195,7 @@ Page({
             icon: 'none',
           })
         },
-      })
+      }, this)
     } catch (error) {
       wx.hideLoading()
       wx.showToast({
@@ -118,7 +216,57 @@ Page({
     })
   },
 
-  drawPoster(coverInfo: WechatImageInfo, avatarInfo: WechatImageInfo) {
+  prepareMiniCodeFile(src: string) {
+    const normalizedSrc = String(src || '').trim()
+    if (!normalizedSrc) {
+      return Promise.resolve('')
+    }
+
+    if (!/^https?:\/\//i.test(normalizedSrc)) {
+      return Promise.resolve(normalizedSrc)
+    }
+
+    return new Promise<string>((resolve) => {
+      wx.downloadFile({
+        url: normalizedSrc,
+        success: (result) => {
+          const statusCode = result && typeof result.statusCode === 'number' ? result.statusCode : 0
+          const tempFilePath = result && typeof result.tempFilePath === 'string' ? result.tempFilePath : ''
+
+          if (statusCode >= 200 && statusCode < 300 && tempFilePath) {
+            resolve(tempFilePath)
+            return
+          }
+
+          resolve('')
+        },
+        fail: () => resolve(''),
+      })
+    })
+  },
+
+  async ensureMiniCodeCanvasSource() {
+    if (this.data.miniCodeLocalPath) {
+      return this.data.miniCodeLocalPath
+    }
+
+    if (!this.data.miniCodeUrl) {
+      return ''
+    }
+
+    const localPath = await this.prepareMiniCodeFile(this.data.miniCodeUrl)
+    if (localPath) {
+      this.setData({
+        miniCodeDisplayUrl: localPath,
+        miniCodeLocalPath: localPath,
+      })
+      return localPath
+    }
+
+    return this.data.miniCodeUrl
+  },
+
+  drawPoster(coverInfo: WechatImageInfo, avatarInfo: WechatImageInfo, miniCodeInfo: WechatImageInfo | null) {
     return new Promise<void>((resolve) => {
       const ctx = wx.createCanvasContext('sharePosterCanvas', this)
       const width = this.data.canvasWidth
@@ -171,16 +319,32 @@ Page({
       ctx.setFillStyle('#22c6b6')
       ctx.setFontSize(20)
       ctx.setTextAlign('left')
-      ctx.fillText('知识星球', cardX + 88, cardY + coverHeight + 78)
+      ctx.fillText('饮视星球', cardX + 88, cardY + coverHeight + 78)
 
       ctx.setFillStyle('#c0c0c0')
       ctx.setFontSize(16)
       ctx.fillText('连接一千位铁杆粉丝', cardX + 60, cardY + coverHeight + 116)
 
-      this.drawQrRing(ctx, cardX + 548, cardY + coverHeight + 86)
+      if (miniCodeInfo && miniCodeInfo.path) {
+        this.drawMiniCode(ctx, miniCodeInfo.path, cardX + 496, cardY + coverHeight + 34, 104)
+      } else {
+        this.drawQrRing(ctx, cardX + 548, cardY + coverHeight + 86)
+      }
 
       ctx.draw(false, () => resolve())
     })
+  },
+
+  drawMiniCode(
+    ctx: WechatMiniprogram.CanvasContext,
+    imagePath: string,
+    x: number,
+    y: number,
+    size: number,
+  ) {
+    ctx.setFillStyle('#ffffff')
+    ctx.fillRect(x, y, size, size)
+    ctx.drawImage(imagePath, x, y, size, size)
   },
 
   drawQrRing(

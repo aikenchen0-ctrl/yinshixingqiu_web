@@ -21,6 +21,11 @@ interface SessionResponse {
   data: UserSession
 }
 
+interface UpdateSessionProfileResponse {
+  ok: boolean
+  data: UserSession
+}
+
 interface LogoutResponse {
   ok: boolean
   message: string
@@ -59,7 +64,21 @@ export function loginByPhoneNumber(payload: {
 
 export function fetchSessionProfile(sessionToken: string) {
   return request<SessionResponse>({
-    url: `/api/auth/session?sessionToken=${encodeURIComponent(sessionToken)}`,
+    url: '/api/auth/session',
+    sessionToken,
+  })
+}
+
+export function updateSessionProfile(payload: {
+  sessionToken: string
+  nickname?: string
+  avatarUrl?: string
+}) {
+  return request<UpdateSessionProfileResponse>({
+    url: '/api/auth/profile',
+    method: 'PUT',
+    data: payload,
+    sessionToken: payload.sessionToken,
   })
 }
 

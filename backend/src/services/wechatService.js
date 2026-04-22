@@ -3,6 +3,7 @@ const https = require("https");
 const WECHAT_CODE_TO_SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session";
 const WECHAT_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token";
 const WECHAT_PHONE_NUMBER_URL = "https://api.weixin.qq.com/wxa/business/getuserphonenumber";
+const WECHAT_UNLIMITED_MINI_CODE_URL = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const ACCESS_TOKEN_REFRESH_INTERVAL_MS = 105 * 60 * 1000;
 
@@ -103,6 +104,111 @@ function postJson(url, payload) {
     req.write(body);
     req.end();
   });
+}
+
+function postBuffer(url, payload) {
+  return new Promise((resolve, reject) => {
+    const requestUrl = new URL(url);
+    const body = JSON.stringify(payload || {});
+
+    const req = https.request(
+      {
+        hostname: requestUrl.hostname,
+        path: `${requestUrl.pathname}${requestUrl.search}`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body),
+        },
+      },
+      (response) => {
+        const chunks = [];
+
+        response.on("data", (chunk) => {
+          chunks.push(chunk);
+        });
+
+        response.on("end", () => {
+          if (response.statusCode !== 200) {
+            reject(new Error(`微信接口请求失败，状态码 ${response.statusCode}`));
+            return;
+          }
+
+          resolve({
+            buffer: Buffer.concat(chunks),
+            contentType: String(response.headers["content-type"] || ""),
+          });
+        });
+      }
+    );
+
+    req.on("error", reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+function normalizeMiniProgramEnvVersion(value) {
+  const normalizedValue = String(value || "").trim().toLowerCase();
+  if (normalizedValue === "release" || normalizedValue === "trial" || normalizedValue === "develop") {
+    return normalizedValue;
+  }
+
+  return "";
+}
+
+function getMiniProgramCodeEnvVersion() {
+  const configuredEnvVersion = normalizeMiniProgramEnvVersion(
+    process.env.WECHAT_MINI_CODE_ENV_VERSION || process.env.WECHAT_MINIPROGRAM_ENV_VERSION
+  );
+
+  if (configuredEnvVersion) {
+    return configuredEnvVersion;
+  }
+
+  return process.env.NODE_ENV === "production" ? "release" : "develop";
+}
+
+function parseWechatJsonBuffer(buffer) {
+  const text = buffer.toString("utf8").trim();
+  if (!text || !/^\{/.test(text)) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    return null;
+  }
+}
+
+async function requestUnlimitedMiniProgramCode(accessToken, payload) {
+  const response = await postBuffer(`${WECHAT_UNLIMITED_MINI_CODE_URL}?access_token=${accessToken}`, payload);
+  const parsedError = parseWechatJsonBuffer(response.buffer);
+
+  if (parsedError && parsedError.errcode) {
+    return {
+      ok: false,
+      retryableTokenError: parsedError.errcode === 40001 || parsedError.errcode === 42001,
+      error: parsedError,
+    };
+  }
+
+  if (!response.buffer.length) {
+    return {
+      ok: false,
+      retryableTokenError: false,
+      error: {
+        errmsg: "微信小程序码返回为空",
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    buffer: response.buffer,
+    contentType: response.contentType,
+  };
 }
 
 async function exchangeLoginCode(loginCode) {
@@ -211,6 +317,53 @@ async function fetchPhoneNumber(phoneCode) {
   };
 }
 
+async function generateUnlimitedMiniProgramCode(options = {}) {
+  const page = String(options.page || "").trim();
+  const scene = String(options.scene || "").trim();
+  const envVersion = normalizeMiniProgramEnvVersion(options.envVersion) || getMiniProgramCodeEnvVersion();
+  const width = Number.isFinite(Number(options.width)) ? Math.max(Math.floor(Number(options.width)), 280) : 430;
+
+  if (!page) {
+    throw new Error("缺少小程序码页面路径");
+  }
+
+  if (!scene) {
+    throw new Error("缺少小程序码 scene 参数");
+  }
+
+  if (scene.length > 32) {
+    throw new Error("小程序码 scene 参数不能超过 32 个字符");
+  }
+
+  const payload = {
+    page,
+    scene,
+    check_path: false,
+    env_version: envVersion,
+    width,
+  };
+
+  let accessToken = await getAccessToken();
+  let result = await requestUnlimitedMiniProgramCode(accessToken, payload);
+
+  if (!result.ok && result.retryableTokenError) {
+    accessToken = await getAccessToken(true);
+    result = await requestUnlimitedMiniProgramCode(accessToken, payload);
+  }
+
+  if (!result.ok) {
+    const errorMessage = result.error && result.error.errmsg ? result.error.errmsg : "生成微信小程序码失败";
+    const errorCode = result.error && result.error.errcode ? `，错误码 ${result.error.errcode}` : "";
+    throw new Error(`${errorMessage}${errorCode}`);
+  }
+
+  return {
+    buffer: result.buffer,
+    contentType: result.contentType,
+    envVersion,
+  };
+}
+
 function startAccessTokenRefreshScheduler() {
   if (accessTokenRefreshTimer) {
     return;
@@ -234,6 +387,8 @@ function startAccessTokenRefreshScheduler() {
 module.exports = {
   exchangeLoginCode,
   fetchPhoneNumber,
+  generateUnlimitedMiniProgramCode,
   getAccessToken,
+  getMiniProgramCodeEnvVersion,
   startAccessTokenRefreshScheduler,
 };

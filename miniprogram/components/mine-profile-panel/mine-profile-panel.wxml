@@ -1,0 +1,57 @@
+<view class="planet-mine-shell" style="padding-top: calc({{statusBarHeight}}px + 20rpx);">
+  <view class="planet-mine-profile-card">
+    <view class="planet-mine-hero" bindtap="onHeroTap">
+      <view class="planet-mine-ring ring-outer"></view>
+      <view class="planet-mine-ring ring-middle"></view>
+      <view class="planet-mine-ring ring-inner"></view>
+      <image wx:if="{{avatarUrl}}" class="planet-mine-avatar" src="{{avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
+      <view wx:else class="planet-mine-avatar planet-mine-avatar-fallback">
+        <text class="planet-mine-avatar-fallback-text">{{avatarFallbackText}}</text>
+      </view>
+      <view wx:if="{{showAvatarEditChip}}" class="planet-mine-avatar-edit-chip">{{avatarEditText}}</view>
+    </view>
+
+    <text class="planet-mine-name">{{nickname}}</text>
+    <text class="planet-mine-subtitle">{{subtitle}}</text>
+
+    <view class="planet-mine-login-panel {{panelCompact ? 'planet-mine-login-panel-compact' : ''}}">
+      <text class="planet-mine-login-title">{{panelTitle}}</text>
+      <text class="planet-mine-login-desc">{{panelDesc}}</text>
+      <button
+        class="planet-mine-auth-button {{panelButtonGhost ? 'planet-mine-auth-button-ghost' : ''}}"
+        loading="{{panelButtonLoading}}"
+        open-type="{{panelButtonOpenType}}"
+        bindtap="onPanelActionTap"
+        bindgetphonenumber="onPanelGetPhoneNumber"
+      >
+        {{panelButtonText}}
+      </button>
+    </view>
+  </view>
+
+  <view class="planet-mine-card-list">
+    <view
+      class="planet-mine-card"
+      wx:for="{{menuItems}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onMenuTap"
+    >
+      <view class="planet-mine-card-left">
+        <view class="planet-mine-icon planet-mine-icon-{{item.iconType}}"></view>
+        <text class="planet-mine-card-title">
+          {{item.title}}<text wx:if="{{item.value}}">: {{item.value}}</text>
+        </text>
+      </view>
+      <view class="planet-mine-card-right">
+        <text wx:if="{{item.actionText}}" class="planet-mine-card-action">{{item.actionText}}</text>
+        <text class="planet-mine-card-arrow">›</text>
+      </view>
+    </view>
+
+    <view wx:if="{{showTipCard}}" class="planet-mine-tip-card">
+      <text class="planet-mine-tip-title">{{tipTitle}}</text>
+      <text class="planet-mine-tip-desc">{{tipDesc}}</text>
+    </view>
+  </view>
+</view>

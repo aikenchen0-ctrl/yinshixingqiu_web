@@ -1,0 +1,59 @@
+@import '../../styles/planet-mine-shared.scss';
+@import '../../styles/mall-address-form.scss';
+
+.mall-address-page {
+  padding-bottom: calc(72rpx + env(safe-area-inset-bottom));
+}
+
+.mall-address-card-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.mall-address-card-back {
+  min-width: 108rpx;
+  height: 64rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12rpx 24rpx rgba(58, 28, 30, 0.08);
+  color: #6d4a41;
+  font-size: 24rpx;
+  line-height: 64rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.mall-address-head-button {
+  min-width: 148rpx;
+  height: 60rpx;
+  margin: 0;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: #fff1f0;
+  color: #ff5c68;
+  font-size: 24rpx;
+  line-height: 60rpx;
+}
+
+.mall-address-head-button::after {
+  border: none;
+}
+
+.mall-address-status-card,
+.mall-address-preview-card {
+  margin-top: 20rpx;
+}
+
+.mall-address-preview-user {
+  display: block;
+  margin-top: 10rpx;
+  color: #253041;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.mall-address-editor-panel {
+  margin-top: 20rpx;
+}

@@ -24,4 +24,4 @@ export const referencePageMap: Record<string, string> = {
   '/permissions': '/reference-admin/permissions.html',
 }
 
-export const defaultReferencePath = '/income'
+export const defaultReferencePath = '/promotion/data'

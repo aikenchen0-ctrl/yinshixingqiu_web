@@ -1,0 +1,419 @@
+page {
+  background: #f5f5f5;
+  color: #333333;
+}
+
+.mall-order-detail-page {
+  min-height: 100vh;
+  padding: 20rpx 24rpx 48rpx;
+  background: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.mall-order-detail-hero-card {
+  padding: 32rpx 28rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #ff856c, #ff5c68 62%, #ffbf61);
+  color: #ffffff;
+  box-shadow: 0 18rpx 36rpx rgba(255, 92, 104, 0.18);
+}
+
+.mall-order-detail-status {
+  display: inline-flex;
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 22rpx;
+  align-items: center;
+}
+
+.mall-order-detail-order-no {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-hero-copy {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.mall-order-detail-hero-refund {
+  display: inline-flex;
+  margin-top: 18rpx;
+  min-height: 44rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  font-size: 22rpx;
+  align-items: center;
+}
+
+.mall-order-detail-section {
+  margin-top: 20rpx;
+}
+
+.mall-order-detail-section-title {
+  display: block;
+  margin-bottom: 14rpx;
+  color: #121826;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-address-card,
+.mall-order-detail-items-card,
+.mall-order-detail-meta-card,
+.mall-order-detail-pay-card,
+.mall-order-detail-empty-card {
+  padding: 24rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 14rpx 30rpx rgba(15, 23, 42, 0.05);
+}
+
+.mall-order-detail-address-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.mall-order-detail-address-name {
+  color: #121826;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-address-phone {
+  color: #5b6575;
+  font-size: 24rpx;
+}
+
+.mall-order-detail-address-full {
+  display: block;
+  margin-top: 12rpx;
+  color: #4b5563;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding-top: 18rpx;
+  margin-top: 18rpx;
+  border-top: 1rpx solid #eef1f4;
+}
+
+.mall-order-detail-item:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.mall-order-detail-cover {
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 22rpx;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ff9b7d, #ffc06a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mall-order-detail-image {
+  width: 100%;
+  height: 100%;
+}
+
+.mall-order-detail-fallback {
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mall-order-detail-title {
+  display: block;
+  color: #121826;
+  font-size: 26rpx;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.mall-order-detail-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  color: #7b8190;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.mall-order-detail-price-row {
+  margin-top: 10rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.mall-order-detail-unit-price,
+.mall-order-detail-quantity {
+  color: #8b94a4;
+  font-size: 22rpx;
+}
+
+.mall-order-detail-item-total {
+  color: #ff5c68;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding-top: 18rpx;
+  margin-top: 18rpx;
+  border-top: 1rpx solid #eef1f4;
+}
+
+.mall-order-detail-meta-row:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.mall-order-detail-status-note {
+  padding: 18rpx 20rpx;
+  border-radius: 20rpx;
+  background: #fff5e8;
+}
+
+.mall-order-detail-status-note-text {
+  display: block;
+  color: #9a5c00;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-meta-label {
+  color: #8b94a4;
+  font-size: 22rpx;
+}
+
+.mall-order-detail-meta-value {
+  flex: 1;
+  text-align: right;
+  color: #121826;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-pricing-note {
+  display: block;
+  margin-top: 18rpx;
+  color: #9a5c00;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-pricing-inspection {
+  margin-top: 18rpx;
+  padding: 20rpx;
+  border-radius: 22rpx;
+  background: #fff7ed;
+}
+
+.mall-order-detail-pricing-inspection.is-ok {
+  background: #f0fdf4;
+}
+
+.mall-order-detail-pricing-inspection.is-legacy {
+  background: #fff7ed;
+}
+
+.mall-order-detail-pricing-inspection.is-risk {
+  background: #fff1f2;
+}
+
+.mall-order-detail-pricing-inspection-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.mall-order-detail-pricing-inspection-title {
+  color: #121826;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-pricing-inspection-badge {
+  display: inline-flex;
+  min-height: 44rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  background: rgba(154, 92, 0, 0.12);
+  color: #9a5c00;
+  font-size: 20rpx;
+  align-items: center;
+}
+
+.mall-order-detail-pricing-inspection.is-ok .mall-order-detail-pricing-inspection-badge {
+  background: rgba(22, 101, 52, 0.12);
+  color: #166534;
+}
+
+.mall-order-detail-pricing-inspection.is-risk .mall-order-detail-pricing-inspection-badge {
+  background: rgba(190, 24, 93, 0.12);
+  color: #be185d;
+}
+
+.mall-order-detail-pricing-inspection-summary {
+  display: block;
+  margin-top: 12rpx;
+  color: #7c5b17;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-pricing-inspection.is-ok .mall-order-detail-pricing-inspection-summary {
+  color: #166534;
+}
+
+.mall-order-detail-pricing-inspection.is-risk .mall-order-detail-pricing-inspection-summary {
+  color: #be185d;
+}
+
+.mall-order-detail-pricing-inspection-list {
+  margin-top: 12rpx;
+  display: grid;
+  gap: 12rpx;
+}
+
+.mall-order-detail-pricing-inspection-item {
+  padding-top: 12rpx;
+  border-top: 1rpx solid rgba(148, 163, 184, 0.2);
+}
+
+.mall-order-detail-pricing-inspection-item:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
+.mall-order-detail-pricing-inspection-item-title {
+  display: block;
+  color: #121826;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-pricing-inspection-item-detail {
+  display: block;
+  margin-top: 6rpx;
+  color: #7c5b17;
+  font-size: 20rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-pricing-inspection.is-ok .mall-order-detail-pricing-inspection-item-detail {
+  color: #166534;
+}
+
+.mall-order-detail-pricing-inspection.is-risk .mall-order-detail-pricing-inspection-item-detail {
+  color: #be185d;
+}
+
+.mall-order-detail-empty-title {
+  display: block;
+  color: #121826;
+  font-size: 30rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.mall-order-detail-empty-copy {
+  display: block;
+  margin-top: 14rpx;
+  color: #8b94a4;
+  font-size: 24rpx;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.mall-order-detail-empty-actions {
+  margin-top: 24rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.mall-order-detail-action-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mall-order-detail-pay-copy {
+  margin-bottom: 20rpx;
+}
+
+.mall-order-detail-pay-title {
+  display: block;
+  color: #121826;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-pay-note {
+  display: block;
+  margin-top: 10rpx;
+  color: #8b94a4;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-primary {
+  min-width: 220rpx;
+  height: 80rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #ff7a66, #ff5c68);
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 80rpx;
+}
+
+.mall-order-detail-primary::after {
+  border: none;
+}
+
+.mall-order-detail-secondary {
+  min-width: 220rpx;
+  height: 80rpx;
+  border-radius: 999rpx;
+  background: #fff4f0;
+  color: #ff5c68;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 80rpx;
+}
+
+.mall-order-detail-secondary::after {
+  border: none;
+}

@@ -1,10 +1,14 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
-require("dotenv").config({ quiet: true });
+require("dotenv").config({ path: path.join(__dirname, "..", ".env"), quiet: true });
 const {
   buildPreview,
+  listJoinCoupons,
+  listJoinChannels,
   createJoinOrder,
+  createRenewalOrder,
+  reapplyJoinReview,
   applyPaymentSuccess,
   getMembershipStatus,
   getOrder,
@@ -12,16 +16,36 @@ const {
 } = require("./services/joinFlowService");
 const { startAccessTokenRefreshScheduler } = require("./services/wechatService");
 const {
+  assertWechatPayResourceMatchesConfig,
+  buildNotifyFailPayload,
+  buildNotifySuccessPayload,
+  getWechatPayConfig,
+  inspectWechatPayReadiness,
+  parseWechatPayNotification,
+} = require("./services/wechatPayService");
+const {
   loginOrRegister,
   loginOrRegisterByPhone,
+  loginWeb,
+  loginWebByMobile,
   getSessionProfile,
+  updateSessionProfile,
   logoutSession,
 } = require("./services/authService");
 const {
   createPlanet,
+  updatePlanetProfile,
+  leavePlanetMembership,
+  requestPlanetRefundReview,
+  reviewPlanetRefundRequest,
+  getRefundApprovalDashboard,
+  getPlanetRefundManagement,
+  refundPlanetMemberByOwner,
+  deletePlanetByOwner,
   getDiscoverPlanets,
   getJoinedPlanets,
   getMyPlanets,
+  getPlanetMembers,
 } = require("./services/planetService");
 const {
   getGroupHome,
@@ -31,82 +55,165 @@ const {
   getPostDetail,
   createPost,
   updatePost,
+  reportPost,
+  assignPostColumn,
+  deletePost,
   listComments,
   listMyPosts,
   createComment,
   togglePostLike,
   toggleCommentLike,
 } = require("./services/contentService");
-const { sendJson, readJsonBody } = require("./utils/http");
+const {
+  listArticles,
+  getArticleDetail,
+  saveArticle,
+  updateArticleStatus,
+} = require("./services/articleService");
+const {
+  listCourses,
+  getCourseDetail,
+  getCourseLessonDetail,
+  saveCourseProgress,
+  listAdminCourses,
+  getAdminCourseDetail,
+  saveAdminCourse,
+  updateAdminCourseStatus,
+  saveAdminCourseLesson,
+  updateAdminCourseLessonStatus,
+  reorderAdminCourseLessons,
+} = require("./services/courseService");
+const { createArticleUnlockOrder } = require("./services/articleUnlockService");
+const {
+  listCheckinChallenges,
+  getCheckinChallengeDetail,
+  createCheckinChallenge,
+  joinCheckinChallenge,
+  publishCheckinPost,
+  getCheckinRankings,
+  getCheckinRecord,
+} = require("./services/checkinService");
+const {
+  listColumns,
+  getColumnDetail,
+  createColumn,
+} = require("./services/columnService");
+const {
+  trackMallAnalyticsEvent,
+  getMallConfig,
+  listMallCoupons,
+  listMallCategories,
+  listMallProducts,
+  getMallProductDetail,
+  createMallProductShareToken,
+  listMallProductReviews,
+  createMallProductReview,
+  getMallShippingAddress,
+  upsertMallShippingAddress,
+  setDefaultMallShippingAddress,
+  deleteMallShippingAddress,
+  listMallCart,
+  addMallCartItem,
+  updateMallCartItem,
+  deleteMallCartItem,
+  clearMallCart,
+  createMallOrder,
+  prepareMallOrderPayment,
+  listMallOrders,
+  listMallCommissionOrders,
+  getMallOrderDetail,
+  confirmMallOrderReceipt,
+  requestMallOrderRefund,
+  startMallOrderAutoCloseScheduler,
+  startMallOrderAutoReceiveScheduler,
+  findMallOrderByOrderNo,
+  applyMallOrderPaymentSuccess,
+  listAdminMallCategories,
+  createAdminMallCategory,
+  updateAdminMallCategory,
+  listAdminMallProducts,
+  createAdminMallProduct,
+  updateAdminMallProduct,
+  listAdminMallProductDetailImages,
+  updateAdminMallProductDetailImages,
+  listAdminMallOrders,
+  getAdminMallMemberZoneConfig,
+  getAdminMallCouponAnalytics,
+  updateAdminMallMemberZoneConfig,
+  updateAdminMallOrderStatus,
+  reviewAdminMallOrderRefund,
+  shipAdminMallOrder,
+  authorizeMallAdminAccess,
+} = require("./services/mallService");
+const { updateGroupSubscription } = require("./services/notificationService");
+const {
+  getAdminIncome,
+  getAdminRenewal,
+  getAdminPromotion,
+  getAdminPromotionChannels,
+  createAdminPromotionChannel,
+  resolvePromotionChannelScene,
+  getAdminChannelLiveSummary,
+  getAdminCoupons,
+  getAdminRenewalCoupons,
+  createAdminCoupon,
+  updateAdminCoupon,
+  updateAdminCouponStatus,
+  createAdminRenewalNotice,
+  getAdminRenewalNotices,
+  getAdminRenewalSettings,
+  updateAdminRenewalGuidance,
+  updateAdminRenewalSettings,
+  getAdminPaywallHighlights,
+  updateAdminPaywallHighlights,
+  getAdminMembers,
+  getAdminContent,
+  getAdminScoreboard,
+  updateAdminScoreboard,
+  getAdminMemberVerification,
+  getMemberVerificationCheck,
+  exportAdminChannelLiveMembers,
+  exportAdminMembers,
+  exportAdminContent,
+  updateAdminMemberReview,
+  updateAdminMemberStatus,
+  getAdminPermissions,
+  updateAdminPermissions,
+  updateAdminContent,
+  getAdminManageableGroups,
+  authorizeAdminGroupAccess,
+  authorizeWebBossAccess,
+} = require("./services/adminService");
+const { queryKB } = require("./services/kbService");
+const { askAIWithKB } = require("./services/aiService");
+const { sendJson, sendText, readJsonBody } = require("./utils/http");
+const { mapErrorToResponse } = require("./utils/error");
 const { prisma } = require("./db/prisma");
 
 const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || "127.0.0.1";
+const HOST = process.env.HOST || "0.0.0.0";
 const schemaPath = path.join(__dirname, "..", "prisma", "schema.prisma");
 const uploadRootPath = path.join(__dirname, "..", "uploads");
-const promotionDataPayload = {
-  title: "ysc的星球",
-  subtitle: "",
-  tag: "数据概览",
-  breadcrumb: "‹ 返回星球列表",
-  summaryRows: [
-    [
-      { label: "累积收入(元)", value: "1280.00", hint: "昨日收入 168.00" },
-      { label: "本周收入(元)", value: "368.00", hint: "上周收入 420.00" },
-      { label: "本月收入(元)", value: "1280.00", hint: "上月收入 0.00" }
-    ],
-    [
-      { label: "付费加入收入(元)", value: "980.00", hint: "昨日收入 168.00" },
-      { label: "续期收入(元)", value: "200.00", hint: "昨日收入 0.00" },
-      { label: "赞赏收入(元)", value: "60.00", hint: "昨日收入 12.00" },
-      { label: "付费提问收入(元)", value: "40.00", hint: "昨日收入 0.00" }
-    ]
-  ],
-  memberRows: [
-    { label: "总成员数", value: "42", hint: "昨日加入成员 3" },
-    { label: "付费加入成员", value: "28", hint: "昨日加入成员 2" },
-    { label: "本月续期成员", value: "6", hint: "上月续期成员 0" },
-    { label: "昨日续期成员", value: "1", hint: "" }
-  ],
-  promotionFlow: [
-    { count: "316", title: "访问星球预览页的人数（星球外用户）", action: "访问星球预览页", tone: "teal" },
-    { count: "52", title: "点击「加入星球」按钮人数", action: "点击加入按钮", tone: "blue" },
-    { count: "14", title: "成功加入星球的人数", action: "成功支付", tone: "orange" }
-  ],
-  renewalFlow: [
-    { count: "12", title: "进入续期页面的人数", action: "进入续期页面", tone: "teal" },
-    { count: "6", title: "支付成功的人数", action: "成功支付", tone: "orange" }
-  ],
-  adviceSections: [
-    {
-      title: "流量转化率: 16.46%",
-      suffix: "（正常范围：35%~60%），你的转化率偏低，建议先优化导流页和渠道质量：",
-      rows: [
-        ["渠道追踪", "优先验证公众号菜单、朋友圈海报、视频号简介这三个入口，先找到最能带来点击的渠道。"],
-        ["付费页优化", "补齐星球价值说明、适合人群、往期精华内容，先让用户快速看懂为什么要付费。"],
-        ["内容创作", "连续更新 7 天，把最近最能代表价值的内容顶出来，帮助新访客建立信任。"]
-      ]
-    },
-    {
-      title: "支付成功率: 26.92%",
-      suffix: "（正常范围：10%~30%），当前支付成功率可接受，建议继续保持：",
-      rows: [
-        ["优惠价格", "可以继续测试限时券和新用户券，观察不同价格带对成交的影响。"],
-        ["价格展示优化", "把年费拆成每天成本展示，降低用户的心理门槛。"],
-        ["官方学习指南", "把优秀案例的表达方式吸收过来，复用在自己的付费页文案里。"]
-      ]
-    },
-    {
-      title: "新成员月留存率: 71.43%",
-      suffix: "（同规模星球平均：70%），留存已达平均线，可继续加强新成员激活：",
-      rows: [
-        ["精选内容", "新用户加入后优先看到精华内容和入门帖，能更快感受到价值。"],
-        ["自动通知", "把入群欢迎语做成固定流程，引导成员完成第一次互动。"],
-        ["成员登记信息", "在活跃期收集成员背景信息，便于后续做更精细的运营。"]
-      ]
-    }
-  ]
-};
+const officialWebsiteRootPath = path.resolve(
+  process.env.OFFICIAL_WEBSITE_ROOT || path.join(__dirname, "..", "..", "official_website")
+);
+const officialWebsiteHosts = new Set(
+  (process.env.OFFICIAL_WEBSITE_HOSTS || "xueyin.net.cn,www.xueyin.net.cn")
+    .split(",")
+    .map((host) => host.trim().toLowerCase())
+    .filter(Boolean)
+);
+
+function isEnabledEnvValue(value, defaultValue) {
+  const normalizedValue = String(value ?? defaultValue)
+    .trim()
+    .toLowerCase();
+  return !["0", "false", "off", "no"].includes(normalizedValue);
+}
+
+function shouldStartBackgroundJobs() {
+  return isEnabledEnvValue(process.env.XUEYIN_BACKGROUND_JOBS, "1");
+}
 
 function ensureUploadDir() {
   if (!fs.existsSync(uploadRootPath)) {
@@ -114,7 +221,7 @@ function ensureUploadDir() {
   }
 }
 
-function sendFile(res, filePath) {
+function sendFile(req, res, filePath) {
   if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
     sendJson(res, 404, {
       ok: false,
@@ -131,15 +238,178 @@ function sendFile(res, filePath) {
     ".gif": "image/gif",
     ".webp": "image/webp",
     ".bmp": "image/bmp",
+    ".mp4": "video/mp4",
+    ".m4v": "video/mp4",
+    ".mov": "video/quicktime",
+    ".webm": "video/webm",
+    ".ogv": "video/ogg",
+    ".ogg": "video/ogg",
+    ".pdf": "application/pdf",
+    ".doc": "application/msword",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".xls": "application/vnd.ms-excel",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".ppt": "application/vnd.ms-powerpoint",
+    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    ".txt": "text/plain; charset=utf-8",
+    ".md": "text/markdown; charset=utf-8",
+    ".zip": "application/zip",
+    ".rar": "application/vnd.rar",
   };
 
+  const stat = fs.statSync(filePath);
+  const mimeType = mimeTypeMap[extension] || "application/octet-stream";
+  const rangeHeader = typeof req.headers.range === "string" ? req.headers.range.trim() : "";
+
+  if (rangeHeader) {
+    const matched = /bytes=(\d*)-(\d*)/i.exec(rangeHeader);
+    const total = stat.size;
+    const start = matched && matched[1] ? Number(matched[1]) : 0;
+    const end = matched && matched[2] ? Number(matched[2]) : total - 1;
+
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end < start || end >= total) {
+      res.writeHead(416, {
+        "Content-Range": `bytes */${total}`,
+        "Access-Control-Allow-Origin": "*",
+      });
+      res.end();
+      return;
+    }
+
+    res.writeHead(206, {
+      "Content-Type": mimeType,
+      "Content-Length": end - start + 1,
+      "Content-Range": `bytes ${start}-${end}/${total}`,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "public, max-age=31536000",
+      "Access-Control-Allow-Origin": "*",
+    });
+
+    fs.createReadStream(filePath, { start, end }).pipe(res);
+    return;
+  }
+
   res.writeHead(200, {
-    "Content-Type": mimeTypeMap[extension] || "application/octet-stream",
+    "Content-Type": mimeType,
+    "Content-Length": stat.size,
+    "Accept-Ranges": "bytes",
     "Cache-Control": "public, max-age=31536000",
     "Access-Control-Allow-Origin": "*",
   });
 
   fs.createReadStream(filePath).pipe(res);
+}
+
+const videoUploadExtensionPattern = /\.(mp4|m4v|mov|webm|ogv|ogg)$/i;
+
+function isAllowedVideoUpload(file) {
+  if (!file || typeof file !== "object") {
+    return false;
+  }
+
+  const mimeType = String(file.mimeType || "").trim().toLowerCase();
+  const filename = String(file.filename || "").trim();
+  return /^video\//.test(mimeType) || videoUploadExtensionPattern.test(filename);
+}
+
+function normalizeHostname(value) {
+  return String(value || "")
+    .split(",")[0]
+    .trim()
+    .toLowerCase()
+    .replace(/:\d+$/, "");
+}
+
+function getRequestHostname(req) {
+  return normalizeHostname(req.headers["x-forwarded-host"] || req.headers.host);
+}
+
+function shouldServeOfficialWebsite(req) {
+  return officialWebsiteHosts.has(getRequestHostname(req));
+}
+
+function sendOfficialWebsiteFile(req, res, filePath, cacheControl) {
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    sendJson(res, 404, {
+      ok: false,
+      message: "Not Found",
+    });
+    return;
+  }
+
+  const extension = path.extname(filePath).toLowerCase();
+  const mimeTypeMap = {
+    ".html": "text/html; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".ico": "image/x-icon",
+    ".txt": "text/plain; charset=utf-8",
+  };
+
+  res.writeHead(200, {
+    "Content-Type": mimeTypeMap[extension] || "application/octet-stream",
+    "Cache-Control": cacheControl,
+    "X-Content-Type-Options": "nosniff",
+  });
+
+  if (req.method === "HEAD") {
+    res.end();
+    return;
+  }
+
+  fs.createReadStream(filePath).pipe(res);
+}
+
+function serveOfficialWebsite(req, res, requestUrl) {
+  if (!shouldServeOfficialWebsite(req)) {
+    return false;
+  }
+
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    sendJson(res, 405, {
+      ok: false,
+      message: "Method Not Allowed",
+    });
+    return true;
+  }
+
+  if (requestUrl.pathname === "/") {
+    sendOfficialWebsiteFile(req, res, path.join(officialWebsiteRootPath, "index.html"), "no-cache");
+    return true;
+  }
+
+  let decodedPathname = "";
+  try {
+    decodedPathname = decodeURIComponent(requestUrl.pathname);
+  } catch (error) {
+    sendJson(res, 400, {
+      ok: false,
+      message: "Bad Request",
+    });
+    return true;
+  }
+
+  const requestedPath = path.resolve(officialWebsiteRootPath, `.${decodedPathname}`);
+  if (requestedPath !== officialWebsiteRootPath && !requestedPath.startsWith(`${officialWebsiteRootPath}${path.sep}`)) {
+    sendJson(res, 403, {
+      ok: false,
+      message: "Forbidden",
+    });
+    return true;
+  }
+
+  const cacheControl = decodedPathname.startsWith("/assets/")
+    ? "public, max-age=2592000, immutable"
+    : "no-cache";
+  sendOfficialWebsiteFile(req, res, requestedPath, cacheControl);
+  return true;
 }
 
 function readRawBody(req) {
@@ -197,13 +467,30 @@ function parseMultipartFile(buffer, contentType) {
 }
 
 function createUploadFileName(originalName) {
-  const extension = path.extname(originalName || "").toLowerCase() || ".jpg";
-  const safeExtension = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"].includes(extension)
-    ? extension
-    : ".jpg";
+  const extension = path.extname(originalName || "").toLowerCase() || ".dat";
+  const safeExtension = /^[.\w-]{1,12}$/.test(extension) ? extension : ".dat";
   const stamp = Date.now();
   const random = Math.random().toString(36).slice(2, 8);
   return `${stamp}_${random}${safeExtension}`;
+}
+
+function saveUploadedFile(req, file) {
+  const todayFolder = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const targetDir = path.join(uploadRootPath, todayFolder);
+  fs.mkdirSync(targetDir, { recursive: true });
+
+  const savedName = createUploadFileName(file.filename);
+  const savedPath = path.join(targetDir, savedName);
+  fs.writeFileSync(savedPath, file.buffer);
+
+  const fileUrl = `/uploads/${todayFolder}/${savedName}`;
+  return {
+    url: fileUrl,
+    filename: file.filename || savedName,
+    savedName,
+    mimeType: file.mimeType || "application/octet-stream",
+    size: file.buffer.length,
+  };
 }
 
 function getSchemaSummary() {
@@ -220,6 +507,56 @@ function getSchemaSummary() {
   };
 }
 
+async function ensureAdminRequestAccess(req, res, requestUrl, explicitGroupId) {
+  const result = await authorizeAdminGroupAccess({
+    groupId: explicitGroupId || requestUrl.searchParams.get("groupId"),
+    sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+  });
+
+  if (result.statusCode !== 200) {
+    sendJson(res, result.statusCode, result.payload);
+    return null;
+  }
+
+  return result.payload.data;
+}
+
+async function ensureWebBossRequestAccess(req, res, requestUrl) {
+  const result = await authorizeWebBossAccess({
+    sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+  });
+
+  if (result.statusCode !== 200) {
+    sendJson(res, result.statusCode, result.payload);
+    return null;
+  }
+
+  return result.payload.data;
+}
+
+function readMallStoreId(requestUrl, body) {
+  const requestStoreId = requestUrl.searchParams.get("storeId") || requestUrl.searchParams.get("groupId");
+  if (requestStoreId) {
+    return requestStoreId;
+  }
+
+  return body ? body.storeId || body.groupId : "";
+}
+
+async function ensureMallAdminRequestAccess(req, res, requestUrl, body) {
+  const result = await authorizeMallAdminAccess({
+    storeId: readMallStoreId(requestUrl, body),
+    sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+  });
+
+  if (result.statusCode !== 200) {
+    sendJson(res, result.statusCode, result.payload);
+    return null;
+  }
+
+  return result.payload.data;
+}
+
 const server = http.createServer(async (req, res) => {
   const requestUrl = new URL(req.url || "/", `http://${req.headers.host}`);
   console.log(`[request] ${req.method} ${requestUrl.pathname}`);
@@ -227,19 +564,23 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "OPTIONS") {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,POST,PUT,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type,x-session-token",
+      "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type,x-session-token,Authorization",
     });
     res.end();
     return;
   }
 
   try {
+    if (serveOfficialWebsite(req, res, requestUrl)) {
+      return;
+    }
+
     if (req.method === "GET" && requestUrl.pathname.startsWith("/uploads/")) {
       const relativePath = requestUrl.pathname.replace(/^\/uploads\//, "");
       const normalizedPath = path.normalize(relativePath).replace(/^(\.\.(\/|\\|$))+/, "");
       const filePath = path.join(uploadRootPath, normalizedPath);
-      sendFile(res, filePath);
+      sendFile(req, res, filePath);
       return;
     }
 
@@ -254,10 +595,90 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/join-coupons") {
+      const result = await listJoinCoupons({
+        groupId: requestUrl.searchParams.get("groupId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/join-channels") {
+      const result = await listJoinChannels({
+        groupId: requestUrl.searchParams.get("groupId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
     if (req.method === "POST" && requestUrl.pathname === "/api/planets/create") {
       const body = await readJsonBody(req);
       const sessionToken = req.headers["x-session-token"];
       const result = await createPlanet(sessionToken, body);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/planets/profile") {
+      const body = await readJsonBody(req);
+      const sessionToken = req.headers["x-session-token"] || body.sessionToken;
+      const result = await updatePlanetProfile(sessionToken, body);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/leave") {
+      const body = await readJsonBody(req);
+      const sessionToken = req.headers["x-session-token"] || body.sessionToken;
+      const result = await leavePlanetMembership(sessionToken, body);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/delete") {
+      const body = await readJsonBody(req);
+      const sessionToken = req.headers["x-session-token"] || body.sessionToken;
+      const result = await deletePlanetByOwner(sessionToken, body);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/refunds/dashboard") {
+      const sessionToken = requestUrl.searchParams.get("sessionToken");
+      const result = await getRefundApprovalDashboard(sessionToken);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/refunds/request") {
+      const body = await readJsonBody(req);
+      const sessionToken = req.headers["x-session-token"] || body.sessionToken;
+      const result = await requestPlanetRefundReview(sessionToken, body);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/refunds/review") {
+      const body = await readJsonBody(req);
+      const sessionToken = req.headers["x-session-token"] || body.sessionToken;
+      const result = await reviewPlanetRefundRequest(sessionToken, body);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/refund-management") {
+      const sessionToken = requestUrl.searchParams.get("sessionToken");
+      const result = await getPlanetRefundManagement(sessionToken, {
+        groupId: requestUrl.searchParams.get("groupId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/refund-member") {
+      const body = await readJsonBody(req);
+      const sessionToken = req.headers["x-session-token"] || body.sessionToken;
+      const result = await refundPlanetMemberByOwner(sessionToken, body);
       sendJson(res, result.statusCode, result.payload);
       return;
     }
@@ -289,6 +710,14 @@ const server = http.createServer(async (req, res) => {
       const result = await getGroupHome(requestUrl.searchParams.get("groupId"), {
         sessionToken: requestUrl.searchParams.get("sessionToken"),
         userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/promotion-scene/resolve") {
+      const result = await resolvePromotionChannelScene({
+        scene: requestUrl.searchParams.get("scene"),
       });
       sendJson(res, result.statusCode, result.payload);
       return;
@@ -342,8 +771,271 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/posts/assign-column") {
+      const body = await readJsonBody(req);
+      const result = await assignPostColumn({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/subscription") {
+      const body = await readJsonBody(req);
+      const result = await updateGroupSubscription({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/members") {
+      const result = await getPlanetMembers(
+        requestUrl.searchParams.get("groupId"),
+        req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken")
+      );
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/checkin/challenges") {
+      const result = await listCheckinChallenges({
+        groupId: requestUrl.searchParams.get("groupId"),
+        status: requestUrl.searchParams.get("status"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/checkin/challenges/detail") {
+      const result = await getCheckinChallengeDetail({
+        challengeId: requestUrl.searchParams.get("challengeId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/checkin/challenges/create") {
+      const body = await readJsonBody(req);
+      const result = await createCheckinChallenge({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/checkin/rankings") {
+      const result = await getCheckinRankings({
+        challengeId: requestUrl.searchParams.get("challengeId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/checkin/records") {
+      const result = await getCheckinRecord({
+        challengeId: requestUrl.searchParams.get("challengeId"),
+        year: requestUrl.searchParams.get("year"),
+        month: requestUrl.searchParams.get("month"),
+        day: requestUrl.searchParams.get("day"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/checkin/challenges/join") {
+      const body = await readJsonBody(req);
+      const result = await joinCheckinChallenge({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/checkin/posts") {
+      const body = await readJsonBody(req);
+      const result = await publishCheckinPost({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/columns") {
+      const result = await listColumns(requestUrl.searchParams.get("groupId"), {
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/planets/columns/detail") {
+      const result = await getColumnDetail(
+        requestUrl.searchParams.get("columnId"),
+        requestUrl.searchParams.get("groupId"),
+        {
+          sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+          userId: requestUrl.searchParams.get("userId"),
+        }
+      );
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/columns") {
+      const body = await readJsonBody(req);
+      const result = await createColumn({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/planets/posts/delete") {
+      const body = await readJsonBody(req);
+      const result = await deletePost({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
     if (req.method === "GET" && requestUrl.pathname === "/api/planets/my-posts") {
       const result = await listMyPosts(requestUrl.searchParams.get("sessionToken"));
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/articles") {
+      const result = await listArticles({
+        groupId: requestUrl.searchParams.get("groupId"),
+        search: requestUrl.searchParams.get("search"),
+        status: requestUrl.searchParams.get("status"),
+        contentSource: requestUrl.searchParams.get("contentSource"),
+        accessType: requestUrl.searchParams.get("accessType"),
+        includeRestricted: requestUrl.searchParams.get("includeRestricted"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/articles/detail") {
+      const result = await getArticleDetail({
+        articleId: requestUrl.searchParams.get("articleId"),
+        id: requestUrl.searchParams.get("id"),
+        postId: requestUrl.searchParams.get("postId"),
+        incrementRead: requestUrl.searchParams.get("incrementRead") !== "0",
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/articles") {
+      const body = await readJsonBody(req);
+      const result = await saveArticle({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/articles") {
+      const body = await readJsonBody(req);
+      const result = await saveArticle({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/articles/unlock-orders") {
+      const body = await readJsonBody(req);
+      const result = await createArticleUnlockOrder({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PATCH" && requestUrl.pathname === "/api/articles/status") {
+      const body = await readJsonBody(req);
+      const result = await updateArticleStatus({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/courses") {
+      const result = await listCourses({
+        groupId: requestUrl.searchParams.get("groupId"),
+        search: requestUrl.searchParams.get("search"),
+        category: requestUrl.searchParams.get("category"),
+        status: requestUrl.searchParams.get("status"),
+        includeRestricted: requestUrl.searchParams.get("includeRestricted"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/courses/detail") {
+      const result = await getCourseDetail({
+        courseId: requestUrl.searchParams.get("courseId"),
+        id: requestUrl.searchParams.get("id"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/courses/lessons/detail") {
+      const result = await getCourseLessonDetail({
+        lessonId: requestUrl.searchParams.get("lessonId"),
+        id: requestUrl.searchParams.get("id"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/courses/progress") {
+      const body = await readJsonBody(req);
+      const result = await saveCourseProgress({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
       sendJson(res, result.statusCode, result.payload);
       return;
     }
@@ -384,6 +1076,16 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && requestUrl.pathname === "/api/posts/report") {
+      const body = await readJsonBody(req);
+      const result = await reportPost({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
     if (req.method === "POST" && requestUrl.pathname === "/api/comments/like") {
       const body = await readJsonBody(req);
       const result = await toggleCommentLike(body.commentId, body.increment !== false, {
@@ -414,35 +1116,235 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      const todayFolder = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-      const targetDir = path.join(uploadRootPath, todayFolder);
-      fs.mkdirSync(targetDir, { recursive: true });
-
-      const savedName = createUploadFileName(file.filename);
-      const savedPath = path.join(targetDir, savedName);
-      fs.writeFileSync(savedPath, file.buffer);
-
-      const publicUrl = `http://${req.headers.host}/uploads/${todayFolder}/${savedName}`;
+      const uploadResult = saveUploadedFile(req, file);
       sendJson(res, 201, {
         ok: true,
         data: {
-          url: publicUrl,
-          filename: savedName,
+          url: uploadResult.url,
+          filename: uploadResult.savedName,
         },
       });
       return;
     }
 
+    if (req.method === "POST" && requestUrl.pathname === "/api/uploads/video") {
+      ensureUploadDir();
+      const rawBody = await readRawBody(req);
+      const file = parseMultipartFile(rawBody, req.headers["content-type"]);
+
+      if (!file || !file.buffer.length) {
+        sendJson(res, 400, {
+          ok: false,
+          message: "视频上传失败，未解析到文件内容",
+        });
+        return;
+      }
+
+      if (!isAllowedVideoUpload(file)) {
+        sendJson(res, 400, {
+          ok: false,
+          message: "仅支持上传 MP4、MOV、M4V、WebM、OGG 视频",
+        });
+        return;
+      }
+
+      if (file.buffer.length > 80 * 1024 * 1024) {
+        sendJson(res, 400, {
+          ok: false,
+          message: "单个视频不能超过80MB",
+        });
+        return;
+      }
+
+      const uploadResult = saveUploadedFile(req, file);
+      sendJson(res, 201, {
+        ok: true,
+        data: uploadResult,
+      });
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/uploads/file") {
+      ensureUploadDir();
+      const rawBody = await readRawBody(req);
+      const file = parseMultipartFile(rawBody, req.headers["content-type"]);
+
+      if (!file || !file.buffer.length) {
+        sendJson(res, 400, {
+          ok: false,
+          message: "文件上传失败，未解析到文件内容",
+        });
+        return;
+      }
+
+      if (file.buffer.length > 20 * 1024 * 1024) {
+        sendJson(res, 400, {
+          ok: false,
+          message: "单个文件不能超过20MB",
+        });
+        return;
+      }
+
+      const uploadResult = saveUploadedFile(req, file);
+      sendJson(res, 201, {
+        ok: true,
+        data: uploadResult,
+      });
+      return;
+    }
+
+    if (
+      req.method === "POST" &&
+      (requestUrl.pathname === "/pay/notify" || requestUrl.pathname === "/api/payments/wechat/notify")
+    ) {
+      const rawBody = await readRawBody(req);
+      const bodyText = rawBody.toString("utf8");
+
+      try {
+        const notification = await parseWechatPayNotification({
+          headers: req.headers,
+          bodyText,
+        });
+        const payConfig = getWechatPayConfig();
+        const resource = notification.resource || {};
+        const orderNo = String(resource.out_trade_no || "").trim();
+        const transactionNo = String(resource.transaction_id || "").trim();
+        const tradeState = String(resource.trade_state || "").trim().toUpperCase();
+        const totalAmount = resource.amount ? Number(resource.amount.total) : NaN;
+
+        if (!orderNo || !transactionNo) {
+          sendText(
+            res,
+            400,
+            JSON.stringify(buildNotifyFailPayload("缺少订单号或微信交易号")),
+            "application/json; charset=utf-8"
+          );
+          return;
+        }
+
+        try {
+          assertWechatPayResourceMatchesConfig(resource, payConfig);
+        } catch (identityError) {
+          sendText(
+            res,
+            400,
+            JSON.stringify(buildNotifyFailPayload(identityError.message || "回调商户信息不匹配")),
+            "application/json; charset=utf-8"
+          );
+          return;
+        }
+
+        const orderResult = await getOrder(orderNo);
+        const isNormalOrder = orderResult.statusCode === 200 && orderResult.payload.ok && orderResult.payload.data;
+        const mallOrder = isNormalOrder ? null : await findMallOrderByOrderNo(orderNo);
+
+        if (!isNormalOrder && !mallOrder) {
+          sendText(
+            res,
+            404,
+            JSON.stringify(buildNotifyFailPayload("订单不存在")),
+            "application/json; charset=utf-8"
+          );
+          return;
+        }
+
+        const expectedAmount = isNormalOrder
+          ? Number(orderResult.payload.data.order.amount)
+          : Math.round(Number(mallOrder.payableAmount || 0) * 100);
+        if (Number.isFinite(totalAmount) && totalAmount !== expectedAmount) {
+          sendText(
+            res,
+            400,
+            JSON.stringify(buildNotifyFailPayload("订单金额不匹配")),
+            "application/json; charset=utf-8"
+          );
+          return;
+        }
+
+        if (tradeState && tradeState !== "SUCCESS") {
+          sendText(
+            res,
+            200,
+            JSON.stringify(buildNotifySuccessPayload()),
+            "application/json; charset=utf-8"
+          );
+          return;
+        }
+
+        const result = isNormalOrder
+          ? await applyPaymentSuccess({
+              orderNo,
+              transactionNo,
+              success: true,
+            })
+          : await applyMallOrderPaymentSuccess({
+              orderNo,
+              transactionNo,
+              success: true,
+            });
+
+        if (result.statusCode !== 200 || !result.payload.ok) {
+          sendText(
+            res,
+            400,
+            JSON.stringify(buildNotifyFailPayload(result.payload.message || "支付结果处理失败")),
+            "application/json; charset=utf-8"
+          );
+          return;
+        }
+
+        sendText(
+          res,
+          200,
+          JSON.stringify(buildNotifySuccessPayload()),
+          "application/json; charset=utf-8"
+        );
+        return;
+      } catch (error) {
+        console.error("[wechat-pay] notify failed", error);
+        sendText(
+          res,
+          400,
+          JSON.stringify(buildNotifyFailPayload(error && error.message ? error.message : "回调处理失败")),
+          "application/json; charset=utf-8"
+        );
+        return;
+      }
+    }
+
     if (req.method === "POST" && requestUrl.pathname === "/api/orders/join") {
       const body = await readJsonBody(req);
-      const result = await createJoinOrder(body);
+      const result = await createJoinOrder({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/orders/renewal") {
+      const body = await readJsonBody(req);
+      const result = await createRenewalOrder({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/orders/join/reapply") {
+      const body = await readJsonBody(req);
+      const result = await reapplyJoinReview(body);
       sendJson(res, result.statusCode, result.payload);
       return;
     }
 
     if (req.method === "POST" && requestUrl.pathname === "/api/payments/mock-callback") {
       const body = await readJsonBody(req);
-      const result = await applyPaymentSuccess(body);
+      let result = await applyPaymentSuccess(body);
+      if (result.statusCode === 404) {
+        result = await applyMallOrderPaymentSuccess(body);
+      }
       sendJson(res, result.statusCode, result.payload);
       return;
     }
@@ -489,8 +1391,309 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && requestUrl.pathname === "/api/auth/web-login") {
+      const body = await readJsonBody(req);
+      console.log("[auth] web login request received", {
+        account: body.account || body.mobile || "",
+      });
+      const result = await loginWeb(body);
+      console.log("[auth] web login response", {
+        statusCode: result.statusCode,
+        ok: result.payload.ok,
+        message: result.payload.message || "",
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/auth/web-mobile-login") {
+      const body = await readJsonBody(req);
+      console.log("[auth] web mobile login request received", {
+        mobile: body.mobile || body.account || "",
+      });
+      const result = await loginWeb(body);
+      console.log("[auth] web mobile login response", {
+        statusCode: result.statusCode,
+        ok: result.payload.ok,
+        message: result.payload.message || "",
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
     if (req.method === "GET" && requestUrl.pathname === "/api/auth/session") {
       const result = await getSessionProfile(requestUrl.searchParams.get("sessionToken"));
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/config") {
+      const result = await getMallConfig({
+        storeId: readMallStoreId(requestUrl),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/categories") {
+      const result = await listMallCategories({
+        storeId: readMallStoreId(requestUrl),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/coupons") {
+      const result = await listMallCoupons({
+        storeId: readMallStoreId(requestUrl),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/products") {
+      const result = await listMallProducts({
+        storeId: readMallStoreId(requestUrl),
+        categoryId: requestUrl.searchParams.get("categoryId"),
+        keyword: requestUrl.searchParams.get("keyword"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/products/detail") {
+      const result = await getMallProductDetail({
+        productId: requestUrl.searchParams.get("productId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/share-token") {
+      const body = await readJsonBody(req);
+      const result = await createMallProductShareToken({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        productId: body.productId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/analytics") {
+      const body = await readJsonBody(req);
+      const result = await trackMallAnalyticsEvent({
+        storeId: readMallStoreId(requestUrl, body),
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        mallEventType: body.mallEventType,
+        mallPage: body.mallPage,
+        mallSource: body.mallSource,
+        targetType: body.targetType,
+        targetId: body.targetId,
+        keyword: body.keyword,
+        eventDedupKey: body.eventDedupKey,
+        properties: body.properties,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/reviews") {
+      const result = await listMallProductReviews({
+        productId: requestUrl.searchParams.get("productId"),
+        limit: requestUrl.searchParams.get("limit"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/reviews") {
+      const body = await readJsonBody(req);
+      const result = await createMallProductReview({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        productId: body.productId,
+        rating: body.rating,
+        content: body.content,
+        isAnonymous: body.isAnonymous,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/address") {
+      const result = await getMallShippingAddress({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/mall/address") {
+      const body = await readJsonBody(req);
+      const result = await upsertMallShippingAddress({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        addressId: body.addressId,
+        createNew: body.createNew,
+        isDefault: body.isDefault,
+        recipientName: body.recipientName,
+        phone: body.phone,
+        province: body.province,
+        city: body.city,
+        district: body.district,
+        detailAddress: body.detailAddress,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/address/default") {
+      const body = await readJsonBody(req);
+      const result = await setDefaultMallShippingAddress({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        addressId: body.addressId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "DELETE" && requestUrl.pathname === "/api/mall/address") {
+      const result = await deleteMallShippingAddress({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        addressId: requestUrl.searchParams.get("addressId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/cart") {
+      const result = await listMallCart({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/cart/add") {
+      const body = await readJsonBody(req);
+      const result = await addMallCartItem({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        productId: body.productId,
+        quantity: body.quantity,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/cart/update") {
+      const body = await readJsonBody(req);
+      const result = await updateMallCartItem({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        productId: body.productId,
+        quantity: body.quantity,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/cart/delete") {
+      const body = await readJsonBody(req);
+      const result = await deleteMallCartItem({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        productId: body.productId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/cart/clear") {
+      const body = await readJsonBody(req);
+      const result = await clearMallCart({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/orders/create") {
+      const body = await readJsonBody(req);
+      const result = await createMallOrder({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        remark: body.remark,
+        couponCode: body.couponCode,
+        shareToken: body.shareToken,
+        addressId: body.addressId,
+        productId: body.productId,
+        quantity: body.quantity,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/orders/pay") {
+      const body = await readJsonBody(req);
+      const result = await prepareMallOrderPayment({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        orderId: body.orderId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/orders") {
+      const result = await listMallOrders({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/commissions") {
+      const result = await listMallCommissionOrders({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/orders/detail") {
+      const result = await getMallOrderDetail({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        orderId: requestUrl.searchParams.get("orderId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/orders/refund/request") {
+      const body = await readJsonBody(req);
+      const result = await requestMallOrderRefund({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        orderId: body.orderId,
+        reason: body.reason,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/mall/orders/receipt/confirm") {
+      const body = await readJsonBody(req);
+      const result = await confirmMallOrderReceipt({
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        orderId: body.orderId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/auth/profile") {
+      const body = await readJsonBody(req);
+      const result = await updateSessionProfile({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
       sendJson(res, result.statusCode, result.payload);
       return;
     }
@@ -503,13 +1706,48 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "GET" && requestUrl.pathname === "/api/orders/detail") {
-      const result = await getOrder(requestUrl.searchParams.get("orderNo"));
+      const result = await getOrder(requestUrl.searchParams.get("orderNo"), {
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        userId: requestUrl.searchParams.get("userId"),
+      });
       sendJson(res, result.statusCode, result.payload);
       return;
     }
 
     if (req.method === "GET" && requestUrl.pathname === "/api/debug/state") {
       const result = await getDebugState();
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/kb/search") {
+      const result = await queryKB({
+        query: requestUrl.searchParams.get("q") || "",
+        limit: parseInt(requestUrl.searchParams.get("limit") || "8", 10),
+        topic: requestUrl.searchParams.get("topic") || undefined,
+        dateFrom: requestUrl.searchParams.get("dateFrom") || undefined,
+        dateTo: requestUrl.searchParams.get("dateTo") || undefined,
+      });
+      sendJson(res, 200, { ok: true, data: result });
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/kb/search") {
+      const body = await readJsonBody(req);
+      const result = await queryKB({
+        query: body.query || "",
+        limit: body.limit || 8,
+        topic: body.topic,
+        dateFrom: body.dateFrom,
+        dateTo: body.dateTo,
+      });
+      sendJson(res, 200, { ok: true, data: result });
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/ai/ask") {
+      const body = await readJsonBody(req);
+      const result = await askAIWithKB(body);
       sendJson(res, result.statusCode, result.payload);
       return;
     }
@@ -528,8 +1766,807 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "GET" && requestUrl.pathname === "/api/admin/promotion/data") {
-      sendJson(res, 200, promotionDataPayload);
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/groups") {
+      const result = await getAdminManageableGroups({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/mall/categories") {
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await listAdminMallCategories({
+        storeId: readMallStoreId(requestUrl),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/mall/categories") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await createAdminMallCategory({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/mall/categories") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await updateAdminMallCategory({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/mall/products") {
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await listAdminMallProducts({
+        storeId: readMallStoreId(requestUrl),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/mall/products") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await createAdminMallProduct({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/mall/products") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await updateAdminMallProduct({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/mall/products/detail-images") {
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await listAdminMallProductDetailImages({
+        storeId: readMallStoreId(requestUrl),
+        productId: requestUrl.searchParams.get("productId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/mall/products/detail-images") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await updateAdminMallProductDetailImages({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/mall/orders") {
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await listAdminMallOrders({
+        storeId: readMallStoreId(requestUrl),
+        limit: requestUrl.searchParams.get("limit"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/mall/member-zone-config") {
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminMallMemberZoneConfig({
+        storeId: readMallStoreId(requestUrl),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/mall/member-zone-config") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await updateAdminMallMemberZoneConfig({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/mall/coupon-analytics") {
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminMallCouponAnalytics({
+        storeId: readMallStoreId(requestUrl),
+        days: requestUrl.searchParams.get("days"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PATCH" && requestUrl.pathname === "/api/admin/mall/orders/status") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await updateAdminMallOrderStatus({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/mall/orders/refund/review") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await reviewAdminMallOrderRefund({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/mall/orders/ship") {
+      const body = await readJsonBody(req);
+      if (!(await ensureMallAdminRequestAccess(req, res, requestUrl, body))) {
+        return;
+      }
+      const result = await shipAdminMallOrder({
+        ...body,
+        storeId: readMallStoreId(requestUrl, body),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/income") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminIncome({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        startDate: requestUrl.searchParams.get("startDate"),
+        endDate: requestUrl.searchParams.get("endDate"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/promotion") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminPromotion({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        startDate: requestUrl.searchParams.get("startDate"),
+        endDate: requestUrl.searchParams.get("endDate"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/promotion/channels") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminPromotionChannels({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/promotion/channels") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await createAdminPromotionChannel({
+        groupId: body.groupId,
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        name: body.name,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/renewal") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminRenewal({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        startDate: requestUrl.searchParams.get("startDate"),
+        endDate: requestUrl.searchParams.get("endDate"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/renewal/coupons") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminRenewalCoupons({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/coupons") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminCoupons({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        couponType: requestUrl.searchParams.get("couponType"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/coupons") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await createAdminCoupon({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/coupons") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminCoupon({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PATCH" && requestUrl.pathname === "/api/admin/coupons/status") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminCouponStatus({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/renewal/notices") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminRenewalNotices({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/renewal/notices") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await createAdminRenewalNotice({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/renewal/settings") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminRenewalSettings({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/renewal/settings") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminRenewalSettings({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/renewal/guidance") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminRenewalGuidance({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/paywall/highlights") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminPaywallHighlights({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/paywall/highlights") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminPaywallHighlights({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/channel-live") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminChannelLiveSummary({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/channel-live/export") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await exportAdminChannelLiveMembers({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        onlyValidMembers: requestUrl.searchParams.get("onlyValidMembers"),
+      });
+      if (result.contentType) {
+        sendText(res, result.statusCode, result.payload, result.contentType, {
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(result.fileName || "video-live-member-list.csv")}`,
+        });
+      } else {
+        sendJson(res, result.statusCode, result.payload);
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/members/export") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await exportAdminMembers({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        status: requestUrl.searchParams.get("status"),
+        sourceType: requestUrl.searchParams.get("sourceType"),
+        search: requestUrl.searchParams.get("search"),
+        startDate: requestUrl.searchParams.get("startDate"),
+        endDate: requestUrl.searchParams.get("endDate"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+        scope: requestUrl.searchParams.get("scope"),
+      });
+      if (result.contentType) {
+        sendText(res, result.statusCode, result.payload, result.contentType, {
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(result.fileName || "member-report.csv")}`,
+        });
+      } else {
+        sendJson(res, result.statusCode, result.payload);
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/members") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminMembers({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        status: requestUrl.searchParams.get("status"),
+        sourceType: requestUrl.searchParams.get("sourceType"),
+        search: requestUrl.searchParams.get("search"),
+        startDate: requestUrl.searchParams.get("startDate"),
+        endDate: requestUrl.searchParams.get("endDate"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/members") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminMemberReview({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PATCH" && requestUrl.pathname === "/api/admin/members/status") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminMemberStatus({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/content/export") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await exportAdminContent({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        status: requestUrl.searchParams.get("status"),
+        type: requestUrl.searchParams.get("type"),
+        reviewStatus: requestUrl.searchParams.get("reviewStatus"),
+        reportStatus: requestUrl.searchParams.get("reportStatus"),
+        columnId: requestUrl.searchParams.get("columnId"),
+        search: requestUrl.searchParams.get("search"),
+        startDate: requestUrl.searchParams.get("startDate"),
+        endDate: requestUrl.searchParams.get("endDate"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+        scope: requestUrl.searchParams.get("scope"),
+      });
+      if (result.contentType) {
+        sendText(res, result.statusCode, result.payload, result.contentType, {
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(result.fileName || "content-report.csv")}`,
+        });
+      } else {
+        sendJson(res, result.statusCode, result.payload);
+      }
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/content") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminContent({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        status: requestUrl.searchParams.get("status"),
+        type: requestUrl.searchParams.get("type"),
+        reviewStatus: requestUrl.searchParams.get("reviewStatus"),
+        reportStatus: requestUrl.searchParams.get("reportStatus"),
+        columnId: requestUrl.searchParams.get("columnId"),
+        search: requestUrl.searchParams.get("search"),
+        startDate: requestUrl.searchParams.get("startDate"),
+        endDate: requestUrl.searchParams.get("endDate"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/scoreboard") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminScoreboard({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        memberStatus: requestUrl.searchParams.get("memberStatus"),
+        search: requestUrl.searchParams.get("search"),
+        rangeDays: requestUrl.searchParams.get("rangeDays"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/scoreboard") {
+      const body = await readJsonBody(req);
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl, body.groupId))) {
+        return;
+      }
+      const result = await updateAdminScoreboard({
+        ...body,
+        sessionToken: req.headers["x-session-token"],
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/member-verification") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminMemberVerification({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        verifyType: requestUrl.searchParams.get("verifyType"),
+        keyword: requestUrl.searchParams.get("keyword"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/member-verification/check") {
+      const result = await getMemberVerificationCheck({
+        groupId: requestUrl.searchParams.get("groupId"),
+        verifyType: requestUrl.searchParams.get("verifyType"),
+        keyword: requestUrl.searchParams.get("keyword"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/content") {
+      const body = await readJsonBody(req);
+      const result = await updateAdminContent({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/courses") {
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await listAdminCourses({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        adminUserId: adminAccess.userId,
+        status: requestUrl.searchParams.get("status"),
+        search: requestUrl.searchParams.get("search"),
+        page: requestUrl.searchParams.get("page"),
+        pageSize: requestUrl.searchParams.get("pageSize"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/courses/detail") {
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await getAdminCourseDetail({
+        courseId: requestUrl.searchParams.get("courseId"),
+        id: requestUrl.searchParams.get("id"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/courses") {
+      const body = await readJsonBody(req);
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await saveAdminCourse({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/courses") {
+      const body = await readJsonBody(req);
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await saveAdminCourse({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PATCH" && requestUrl.pathname === "/api/admin/courses/status") {
+      const body = await readJsonBody(req);
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await updateAdminCourseStatus({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/admin/course-lessons") {
+      const body = await readJsonBody(req);
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await saveAdminCourseLesson({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/course-lessons") {
+      const body = await readJsonBody(req);
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await saveAdminCourseLesson({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PATCH" && requestUrl.pathname === "/api/admin/course-lessons/status") {
+      const body = await readJsonBody(req);
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await updateAdminCourseLessonStatus({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PATCH" && requestUrl.pathname === "/api/admin/course-lessons/reorder") {
+      const body = await readJsonBody(req);
+      const adminAccess = await ensureWebBossRequestAccess(req, res, requestUrl);
+      if (!adminAccess) {
+        return;
+      }
+      const result = await reorderAdminCourseLessons({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+        adminUserId: adminAccess.userId,
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/admin/permissions") {
+      if (!(await ensureAdminRequestAccess(req, res, requestUrl))) {
+        return;
+      }
+      const result = await getAdminPermissions({
+        groupId: requestUrl.searchParams.get("groupId"),
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "PUT" && requestUrl.pathname === "/api/admin/permissions") {
+      const body = await readJsonBody(req);
+      const result = await updateAdminPermissions({
+        ...body,
+        sessionToken: req.headers["x-session-token"] || body.sessionToken,
+      });
+      sendJson(res, result.statusCode, result.payload);
       return;
     }
 
@@ -540,28 +2577,54 @@ const server = http.createServer(async (req, res) => {
         endpoints: [
           "/health",
           "/schema",
-          "/api/admin/promotion/data",
+          "/api/admin/income",
+          "/api/admin/promotion",
           "/api/auth/login",
+          "/api/auth/web-mobile-login",
           "/api/auth/session?sessionToken=<token>",
           "/api/auth/logout",
           "/api/planets/joined?sessionToken=<token>",
           "/api/planets/discover?sessionToken=<token>&limit=12",
           "/api/planets/home?groupId=<groupId>&sessionToken=<token>",
+          "/api/planets/members?groupId=<groupId>&sessionToken=<token>",
           "/api/planets/posts?groupId=<groupId>&tab=latest&limit=20",
+          "/api/checkin/challenges?groupId=<groupId>&status=ongoing&sessionToken=<token>",
+          "/api/checkin/challenges/detail?challengeId=<challengeId>&sessionToken=<token>",
+          "/api/checkin/rankings?challengeId=<challengeId>&sessionToken=<token>",
+          "/api/checkin/records?challengeId=<challengeId>&year=2026&month=4&day=3&sessionToken=<token>",
+          "/api/checkin/challenges/join",
+          "/api/checkin/posts",
+          "/api/planets/columns?groupId=<groupId>&sessionToken=<token>",
+          "/api/planets/columns",
+          "/api/planets/columns/detail?columnId=<columnId>&groupId=<groupId>&sessionToken=<token>",
           "/api/planets/pinned-posts?groupId=<groupId>",
           "/api/planets/posts",
+          "/api/planets/posts/assign-column",
+          "/api/planets/subscription",
+          "/api/planets/posts/delete",
           "/api/planets/my-posts?sessionToken=<token>",
+          "/api/articles?groupId=<groupId>&status=PUBLISHED&page=1&pageSize=20",
+          "/api/articles/detail?articleId=<articleId>",
+          "/api/articles",
+          "/api/articles/status",
           "/api/posts/detail?postId=<postId>",
           "/api/posts/comments?postId=<postId>",
           "/api/posts/comments",
           "/api/posts/like",
+          "/api/posts/report",
           "/api/comments/like",
           "/api/planets/preview?groupId=grp_datawhale_001&userId=usr_buyer_001&couponCode=NEW1000&channelCode=CH_WECHAT_MENU_001",
+          "/api/planets/profile",
           "/api/orders/join",
+          "/api/orders/renewal",
+          "/api/payments/wechat/notify",
+          "/pay/notify",
           "/api/payments/mock-callback",
           "/api/orders/detail?orderNo=<orderNo>",
           "/api/memberships/status?groupId=grp_datawhale_001&userId=usr_buyer_001",
           "/api/debug/state",
+          "/api/ai/ask",
+          "/api/kb/search?q=<query>&limit=8&topic=金融货币",
         ],
       });
       return;
@@ -574,19 +2637,73 @@ const server = http.createServer(async (req, res) => {
     });
   } catch (error) {
     console.error("[request] unhandled error", error);
-    sendJson(res, 500, {
+    const mappedError = mapErrorToResponse(error);
+    sendJson(res, mappedError.statusCode, {
       ok: false,
-      message: error.message || "Internal Server Error",
+      message: mappedError.message,
     });
   }
 });
 
+function listenServer() {
+  return new Promise((resolve, reject) => {
+    const handleError = (error) => {
+      server.off("listening", handleListening);
+      if (error && error.code === "EADDRINUSE") {
+        reject(new Error(`端口 ${PORT} 已被占用，请先停止已有后端实例，或修改 PORT 后重试`));
+        return;
+      }
+      reject(error);
+    };
+
+    const handleListening = () => {
+      server.off("error", handleError);
+      console.log(`xueyin-backend listening on http://${HOST}:${PORT}`);
+      resolve();
+    };
+
+    server.once("error", handleError);
+    server.once("listening", handleListening);
+    server.listen(PORT, HOST);
+  });
+}
+
+function logWechatPayReadiness() {
+  const diagnostics = inspectWechatPayReadiness();
+  const modeSuffix = diagnostics.mode === "partner" ? "partner" : "direct";
+  const identityText =
+    diagnostics.mode === "partner"
+      ? `spAppId=${diagnostics.spAppId || "-"} spMchId=${diagnostics.spMchId || "-"} subAppId=${
+          diagnostics.subAppId || "-"
+        } subMchId=${diagnostics.subMchId || "-"}`
+      : `appId=${diagnostics.appId || "-"} mchId=${diagnostics.mchId || "-"}`;
+
+  if (diagnostics.ready) {
+    const privateKeySuffix = diagnostics.privateKeyMode === "inline" ? "inline" : diagnostics.privateKeyPath || "unknown";
+    console.log(
+      `[wechat-pay] ready mode=${modeSuffix} ${identityText} notifyUrl=${diagnostics.notifyUrl} privateKey=${privateKeySuffix}`
+    );
+    return;
+  }
+
+  console.warn(
+    `[wechat-pay] not ready mode=${modeSuffix} ${identityText} notifyUrl=${diagnostics.notifyUrl || "-"} message=${
+      diagnostics.message
+    }`
+  );
+}
+
 async function start() {
   ensureUploadDir();
-  startAccessTokenRefreshScheduler();
-  server.listen(PORT, HOST, () => {
-    console.log(`xueyin-backend listening on http://${HOST}:${PORT}`);
-  });
+  if (shouldStartBackgroundJobs()) {
+    startAccessTokenRefreshScheduler();
+    startMallOrderAutoCloseScheduler();
+    startMallOrderAutoReceiveScheduler();
+  } else {
+    console.log("[scheduler] background jobs disabled by XUEYIN_BACKGROUND_JOBS=0");
+  }
+  logWechatPayReadiness();
+  await listenServer();
 }
 
 start().catch(async (error) => {

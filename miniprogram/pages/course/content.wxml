@@ -1,0 +1,98 @@
+<navigation-bar
+  title="学习内容"
+  back="{{true}}"
+  color="#22160d"
+  background="#fff7f1"
+></navigation-bar>
+
+<scroll-view class="course-content-page" scroll-y="{{true}}">
+  <view class="course-content-shell">
+    <block wx:if="{{hasLesson}}">
+      <view class="course-content-head">
+        <text class="course-content-badge">{{lessonTypeLabel}}</text>
+        <text class="course-content-course">{{courseTitle}}</text>
+        <text class="course-content-title">{{lessonTitle}}</text>
+        <text class="course-content-summary">{{lessonSummary}}</text>
+
+        <view class="course-content-meta">
+          <text>{{lessonIndexText}}</text>
+          <text>{{lessonDuration}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{isVideo}}" class="course-video-card">
+        <video
+          id="course-player"
+          class="course-video-player"
+          src="{{videoUrl}}"
+          poster="{{posterImage}}"
+          initial-time="{{resumePositionSec}}"
+          controls="{{true}}"
+          show-center-play-btn="{{true}}"
+          enable-progress-gesture="{{true}}"
+          object-fit="cover"
+          binderror="onVideoError"
+          bindtimeupdate="onVideoTimeUpdate"
+          bindpause="onVideoPause"
+          bindended="onVideoEnded"
+        ></video>
+
+        <view class="course-video-meta">
+          <text class="course-video-tip">这一节先看完，再点底部下一节继续。</text>
+          <text wx:if="{{playError}}" class="course-video-error">视频加载失败，可稍后重试或切换到下一节。</text>
+        </view>
+      </view>
+
+      <view wx:if="{{isArticle}}" class="course-article-card">
+        <image wx:if="{{articleCoverImage}}" class="course-article-cover" src="{{articleCoverImage}}" mode="widthFix"></image>
+
+        <view class="course-article-body">
+          <text class="course-article-paragraph" wx:for="{{articleParagraphs}}" wx:key="index">{{item}}</text>
+          <image class="course-article-image" wx:for="{{articleImages}}" wx:key="*this" src="{{item}}" mode="widthFix"></image>
+        </view>
+      </view>
+
+      <view wx:if="{{!canAccess}}" class="course-paywall-card">
+        <text class="course-paywall-title">{{paywallTitle || '当前课节暂未开放完整内容'}}</text>
+        <text class="course-paywall-subtitle">{{lockedReason || '先保留课程结构，后续再接成员或付费解锁。'}}</text>
+        <view class="course-paywall-actions">
+          <button class="course-nav-button course-nav-button-primary" bindtap="goCourseDetail">返回课程详情</button>
+          <button class="course-nav-button" bindtap="goList">回到课程列表</button>
+        </view>
+        <text wx:if="{{paywallButtonText}}" class="course-paywall-note">{{paywallButtonText}}</text>
+      </view>
+
+      <view class="course-nav-panel">
+        <view class="course-nav-copy">
+          <text class="course-nav-title">章节切换</text>
+          <text class="course-nav-subtitle">用最短路径把当前课程学习闭环跑通。</text>
+        </view>
+
+        <view class="course-nav-actions">
+          <button class="course-nav-button {{previousLessonId ? '' : 'is-disabled'}}" disabled="{{!previousLessonId}}" bindtap="onPrevLesson">上一节</button>
+          <button class="course-nav-button course-nav-button-primary {{nextLessonId ? '' : 'is-disabled'}}" disabled="{{!nextLessonId}}" bindtap="onNextLesson">下一节</button>
+        </view>
+
+        <view class="course-nav-targets">
+          <text class="course-nav-target">{{previousLessonTitle}}</text>
+          <text class="course-nav-target">{{nextLessonTitle}}</text>
+        </view>
+
+        <view class="course-nav-links">
+          <text class="course-nav-link" bindtap="goCourseDetail">返回课程详情</text>
+          <text class="course-nav-link" bindtap="goList">回到课程列表</text>
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="course-content-empty">
+      <text class="course-content-empty-title">内容加载失败</text>
+      <text class="course-content-empty-subtitle">{{errorText}}</text>
+      <view class="course-content-empty-actions">
+        <button class="course-content-empty-button" bindtap="goList">返回课程列表</button>
+      </view>
+    </view>
+
+    <view class="safe-bottom"></view>
+  </view>
+</scroll-view>

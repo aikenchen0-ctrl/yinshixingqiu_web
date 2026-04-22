@@ -1,5 +1,5 @@
 <navigation-bar
-  title="知识星球"
+  title="饮视星球"
   back="{{true}}"
   color="#111111"
   background="#ffffff"
@@ -22,24 +22,32 @@
         <view class="share-card-brand">
           <view class="share-card-brand-icon"></view>
           <view class="share-card-brand-copy">
-            <text class="share-card-brand-name">知识星球</text>
+            <text class="share-card-brand-name">饮视星球</text>
             <text class="share-card-brand-desc">连接一千位铁杆粉丝</text>
           </view>
         </view>
 
         <view class="share-card-qrcode">
-          <view class="share-card-qrcode-ring"></view>
-          <view class="share-card-qrcode-center"></view>
-          <view class="share-card-qrcode-corner share-card-qrcode-corner-left"></view>
-          <view class="share-card-qrcode-corner share-card-qrcode-corner-top"></view>
-          <view class="share-card-qrcode-corner share-card-qrcode-corner-right"></view>
-          <view class="share-card-qrcode-dot share-card-qrcode-dot-a"></view>
-          <view class="share-card-qrcode-dot share-card-qrcode-dot-b"></view>
-          <view class="share-card-qrcode-dot share-card-qrcode-dot-c"></view>
-          <view class="share-card-qrcode-dot share-card-qrcode-dot-d"></view>
-          <view class="share-card-qrcode-dot share-card-qrcode-dot-e"></view>
-          <view class="share-card-qrcode-dot share-card-qrcode-dot-f"></view>
-          <view class="share-card-qrcode-mini"></view>
+          <image
+            wx:if="{{miniCodeUrl}}"
+            class="share-card-qrcode-image"
+            src="{{miniCodeDisplayUrl || miniCodeUrl}}"
+            mode="aspectFit"
+          ></image>
+          <block wx:else>
+            <view class="share-card-qrcode-ring"></view>
+            <view class="share-card-qrcode-center"></view>
+            <view class="share-card-qrcode-corner share-card-qrcode-corner-left"></view>
+            <view class="share-card-qrcode-corner share-card-qrcode-corner-top"></view>
+            <view class="share-card-qrcode-corner share-card-qrcode-corner-right"></view>
+            <view class="share-card-qrcode-dot share-card-qrcode-dot-a"></view>
+            <view class="share-card-qrcode-dot share-card-qrcode-dot-b"></view>
+            <view class="share-card-qrcode-dot share-card-qrcode-dot-c"></view>
+            <view class="share-card-qrcode-dot share-card-qrcode-dot-d"></view>
+            <view class="share-card-qrcode-dot share-card-qrcode-dot-e"></view>
+            <view class="share-card-qrcode-dot share-card-qrcode-dot-f"></view>
+            <view class="share-card-qrcode-mini"></view>
+          </block>
         </view>
       </view>
     </view>

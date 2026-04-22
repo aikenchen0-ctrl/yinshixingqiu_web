@@ -1,0 +1,61 @@
+<navigation-bar title="创建打卡挑战" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
+
+<scroll-view class="checkin-create-page" scroll-y="{{true}}">
+  <view class="checkin-create-card">
+    <view class="checkin-create-section">
+      <text class="checkin-create-label">挑战标题</text>
+      <input
+        class="checkin-create-input"
+        maxlength="30"
+        placeholder="例如：30天内容输出挑战"
+        value="{{title}}"
+        bindinput="onTitleInput"
+      />
+      <text class="checkin-create-counter">{{title.length}}/30</text>
+    </view>
+
+    <view class="checkin-create-section">
+      <text class="checkin-create-label">挑战说明</text>
+      <textarea
+        class="checkin-create-textarea"
+        maxlength="300"
+        placeholder="说明挑战目标、适合人群和完成方式"
+        value="{{description}}"
+        bindinput="onDescriptionInput"
+        auto-height="{{true}}"
+      ></textarea>
+      <text class="checkin-create-counter">{{description.length}}/300</text>
+    </view>
+
+    <view class="checkin-create-section">
+      <text class="checkin-create-label">打卡天数</text>
+      <input
+        class="checkin-create-input"
+        type="number"
+        placeholder="1-365"
+        value="{{dayCount}}"
+        bindinput="onDayCountInput"
+      />
+    </view>
+
+    <view class="checkin-create-section">
+      <text class="checkin-create-label">主题配色</text>
+      <view class="checkin-create-color-row">
+        <view
+          wx:for="{{colorOptions}}"
+          wx:key="key"
+          class="checkin-create-color-chip {{heroColor === item.key ? 'checkin-create-color-chip-active' : ''}}"
+          data-key="{{item.key}}"
+          bindtap="onColorTap"
+        >
+          <view class="checkin-create-color-dot checkin-create-color-dot-{{item.key}}"></view>
+          <text>{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="checkin-create-footer">
+    <button class="checkin-create-submit" loading="{{submitting}}" bindtap="onSubmit">创建挑战</button>
+  </view>
+</scroll-view>

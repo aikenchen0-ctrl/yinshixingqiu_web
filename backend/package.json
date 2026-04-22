@@ -9,10 +9,17 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed": "node scripts/seedDemoData.js",
+    "db:seed-mall": "node scripts/seedMallDemoData.js",
+    "db:backfill-owner-members": "node scripts/backfillOwnerMemberships.js",
     "db:delete-group": "node scripts/deleteGroup.js",
     "start": "node src/server.js",
+    "start:no-db": "node scripts/startWithoutDb.js",
     "start:prod": "node src/server.js",
-    "verify:join-flow": "node scripts/verifyJoinFlow.js"
+    "verify:join-flow": "node scripts/verifyJoinFlow.js",
+    "deploy:boss:prepare": "bash deploy/prepare-openwebui-hermes-env.sh",
+    "deploy:boss:check": "bash deploy/check-openwebui-hermes.sh",
+    "deploy:boss:prepare:windows": "powershell -ExecutionPolicy Bypass -File deploy/prepare-openwebui-hermes-env.ps1",
+    "deploy:boss:start:webui:windows": "powershell -ExecutionPolicy Bypass -File deploy/start-openwebui-hermes-windows.ps1"
   },
   "dependencies": {
     "@prisma/client": "^6.18.0",

@@ -27,7 +27,18 @@
           data-creator="{{item.creator}}"
           bindtap="onPlanetTap"
         >
-          <image class="interest-cover" src="{{item.image}}" mode="aspectFill"></image>
+          <image
+            wx:if="{{item.image}}"
+            class="interest-cover"
+            src="{{item.image}}"
+            mode="aspectFill"
+            data-id="{{item.id}}"
+            binderror="onInterestImageError"
+          ></image>
+          <view wx:else class="interest-cover interest-cover-fallback">
+            <text class="interest-cover-fallback-text">{{item.imageFallbackText}}</text>
+            <text class="interest-cover-fallback-tag">星球</text>
+          </view>
           <view class="interest-copy">
             <text class="interest-name">{{item.name}}</text>
             <text class="interest-meta">{{item.meta}}</text>
@@ -59,6 +70,7 @@
           wx:key="id"
           data-post-id="{{item.postId}}"
           data-planet-id="{{item.planetId}}"
+          data-planet-name="{{item.meta}}"
           bindtap="onTopicTap"
         >
           <view class="topic-main {{item.cover ? 'topic-main-with-cover' : ''}}">

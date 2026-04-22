@@ -70,6 +70,36 @@ enum PostStatus {
   DELETED
 }
 
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+  DELETED
+}
+
+enum CourseAccessType {
+  FREE
+  MEMBER
+  PAID
+}
+
+enum CourseLessonType {
+  VIDEO
+  ARTICLE
+}
+
+enum CheckinChallengeStatus {
+  ONGOING
+  ENDED
+  CLOSED
+}
+
+enum CheckinParticipantStatus {
+  ACTIVE
+  COMPLETED
+  QUIT
+}
+
 enum CommentStatus {
   PUBLISHED
   HIDDEN
@@ -79,6 +109,7 @@ enum CommentStatus {
 enum OrderType {
   GROUP_JOIN
   GROUP_RENEWAL
+  ARTICLE_UNLOCK
   REWARD
   QUESTION
   IDENTITY_MEMBER_MONTHLY
@@ -91,6 +122,24 @@ enum OrderStatus {
   CLOSED
   REFUNDED
   FAILED
+}
+
+enum MallOrderStatus {
+  PENDING
+  PAID
+  CLOSED
+}
+
+enum MallCommissionStatus {
+  NONE
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum MallProductDetailImageType {
+  CAROUSEL
+  PROMOTION
 }
 
 enum PaymentStatus {
@@ -215,7 +264,15 @@ model User {
   postLikes    PostLike[]
   commentLikes CommentLike[]
   orders       Order[]
+  articleUnlocks ArticleUnlock[]
+  mallCartItems MallCartItem[]
+  mallOrders    MallOrder[]
+  mallShippingAddresses MallShippingAddress[]
+  mallProductReviews MallProductReview[]
   scoreLedgers MemberScoreLedger[]
+  checkinChallengeParticipants CheckinChallengeParticipant[]
+  notificationSubscriptions    GroupNotificationSubscription[]
+  courseProgresses CourseProgress[]
 
   @@map("users")
 }
@@ -265,6 +322,7 @@ model Group {
   coverUrl            String?       @map("cover_url")
   intro               String?
   description         String?
+  metadata            Json?
   joinType            GroupJoinType @default(PAID) @map("join_type")
   billingPeriod       BillingPeriod @default(YEAR) @map("billing_period")
   priceAmount         Decimal       @default(0) @map("price_amount") @db.Decimal(10, 2)
@@ -286,6 +344,7 @@ model Group {
   coupons           Coupon[]
   promotionChannels PromotionChannel[]
   notifications     GroupNotification[]
+  notificationSubscriptions GroupNotificationSubscription[]
   renewalSetting    RenewalSetting?
   renewalTemplates  RenewalNotificationTemplate[]
   scoreboardSetting ScoreboardSetting?
@@ -298,6 +357,14 @@ model Group {
   renewalStats      GroupRenewalDailyStat[]
   exportTasks       ExportTask[]
   identityContracts IdentityMemberContract[]
+  checkinChallenges CheckinChallenge[]
+  columns           Column[]
+  articleUnlocks    ArticleUnlock[]
+  courses           Course[]
+  mallCategories    MallCategory[]
+  mallProducts      MallProduct[]
+  mallProductDetailImages MallProductDetailImage[]
+  mallOrders        MallOrder[]
 
   @@index([ownerUserId])
   @@index([status])
@@ -313,8 +380,12 @@ model GroupPermissionPolicy {
   adminCanViewIncome          Boolean  @default(true) @map("admin_can_view_income")
   partnerCanViewMemberContact Boolean  @default(true) @map("partner_can_view_member_contact")
   adminCanViewMemberContact   Boolean  @default(true) @map("admin_can_view_member_contact")
+  partnerCanViewWeeklyReport  Boolean  @default(true) @map("partner_can_view_weekly_report")
+  adminCanViewWeeklyReport    Boolean  @default(true) @map("admin_can_view_weekly_report")
   allowStarCoinJoin           Boolean  @default(false) @map("allow_star_coin_join")
   allowStarCoinRenewal        Boolean  @default(false) @map("allow_star_coin_renewal")
+  allowVirtualPayJoin         Boolean  @default(false) @map("allow_virtual_pay_join")
+  allowVirtualPayRenewal      Boolean  @default(false) @map("allow_virtual_pay_renewal")
   allowJoin                   Boolean  @default(true) @map("allow_join")
   needExamine                 Boolean  @default(false) @map("need_examine")
   allowPreview                Boolean  @default(true) @map("allow_preview")
@@ -397,10 +468,127 @@ model Post {
   author   User      @relation(fields: [authorUserId], references: [id])
   comments Comment[]
   likes    PostLike[]
+  articleUnlocks ArticleUnlock[]
 
   @@index([groupId, type, status])
   @@index([publishedAt])
   @@map("posts")
+}
+
+model Course {
+  id          String           @id @default(cuid())
+  groupId     String?          @map("group_id")
+  title       String
+  subtitle    String?
+  summary     String?
+  category    String?
+  difficulty  String?
+  coverImage  String?          @map("cover_image")
+  tags        Json?
+  status      CourseStatus     @default(DRAFT)
+  accessType  CourseAccessType @default(FREE) @map("access_type")
+  priceAmount Decimal          @default(0) @map("price_amount") @db.Decimal(10, 2)
+  sortOrder   Int              @default(0) @map("sort_order")
+  publishedAt DateTime?        @map("published_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  group      Group?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  lessons    CourseLesson[]
+  progresses CourseProgress[]
+
+  @@index([groupId, status, sortOrder])
+  @@index([status, sortOrder])
+  @@map("courses")
+}
+
+model CourseLesson {
+  id           String           @id @default(cuid())
+  courseId     String           @map("course_id")
+  title        String
+  summary      String?
+  lessonType   CourseLessonType @default(ARTICLE) @map("lesson_type")
+  videoUrl     String?          @map("video_url")
+  durationText String?          @map("duration_text")
+  contentText  String?          @map("content_text") @db.Text
+  richContent  String?          @map("rich_content") @db.Text
+  coverImage   String?          @map("cover_image")
+  posterImage  String?          @map("poster_image")
+  images       Json?
+  isTrial      Boolean          @default(false) @map("is_trial")
+  sortOrder    Int              @default(0) @map("sort_order")
+  status       CourseStatus     @default(DRAFT)
+  publishedAt  DateTime?        @map("published_at")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progresses CourseProgress[]
+
+  @@index([courseId, status, sortOrder])
+  @@map("course_lessons")
+}
+
+model CourseProgress {
+  id              String    @id @default(cuid())
+  courseId        String    @map("course_id")
+  lessonId        String    @map("lesson_id")
+  userId          String    @map("user_id")
+  isCompleted     Boolean   @default(false) @map("is_completed")
+  lastPositionSec Int       @default(0) @map("last_position_sec")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  course Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, userId])
+  @@index([courseId, userId])
+  @@map("course_progresses")
+}
+
+model CheckinChallenge {
+  id             String                 @id @default(cuid())
+  groupId        String                 @map("group_id")
+  title          String
+  description    String
+  status         CheckinChallengeStatus @default(ONGOING)
+  dayCount       Int                    @default(21) @map("day_count")
+  validityText   String                 @default("长期有效") @map("validity_text")
+  heroColor      String                 @default("teal") @map("hero_color")
+  sortOrder      Int                    @default(0) @map("sort_order")
+  joinedCount    Int                    @default(0) @map("joined_count")
+  checkinCount   Int                    @default(0) @map("checkin_count")
+  completedCount Int                    @default(0) @map("completed_count")
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  group        Group                       @relation(fields: [groupId], references: [id])
+  participants CheckinChallengeParticipant[]
+
+  @@index([groupId, status, sortOrder])
+  @@map("checkin_challenges")
+}
+
+model CheckinChallengeParticipant {
+  id          String                   @id @default(cuid())
+  challengeId String                   @map("challenge_id")
+  userId      String                   @map("user_id")
+  status      CheckinParticipantStatus @default(ACTIVE)
+  joinedAt    DateTime                 @default(now()) @map("joined_at")
+  completedAt DateTime?                @map("completed_at")
+  createdAt   DateTime                 @default(now()) @map("created_at")
+  updatedAt   DateTime                 @updatedAt @map("updated_at")
+
+  challenge CheckinChallenge @relation(fields: [challengeId], references: [id])
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@unique([challengeId, userId])
+  @@index([challengeId, status])
+  @@index([userId, status])
+  @@map("checkin_challenge_participants")
 }
 
 model Comment {
@@ -410,6 +598,7 @@ model Comment {
   parentId    String?       @map("parent_id")
   status      CommentStatus @default(PUBLISHED)
   contentText String        @map("content_text")
+  attachments Json?
   likeCount   Int           @default(0) @map("like_count")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
@@ -476,10 +665,226 @@ model Order {
   coupon           Coupon?           @relation(fields: [couponId], references: [id])
   promotionChannel PromotionChannel? @relation(fields: [promotionChannelId], references: [id])
   paymentRecords   PaymentRecord[]
+  articleUnlock    ArticleUnlock?
   couponClaims     CouponClaim[]
 
   @@index([groupId, type, status])
   @@map("orders")
+}
+
+model ArticleUnlock {
+  id         String   @id @default(cuid())
+  articleId  String   @map("article_id")
+  groupId    String   @map("group_id")
+  userId     String   @map("user_id")
+  orderId    String   @unique @map("order_id")
+  unlockedAt DateTime @default(now()) @map("unlocked_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  article Post  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  group   Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, userId])
+  @@index([groupId, unlockedAt])
+  @@index([userId, unlockedAt])
+  @@map("article_unlocks")
+}
+
+model MallCategory {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  name      String
+  slug      String?
+  sortOrder Int      @default(0) @map("sort_order")
+  isEnabled Boolean  @default(true) @map("is_enabled")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  group    Group         @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  products MallProduct[]
+
+  @@unique([groupId, name])
+  @@unique([groupId, slug])
+  @@index([groupId, isEnabled, sortOrder])
+  @@map("mall_categories")
+}
+
+model MallProduct {
+  id             String   @id @default(cuid())
+  groupId        String   @map("group_id")
+  categoryId     String   @map("category_id")
+  title          String
+  subtitle       String?
+  coverImageUrl  String?  @map("cover_image_url")
+  price          Decimal  @db.Decimal(10, 2)
+  originalPrice  Decimal  @default(0) @map("original_price") @db.Decimal(10, 2)
+  stock          Int      @default(0)
+  isOnSale       Boolean  @default(true) @map("is_on_sale")
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  category   MallCategory     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  cartItems  MallCartItem[]
+  orderItems MallOrderItem[]
+  reviews    MallProductReview[]
+  detailImages MallProductDetailImage[]
+
+  @@index([groupId, isOnSale, sortOrder])
+  @@index([categoryId, isOnSale, sortOrder])
+  @@map("mall_products")
+}
+
+model MallProductDetailImage {
+  id          String   @id @default(cuid())
+  groupId     String   @map("group_id")
+  productId   String   @map("product_id")
+  mediaType   MallProductDetailImageType @default(PROMOTION) @map("media_type")
+  imageUrl    String   @map("image_url")
+  title       String?
+  description String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  isEnabled   Boolean  @default(true) @map("is_enabled")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  group   Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  product MallProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([groupId, productId, isEnabled, sortOrder])
+  @@index([productId, isEnabled, sortOrder])
+  @@map("mall_product_detail_images")
+}
+
+model MallProductReview {
+  id          String   @id @default(cuid())
+  productId   String   @map("product_id")
+  userId      String   @map("user_id")
+  rating      Int      @default(5)
+  content     String
+  isAnonymous Boolean  @default(false) @map("is_anonymous")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  product MallProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId, createdAt])
+  @@map("mall_product_reviews")
+}
+
+model MallShippingAddress {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  recipientName String   @map("recipient_name")
+  phone         String
+  province      String
+  city          String
+  district      String
+  detailAddress String   @map("detail_address")
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isDefault])
+  @@index([userId, updatedAt])
+  @@map("mall_shipping_addresses")
+}
+
+model MallCartItem {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product MallProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId, updatedAt])
+  @@map("mall_cart_items")
+}
+
+model MallOrder {
+  id                         String               @id @default(cuid())
+  orderNo                    String               @unique @map("order_no")
+  groupId                    String               @map("group_id")
+  userId                     String               @map("user_id")
+  status                     MallOrderStatus      @default(PENDING)
+  totalAmount                Decimal              @map("total_amount") @db.Decimal(10, 2)
+  payableAmount              Decimal              @map("payable_amount") @db.Decimal(10, 2)
+  remark                     String?
+  shareSharerUserId          String?              @map("share_sharer_user_id")
+  shareProductId             String?              @map("share_product_id")
+  shareCommissionRate        Decimal?             @map("share_commission_rate") @db.Decimal(5, 4)
+  shareCommissionBaseAmount  Decimal?             @map("share_commission_base_amount") @db.Decimal(10, 2)
+  shareCommissionAmount      Decimal?             @map("share_commission_amount") @db.Decimal(10, 2)
+  shareCommissionStatus      MallCommissionStatus @default(NONE) @map("share_commission_status")
+  shareCommissionSettledAt   DateTime?            @map("share_commission_settled_at")
+  shippingRecipientName      String               @default("") @map("shipping_recipient_name")
+  shippingRecipientPhone     String               @default("") @map("shipping_recipient_phone")
+  shippingProvince           String               @default("") @map("shipping_province")
+  shippingCity               String               @default("") @map("shipping_city")
+  shippingDistrict           String               @default("") @map("shipping_district")
+  shippingDetailAddress      String               @default("") @map("shipping_detail_address")
+  shippingStatus             String               @default("PENDING") @map("shipping_status")
+  shippingCompany            String               @default("") @map("shipping_company")
+  shippingTrackingNo         String               @default("") @map("shipping_tracking_no")
+  shippingRemark             String               @default("") @map("shipping_remark")
+  shippedAt                  DateTime?            @map("shipped_at")
+  refundStatus               String               @default("NONE") @map("refund_status")
+  refundReason               String?              @map("refund_reason")
+  refundReviewRemark         String?              @map("refund_review_remark")
+  refundRequestedAt          DateTime?            @map("refund_requested_at")
+  refundReviewedAt           DateTime?            @map("refund_reviewed_at")
+  refundReviewerUserId       String?              @map("refund_reviewer_user_id")
+  refundAmount               Decimal?             @map("refund_amount") @db.Decimal(10, 2)
+  refundOutRefundNo          String?              @map("refund_out_refund_no")
+  refundWechatRefundId       String?              @map("refund_wechat_refund_id")
+  refundWechatStatus         String?              @map("refund_wechat_status")
+  refundUserReceivedAccount  String?              @map("refund_user_received_account")
+  refundedAt                 DateTime?            @map("refunded_at")
+  createdAt                  DateTime             @default(now()) @map("created_at")
+  updatedAt                  DateTime             @updatedAt @map("updated_at")
+
+  group Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items MallOrderItem[]
+
+  @@index([groupId, createdAt])
+  @@index([groupId, refundStatus, createdAt])
+  @@index([userId, createdAt])
+  @@index([shareSharerUserId, shareCommissionStatus, createdAt])
+  @@map("mall_orders")
+}
+
+model MallOrderItem {
+  id             String   @id @default(cuid())
+  orderId        String   @map("order_id")
+  productId      String?  @map("product_id")
+  productTitle   String   @map("product_title")
+  productSubtitle String? @map("product_subtitle")
+  coverImageUrl  String?  @map("cover_image_url")
+  unitPrice      Decimal  @map("unit_price") @db.Decimal(10, 2)
+  quantity       Int
+  totalAmount    Decimal  @map("total_amount") @db.Decimal(10, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  order   MallOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product MallProduct? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("mall_order_items")
 }
 
 model PaymentRecord {
@@ -580,19 +985,46 @@ model GroupNotification {
   @@map("group_notifications")
 }
 
+model GroupNotificationSubscription {
+  id               String    @id @default(cuid())
+  groupId          String    @map("group_id")
+  userId           String    @map("user_id")
+  enabled          Boolean   @default(false)
+  lastSubscribedAt DateTime? @map("last_subscribed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId, enabled])
+  @@index([userId, enabled])
+  @@map("group_notification_subscriptions")
+}
+
 model RenewalSetting {
   id                        String    @id @default(cuid())
   groupId                   String    @unique @map("group_id")
+  enabled                   Boolean   @default(true)
+  limitWindow               Boolean   @default(false) @map("limit_window")
   amount                    Decimal   @db.Decimal(10, 2)
   originalAmount            Decimal   @map("original_amount") @db.Decimal(10, 2)
   discountedPercentage      Int       @default(100) @map("discounted_percentage")
+  expiringEnabled           Boolean   @default(true) @map("expiring_enabled")
   advanceAmount             Decimal   @map("advance_amount") @db.Decimal(10, 2)
   advanceDiscountPercentage Int       @default(100) @map("advance_discount_percentage")
+  advanceEnabled            Boolean   @default(true) @map("advance_enabled")
   graceAmount               Decimal   @map("grace_amount") @db.Decimal(10, 2)
   graceDiscountPercentage   Int       @default(100) @map("grace_discount_percentage")
+  graceEnabled              Boolean   @default(true) @map("grace_enabled")
+  audience                  String    @default("renewable_members")
+  allowCouponStack          Boolean   @default(true) @map("allow_coupon_stack")
+  minRenewCount             Int       @default(0) @map("min_renew_count")
   mode                      String    @default("period")
   duration                  String    @default("1Y")
   beginTime                 DateTime? @map("begin_time")
+  endTime                   DateTime? @map("end_time")
   guidance                  String?
   renewalUrl                String?   @map("renewal_url")
   createdAt                 DateTime  @default(now()) @map("created_at")
@@ -706,6 +1138,20 @@ model ExportTask {
 
   @@index([groupId, type, status])
   @@map("export_tasks")
+}
+
+model Column {
+  id        String   @id @default(cuid())
+  groupId   String   @map("group_id")
+  title     String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@index([groupId, sortOrder])
+  @@map("columns")
 }
 
 model HotBoardSnapshot {

@@ -13,46 +13,38 @@ $RECYCLE.BIN/
 # Node.js
 node_modules/
 
-# IDE
-.idea/
-.vscode/
+# Build and cache artifacts
+.mcp-artifacts/
+temp/
+前端页面-管理端/
+接口返回.json
 
 # Logs
 *.log
-*.log.*
 
-# Environment
+# Environment files
 .env
-.env.*
+*.env.local
+backend/deploy/.env.openwebui-hermes
+backend/deploy/.env.openwebui-hermes-docker
+backend/deploy/.docker-public/
+backend/deploy/.openwebui-data/
+backend/deploy/.openwebui-venv/
+backend/deploy/.openwebui.err.log
+backend/deploy/.openwebui.log
+backend/deploy/.openwebui.pid
 
-# Temporary files
-temp/
-tmp/
-*.tmp
+# WeChat DevTools private config
+project.private.config.json
 
-# Uploads
-uploads/
+# Backend runtime artifacts
+backend/.env
+backend/cert/
+backend/certs/
+backend/wxpay/
+backend/uploads/
+backend/server.log
+backend/server.err.log
 
-# Build outputs
-dist/
-build/
-
-# IDE logs
-.codex-*/
-.codex-*.log
-
-# MCP
-.mcp-*/
-
-# Playwright
-.playwright-*/
-
-# Backend temp
-backend/temp/
-backend/deploy/.docker-*/
-backend/deploy/.openwebui-*/
-
-# Untracked directories
-hermes-webui/
-mall/
-official_website/
+# Test output
+minitest/minitest-*.json

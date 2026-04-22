@@ -109,7 +109,7 @@
         <text class="planet-publish-section-title">标签</text>
         <input
           class="planet-publish-inline-input"
-          placeholder="例如 AI副业, 运营, 复盘"
+          placeholder="例如 AI学习, 内容策划, 复盘"
           placeholder-class="planet-publish-input-placeholder"
           value="{{tagInput}}"
           bindinput="onTagInput"

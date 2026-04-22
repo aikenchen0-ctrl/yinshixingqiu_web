@@ -1,0 +1,129 @@
+<view class="page planet-mine-page mall-address-page">
+  <view class="planet-mine-shell mall-address-shell" style="padding-top: calc({{statusBarHeight}}px + 16rpx);">
+    <view class="planet-mine-profile-card">
+      <view class="mall-address-card-nav">
+        <view class="mall-address-card-back" bindtap="onBack">返回</view>
+      </view>
+
+      <view class="planet-mine-hero">
+        <view class="planet-mine-ring ring-outer"></view>
+        <view class="planet-mine-ring ring-middle"></view>
+        <view class="planet-mine-ring ring-inner"></view>
+        <view class="planet-mine-avatar planet-mine-avatar-fallback">
+          <text class="planet-mine-avatar-fallback-text">地址</text>
+        </view>
+        <view class="planet-mine-avatar-edit-chip">{{hasAddress ? '已配置' : '待补充'}}</view>
+      </view>
+
+      <text class="planet-mine-name">收货地址</text>
+      <text class="planet-mine-subtitle">地址统一放在“我的 - 商城服务”里管理，商城下单会默认使用这里的默认地址。</text>
+
+      <view class="planet-mine-login-panel planet-mine-login-panel-compact">
+        <text class="planet-mine-login-title">{{hasAddress ? '管理你的地址列表' : '先新增一条默认地址'}}</text>
+        <text class="planet-mine-login-desc">
+          {{hasAddress ? '可以新增、编辑、删除，也可以切换默认地址。订单会优先使用默认地址。' : '补好默认地址后，商城下单页只负责确认，不再内嵌编辑地址。'}}
+        </text>
+      </view>
+    </view>
+
+    <view class="planet-mine-card-list">
+      <view class="planet-mine-section">
+        <view class="planet-mine-section-head">
+          <text class="planet-mine-section-title">地址列表</text>
+          <button wx:if="{{!addressFormVisible}}" class="mall-address-head-button" bindtap="onAddAddress">新增地址</button>
+        </view>
+
+        <block wx:if="{{loading}}">
+          <view class="planet-mine-tip-card mall-address-status-card">
+            <text class="planet-mine-tip-title">地址读取中</text>
+            <text class="planet-mine-tip-desc">正在同步你当前账号下的收货地址。</text>
+          </view>
+        </block>
+
+        <block wx:elif="{{shippingAddresses.length}}">
+          <view class="mall-address-list">
+            <view
+              wx:for="{{shippingAddresses}}"
+              wx:key="id"
+              class="mall-address-item"
+              data-id="{{item.id}}"
+            >
+              <view class="mall-address-item-head">
+                <view class="mall-address-item-user">
+                  <text class="mall-address-item-name">{{item.recipientName}}</text>
+                  <text class="mall-address-item-phone">{{item.phone}}</text>
+                </view>
+                <view class="mall-address-item-tags">
+                  <text wx:if="{{item.isDefault}}" class="mall-address-tag">默认</text>
+                </view>
+              </view>
+
+              <text class="mall-address-item-full">{{item.fullAddress}}</text>
+
+              <view class="mall-address-item-actions">
+                <text class="mall-address-action-link" data-id="{{item.id}}" catchtap="onEditAddress">编辑</text>
+                <text wx:if="{{!item.isDefault}}" class="mall-address-action-link" data-id="{{item.id}}" catchtap="onSetDefaultAddress">设为默认</text>
+                <text class="mall-address-action-link mall-address-action-link-danger" data-id="{{item.id}}" catchtap="onDeleteAddress">删除</text>
+              </view>
+            </view>
+          </view>
+        </block>
+
+        <block wx:else>
+          <view class="planet-mine-tip-card mall-address-status-card">
+            <text class="planet-mine-tip-title">还没有收货地址</text>
+            <text class="planet-mine-tip-desc">先新增一条默认地址，商城下单时就会自动带出。</text>
+          </view>
+        </block>
+      </view>
+
+      <view wx:if="{{addressFormVisible}}" class="planet-mine-section">
+        <view class="planet-mine-section-head">
+          <text class="planet-mine-section-title">{{editingAddressId ? '编辑地址' : '新增地址'}}</text>
+        </view>
+
+        <view class="mall-address-editor mall-address-editor-panel">
+          <text class="mall-address-editor-caption">地址保存后会出现在列表里。第一条地址会自动设为默认地址。</text>
+
+          <view class="mall-inline-address-form">
+            <view class="mall-inline-address-field">
+              <text class="mall-inline-address-label">收货人</text>
+              <input class="mall-inline-address-input" value="{{recipientName}}" placeholder="请输入收货人姓名" bindinput="onRecipientNameInput" />
+            </view>
+
+            <view class="mall-inline-address-field">
+              <text class="mall-inline-address-label">手机号</text>
+              <input class="mall-inline-address-input" value="{{phone}}" type="number" maxlength="11" placeholder="请输入手机号" bindinput="onPhoneInput" />
+            </view>
+
+            <view class="mall-inline-address-field">
+              <text class="mall-inline-address-label">省市区</text>
+              <picker mode="region" value="{{region}}" bindchange="onRegionChange">
+                <view class="mall-inline-address-picker {{hasRegion ? 'mall-inline-address-picker-filled' : ''}}">
+                  <text class="mall-inline-address-picker-text">{{hasRegion ? regionText : '请选择省 / 市 / 区'}}</text>
+                  <text class="mall-inline-address-picker-arrow">›</text>
+                </view>
+              </picker>
+            </view>
+
+            <view class="mall-inline-address-field">
+              <text class="mall-inline-address-label">详细地址</text>
+              <textarea
+                class="mall-inline-address-textarea"
+                value="{{detailAddress}}"
+                maxlength="120"
+                placeholder="请填写街道、门牌号、楼栋单元等详细地址"
+                bindinput="onDetailAddressInput"
+              ></textarea>
+            </view>
+          </view>
+
+          <view class="mall-address-editor-actions">
+            <button wx:if="{{shippingAddresses.length}}" class="mall-address-editor-secondary" bindtap="onCancelAddressEdit">取消</button>
+            <button class="mall-address-editor-primary" loading="{{submitting}}" bindtap="onSaveAddress">保存地址</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

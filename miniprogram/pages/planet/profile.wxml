@@ -1,15 +1,115 @@
 <navigation-bar
-  title="查看星球资料"
+  title="{{canEdit || canExitPlanet ? '星球设置' : '查看星球资料'}}"
   back="{{true}}"
   color="#111111"
   background="#ffffff"
 ></navigation-bar>
 
 <view class="page planet-profile-page">
-  <view class="planet-profile-shell">
-    <image class="planet-profile-avatar" src="{{planet.avatarImageUrl}}" mode="aspectFill"></image>
-    <text class="planet-profile-name">{{planet.name}}</text>
-    <text class="planet-profile-tag">{{planet.category}}</text>
-    <text class="planet-profile-intro">{{planet.introText}}</text>
+  <view wx:if="{{loading}}" class="planet-profile-loading">
+    <text class="planet-profile-loading-text">星球资料加载中...</text>
+  </view>
+
+  <view wx:else class="planet-profile-shell">
+    <view class="planet-profile-hero">
+      <image class="planet-profile-avatar" src="{{editMode ? editAvatarImageUrl : profile.avatarImageUrl}}" mode="aspectFill"></image>
+      <view wx:if="{{editMode}}" class="planet-profile-avatar-trigger" bindtap="onChooseAvatar">
+        {{uploadingAvatar ? '上传中' : '更换头像'}}
+      </view>
+
+      <block wx:if="{{editMode}}">
+        <input
+          class="planet-profile-input planet-profile-name-input"
+          value="{{editName}}"
+          maxlength="24"
+          placeholder="请输入星球名称"
+          placeholder-class="planet-profile-placeholder"
+          bindinput="onNameInput"
+        />
+        <input
+          class="planet-profile-input planet-profile-category-input"
+          value="{{editCategory}}"
+          maxlength="12"
+          placeholder="请输入分类标签"
+          placeholder-class="planet-profile-placeholder"
+          bindinput="onCategoryInput"
+        />
+      </block>
+
+      <block wx:else>
+        <text class="planet-profile-name">{{profile.name}}</text>
+        <text class="planet-profile-tag">{{profile.category}}</text>
+      </block>
+    </view>
+
+    <view class="planet-profile-section">
+      <text class="planet-profile-section-label">星球简介</text>
+
+      <textarea
+        wx:if="{{editMode}}"
+        class="planet-profile-textarea"
+        value="{{editIntro}}"
+        maxlength="1000"
+        placeholder="写一下这个星球适合谁、会持续分享什么内容"
+        placeholder-class="planet-profile-placeholder"
+        auto-height="{{true}}"
+        bindinput="onIntroInput"
+      ></textarea>
+
+      <text wx:else class="planet-profile-intro">{{profile.intro || '这个星球还没有填写简介'}}</text>
+    </view>
+
+    <view wx:if="{{profile.joined || canEdit}}" class="planet-profile-section">
+      <text class="planet-profile-section-label">更多操作</text>
+
+      <view class="planet-profile-link-item" bindtap="onToggleSubscriptionTap">
+        <view class="planet-profile-link-copy">
+          <text class="planet-profile-link-title">订阅更新</text>
+          <text class="planet-profile-link-desc">及时接收这个星球的新内容提醒</text>
+        </view>
+        <text class="planet-profile-link-value">{{subscribeLoading ? '处理中' : (subscribeEnabled ? '已订阅' : '未订阅')}}</text>
+      </view>
+
+      <view class="planet-profile-link-item" bindtap="onInviteTap">
+        <view class="planet-profile-link-copy">
+          <text class="planet-profile-link-title">邀请成员</text>
+          <text class="planet-profile-link-desc">生成分享卡片，把星球发给朋友或群聊</text>
+        </view>
+        <text class="planet-profile-link-arrow">›</text>
+      </view>
+    </view>
+
+    <view wx:if="{{(canExitPlanet || canEdit) && !editMode}}" class="planet-profile-section planet-profile-danger-section">
+      <text class="planet-profile-section-label">危险操作</text>
+      <text class="planet-profile-danger-hint">{{dangerHint}}</text>
+
+      <view
+        wx:if="{{canExitPlanet}}"
+        class="planet-profile-danger-action"
+        bindtap="onLeavePlanetTap"
+      >
+        {{dangerActionLoading ? '处理中...' : (canRefundOnExit ? '申请退款退出星球' : '退出星球')}}
+      </view>
+
+      <block wx:elif="{{canEdit}}">
+        <view
+          class="planet-profile-danger-action {{canDeletePlanet ? '' : 'planet-profile-danger-action-disabled'}}"
+          bindtap="onDeletePlanetTap"
+        >
+          {{dangerActionLoading ? '删除中...' : '删除星球'}}
+        </view>
+        <text wx:if="{{!canDeletePlanet}}" class="planet-profile-danger-note">仅免费星球或当前仅剩球主一人时可删除。</text>
+      </block>
+    </view>
+
+    <view wx:if="{{canEdit}}" class="planet-profile-actions">
+      <block wx:if="{{editMode}}">
+        <view class="planet-profile-action planet-profile-action-secondary" bindtap="onCancelEdit">取消</view>
+        <view class="planet-profile-action planet-profile-action-primary" bindtap="onSaveProfile">保存</view>
+      </block>
+      <view wx:else class="planet-profile-action planet-profile-action-primary planet-profile-action-single" bindtap="onStartEdit">
+        编辑资料
+      </view>
+    </view>
   </view>
 </view>

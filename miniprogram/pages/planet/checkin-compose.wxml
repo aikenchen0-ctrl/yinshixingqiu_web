@@ -1,0 +1,55 @@
+<navigation-bar title="发布打卡" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
+
+<view class="checkin-compose-page">
+  <view class="checkin-compose-topbar">
+    <view class="checkin-compose-topbar-placeholder"></view>
+    <text class="checkin-compose-top-title">发布打卡</text>
+    <view class="checkin-compose-topbar-placeholder"></view>
+  </view>
+
+  <view class="checkin-compose-body">
+    <view class="checkin-compose-challenge-card">
+      <text class="checkin-compose-challenge-label">当前挑战</text>
+      <text class="checkin-compose-challenge-title">{{challengeTitle}}</text>
+      <text class="checkin-compose-challenge-tip">建议记录今天完成了什么、卡在哪里、下一步准备怎么做。</text>
+    </view>
+
+    <textarea
+      class="checkin-compose-textarea"
+      maxlength="10000"
+      placeholder="写下今天的进展、问题和下一步计划"
+      placeholder-class="checkin-compose-placeholder"
+      value="{{content}}"
+      cursor="{{contentCursor}}"
+      bindinput="onInput"
+      bindblur="onTextareaBlur"
+      auto-height="{{true}}"
+      adjust-position="{{false}}"
+      cursor-spacing="24"
+    ></textarea>
+
+    <view wx:if="{{imageList.length}}" class="checkin-compose-images">
+      <view wx:for="{{imageList}}" wx:key="*this" class="checkin-compose-image-item">
+        <image class="checkin-compose-image" src="{{item}}" mode="aspectFill" data-url="{{item}}" bindtap="onPreviewImage"></image>
+        <view class="checkin-compose-image-remove" data-index="{{index}}" bindtap="onRemoveImage">删除</view>
+      </view>
+    </view>
+
+    <view class="checkin-compose-counter">{{content.length}}/10000 字 · {{imageList.length}}/9 张图片</view>
+
+    <view class="checkin-compose-toolbar">
+      <view class="checkin-compose-tool checkin-compose-tool-image" bindtap="onChooseImage"></view>
+      <view class="checkin-compose-tool checkin-compose-tool-folder" data-action="template" bindtap="onToolbarTap"></view>
+      <view class="checkin-compose-tool checkin-compose-tool-smile" data-action="mood" bindtap="onToolbarTap"></view>
+      <view class="checkin-compose-tool checkin-compose-tool-topic" data-action="topic" bindtap="onToolbarTap">#</view>
+      <view class="checkin-compose-tool checkin-compose-tool-plus" data-action="more" bindtap="onToolbarTap"></view>
+    </view>
+  </view>
+
+  <view class="checkin-compose-footer">
+    <view class="checkin-compose-footer-actions">
+      <button class="checkin-compose-cancel-button" bindtap="onCancel">取消</button>
+      <button class="checkin-compose-submit-button" loading="{{submitting}}" bindtap="onSubmit">发布打卡</button>
+    </view>
+  </view>
+</view>

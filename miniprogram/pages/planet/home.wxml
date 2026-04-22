@@ -1,16 +1,19 @@
 <navigation-bar
-  title="{{isJoined ? '' : '知识星球'}}"
+  title="{{isJoined ? '' : '饮视星球'}}"
   back="{{true}}"
   color="{{isJoined ? '#ffffff' : '#22160d'}}"
   background="{{isJoined ? 'linear-gradient(135deg, #6f8692 0%, #7d8f97 35%, #8f8a74 100%)' : '#ffffff'}}"
 ></navigation-bar>
 
 <block wx:if="{{isJoined}}">
-  <scroll-view class="planet-joined-page" scroll-y="{{true}}">
+  <scroll-view class="planet-joined-page" scroll-y="{{true}}" bindtap="onCloseFeedMenu">
     <view class="planet-home-hero">
       <view class="planet-home-hero-mask"></view>
       <view class="planet-home-header">
-        <image class="planet-home-avatar-image" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+        <view class="planet-home-avatar planet-avatar-frame {{avatarClass}}">
+          <image wx:if="{{avatarImageUrl}}" class="planet-home-avatar-image" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+          <text wx:else class="planet-home-avatar-text">{{planetName.slice(0, 1) || '星'}}</text>
+        </view>
         <view class="planet-home-copy">
           <text class="planet-home-name">{{planetName}}</text>
           <text class="planet-home-meta">{{ownerName}} 创建</text>
@@ -26,22 +29,51 @@
           <view class="planet-home-action-icon icon-stack"></view>
           <text class="planet-home-action-label">专栏</text>
         </view>
-        <view class="planet-home-action" data-key="subscribe" bindtap="onActionTap">
-          <view class="planet-home-action-icon icon-bookmark"></view>
-          <text class="planet-home-action-label">订阅</text>
-        </view>
         <view class="planet-home-action" data-key="settings" bindtap="onActionTap">
           <view class="planet-home-action-icon icon-gear"></view>
           <text class="planet-home-action-label">设置</text>
-        </view>
-        <view class="planet-home-action" data-key="invite" bindtap="onActionTap">
-          <view class="planet-home-action-icon icon-send"></view>
-          <text class="planet-home-action-label">邀请</text>
         </view>
       </view>
     </view>
 
     <view class="planet-home-body">
+      <view wx:if="{{showRenewalEntry}}" class="planet-home-renewal-wrap">
+        <view class="planet-renewal-card">
+          <view class="planet-renewal-copy">
+            <text class="planet-renewal-badge">{{renewalBadgeText}}</text>
+            <text class="planet-renewal-title">{{renewalTitle}}</text>
+            <text class="planet-renewal-hint">{{renewalHint}}</text>
+            <view class="planet-renewal-price-row">
+              <text class="planet-renewal-price">{{renewalPriceText}}</text>
+              <text wx:if="{{renewalOriginalPriceText}}" class="planet-renewal-original">{{renewalOriginalPriceText}}</text>
+              <text wx:if="{{renewalDiscountText}}" class="planet-renewal-discount">{{renewalDiscountText}}</text>
+            </view>
+          </view>
+          <button class="planet-renewal-button" loading="{{joinLoading}}" disabled="{{joinLoading}}" bindtap="onRenewTap">{{renewalActionText}}</button>
+        </view>
+      </view>
+
+      <scroll-view
+        wx:if="{{featureCards.length}}"
+        class="planet-home-feature-row"
+        scroll-x="{{true}}"
+        enhanced="{{true}}"
+        show-scrollbar="{{false}}"
+      >
+        <view
+          wx:for="{{featureCards}}"
+          wx:key="key"
+          class="planet-home-feature-card planet-home-feature-card-{{item.key}}"
+          data-key="{{item.key}}"
+          bindtap="onFeatureCardTap"
+        >
+          <view class="planet-home-feature-arrow"></view>
+          <text class="planet-home-feature-title">{{item.title}}</text>
+          <text class="planet-home-feature-subtitle">{{item.subtitle}}</text>
+          <text wx:if="{{item.accentLabel}}" class="planet-home-feature-accent">{{item.accentLabel}}</text>
+        </view>
+      </scroll-view>
+
       <view class="planet-home-tab-row">
         <view
           class="planet-home-tab {{activeTab === item.key ? 'planet-home-tab-active' : ''}}"
@@ -79,15 +111,57 @@
 
         <view class="planet-feed-card" wx:for="{{latestList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
           <view class="planet-feed-head">
-            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-avatar {{!item.avatarUrl ? item.avatarClass : ''}} {{!item.avatarUrl ? 'planet-feed-avatar-fallback' : ''}}">
+              <image
+                wx:if="{{item.avatarUrl}}"
+                class="planet-feed-avatar-image"
+                src="{{item.avatarUrl}}"
+                mode="aspectFill"
+                data-list="latestList"
+                data-id="{{item.id}}"
+                binderror="onFeedAvatarError"
+              ></image>
+              <text wx:else class="planet-feed-avatar-fallback-text">mo</text>
+            </view>
             <view class="planet-feed-author">
-              <text class="planet-feed-name">{{item.author}}</text>
+              <view class="planet-feed-name-row">
+                <text class="planet-feed-name">{{item.author}}</text>
+                <text wx:if="{{item.isPinned}}" class="planet-feed-status-tag">置顶</text>
+                <text wx:if="{{item.isEssence}}" class="planet-feed-status-tag planet-feed-status-tag-essence">精华</text>
+              </view>
               <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+            <view
+              class="planet-feed-manage"
+              catchtap="onToggleFeedMenu"
+              data-id="{{item.id}}"
+              data-is-essence="{{item.isEssence}}"
+              data-is-pinned="{{item.isPinned}}"
+            >
+              <view class="planet-feed-manage-caret {{activeMenuPostId === item.id ? 'planet-feed-manage-caret-active' : ''}}"></view>
+              <view wx:if="{{activeMenuPostId === item.id}}" class="planet-feed-menu-panel" catchtap="onFeedMenuPanelTap">
+                <view
+                  class="planet-feed-menu-item {{action.danger ? 'planet-feed-menu-item-danger' : ''}}"
+                  wx:for="{{feedManageActions}}"
+                  wx:for-item="action"
+                  wx:key="key"
+                  catchtap="onFeedManageActionTap"
+                  data-key="{{action.key}}"
+                  data-id="{{item.id}}"
+                  data-is-essence="{{item.isEssence}}"
+                  data-is-pinned="{{item.isPinned}}"
+                >
+                  {{action.label}}
+                </view>
+              </view>
             </view>
           </view>
           <text class="planet-feed-title">{{item.title}}</text>
+          <view wx:if="{{item.columnTitle}}" class="planet-feed-column-tag">
+            <text class="planet-feed-column-tag-text">专栏 {{item.columnTitle}}</text>
+          </view>
           <view wx:if="{{item.images.length}}" class="planet-feed-images">
-            <image wx:for="{{item.images}}" wx:key="*this" class="planet-feed-image" src="{{item}}" mode="aspectFill"></image>
+            <image wx:for="{{item.displayImages}}" wx:key="*this" class="planet-feed-image" src="{{item}}" mode="aspectFill" lazy-load="true"></image>
           </view>
           <view class="planet-feed-bar">
             <view class="planet-feed-action">
@@ -105,13 +179,55 @@
       <view wx:if="{{activeTab === 'featured'}}" class="planet-feed-list">
         <view class="planet-feed-card" wx:for="{{featuredList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
           <view class="planet-feed-head">
-            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-avatar {{!item.avatarUrl ? item.avatarClass : ''}} {{!item.avatarUrl ? 'planet-feed-avatar-fallback' : ''}}">
+              <image
+                wx:if="{{item.avatarUrl}}"
+                class="planet-feed-avatar-image"
+                src="{{item.avatarUrl}}"
+                mode="aspectFill"
+                data-list="featuredList"
+                data-id="{{item.id}}"
+                binderror="onFeedAvatarError"
+              ></image>
+              <text wx:else class="planet-feed-avatar-fallback-text">mo</text>
+            </view>
             <view class="planet-feed-author">
-              <text class="planet-feed-name">{{item.author}}</text>
+              <view class="planet-feed-name-row">
+                <text class="planet-feed-name">{{item.author}}</text>
+                <text wx:if="{{item.isPinned}}" class="planet-feed-status-tag">置顶</text>
+                <text wx:if="{{item.isEssence}}" class="planet-feed-status-tag planet-feed-status-tag-essence">精华</text>
+              </view>
               <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+            <view
+              class="planet-feed-manage"
+              catchtap="onToggleFeedMenu"
+              data-id="{{item.id}}"
+              data-is-essence="{{item.isEssence}}"
+              data-is-pinned="{{item.isPinned}}"
+            >
+              <view class="planet-feed-manage-caret {{activeMenuPostId === item.id ? 'planet-feed-manage-caret-active' : ''}}"></view>
+              <view wx:if="{{activeMenuPostId === item.id}}" class="planet-feed-menu-panel" catchtap="onFeedMenuPanelTap">
+                <view
+                  class="planet-feed-menu-item {{action.danger ? 'planet-feed-menu-item-danger' : ''}}"
+                  wx:for="{{feedManageActions}}"
+                  wx:for-item="action"
+                  wx:key="key"
+                  catchtap="onFeedManageActionTap"
+                  data-key="{{action.key}}"
+                  data-id="{{item.id}}"
+                  data-is-essence="{{item.isEssence}}"
+                  data-is-pinned="{{item.isPinned}}"
+                >
+                  {{action.label}}
+                </view>
+              </view>
             </view>
           </view>
           <text class="planet-feed-title">{{item.title}}</text>
+          <view wx:if="{{item.columnTitle}}" class="planet-feed-column-tag">
+            <text class="planet-feed-column-tag-text">专栏 {{item.columnTitle}}</text>
+          </view>
           <view class="planet-feed-bar">
             <view class="planet-feed-action">
               <view class="feed-icon-like"></view>
@@ -128,16 +244,64 @@
       <view wx:if="{{activeTab === 'files'}}" class="planet-feed-list">
         <view class="planet-feed-card" wx:for="{{fileList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
           <view class="planet-feed-head">
-            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-avatar {{!item.avatarUrl ? item.avatarClass : ''}} {{!item.avatarUrl ? 'planet-feed-avatar-fallback' : ''}}">
+              <image
+                wx:if="{{item.avatarUrl}}"
+                class="planet-feed-avatar-image"
+                src="{{item.avatarUrl}}"
+                mode="aspectFill"
+                data-list="fileList"
+                data-id="{{item.id}}"
+                binderror="onFeedAvatarError"
+              ></image>
+              <text wx:else class="planet-feed-avatar-fallback-text">mo</text>
+            </view>
             <view class="planet-feed-author">
-              <text class="planet-feed-name">{{item.author}}</text>
+              <view class="planet-feed-name-row">
+                <text class="planet-feed-name">{{item.author}}</text>
+                <text wx:if="{{item.isPinned}}" class="planet-feed-status-tag">置顶</text>
+                <text wx:if="{{item.isEssence}}" class="planet-feed-status-tag planet-feed-status-tag-essence">精华</text>
+              </view>
               <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+            <view
+              class="planet-feed-manage"
+              catchtap="onToggleFeedMenu"
+              data-id="{{item.id}}"
+              data-is-essence="{{item.isEssence}}"
+              data-is-pinned="{{item.isPinned}}"
+            >
+              <view class="planet-feed-manage-caret {{activeMenuPostId === item.id ? 'planet-feed-manage-caret-active' : ''}}"></view>
+              <view wx:if="{{activeMenuPostId === item.id}}" class="planet-feed-menu-panel" catchtap="onFeedMenuPanelTap">
+                <view
+                  class="planet-feed-menu-item {{action.danger ? 'planet-feed-menu-item-danger' : ''}}"
+                  wx:for="{{feedManageActions}}"
+                  wx:for-item="action"
+                  wx:key="key"
+                  catchtap="onFeedManageActionTap"
+                  data-key="{{action.key}}"
+                  data-id="{{item.id}}"
+                  data-is-essence="{{item.isEssence}}"
+                  data-is-pinned="{{item.isPinned}}"
+                >
+                  {{action.label}}
+                </view>
+              </view>
             </view>
           </view>
           <text class="planet-feed-title">{{item.title}}</text>
-          <view class="planet-file-box">
-            <view class="planet-file-icon">PDF</view>
-            <text class="planet-file-name">{{item.fileName}}</text>
+          <view wx:if="{{item.columnTitle}}" class="planet-feed-column-tag">
+            <text class="planet-feed-column-tag-text">专栏 {{item.columnTitle}}</text>
+          </view>
+          <view wx:if="{{item.images.length}}" class="planet-feed-images">
+            <image wx:for="{{item.displayImages}}" wx:key="*this" class="planet-feed-image" src="{{item}}" mode="aspectFill" lazy-load="true"></image>
+          </view>
+          <view wx:elif="{{item.hasFile}}" class="planet-file-box">
+            <view class="planet-file-icon">文件</view>
+            <view class="planet-file-copy">
+              <text class="planet-file-name">{{item.fileName}}</text>
+              <text wx:if="{{item.fileSizeText}}" class="planet-file-meta">{{item.fileSizeText}}</text>
+            </view>
           </view>
           <view class="planet-feed-bar">
             <view class="planet-feed-action">
@@ -155,13 +319,55 @@
       <view wx:if="{{activeTab === 'answer' && answerList.length}}" class="planet-feed-list">
         <view class="planet-feed-card" wx:for="{{answerList}}" wx:key="id" data-id="{{item.id}}" bindtap="onFeedTap">
           <view class="planet-feed-head">
-            <view class="planet-feed-avatar {{item.avatarClass}}"></view>
+            <view class="planet-feed-avatar {{!item.avatarUrl ? item.avatarClass : ''}} {{!item.avatarUrl ? 'planet-feed-avatar-fallback' : ''}}">
+              <image
+                wx:if="{{item.avatarUrl}}"
+                class="planet-feed-avatar-image"
+                src="{{item.avatarUrl}}"
+                mode="aspectFill"
+                data-list="answerList"
+                data-id="{{item.id}}"
+                binderror="onFeedAvatarError"
+              ></image>
+              <text wx:else class="planet-feed-avatar-fallback-text">mo</text>
+            </view>
             <view class="planet-feed-author">
-              <text class="planet-feed-name">{{item.author}}</text>
+              <view class="planet-feed-name-row">
+                <text class="planet-feed-name">{{item.author}}</text>
+                <text wx:if="{{item.isPinned}}" class="planet-feed-status-tag">置顶</text>
+                <text wx:if="{{item.isEssence}}" class="planet-feed-status-tag planet-feed-status-tag-essence">精华</text>
+              </view>
               <text class="planet-feed-time">{{item.time}}</text>
+            </view>
+            <view
+              class="planet-feed-manage"
+              catchtap="onToggleFeedMenu"
+              data-id="{{item.id}}"
+              data-is-essence="{{item.isEssence}}"
+              data-is-pinned="{{item.isPinned}}"
+            >
+              <view class="planet-feed-manage-caret {{activeMenuPostId === item.id ? 'planet-feed-manage-caret-active' : ''}}"></view>
+              <view wx:if="{{activeMenuPostId === item.id}}" class="planet-feed-menu-panel" catchtap="onFeedMenuPanelTap">
+                <view
+                  class="planet-feed-menu-item {{action.danger ? 'planet-feed-menu-item-danger' : ''}}"
+                  wx:for="{{feedManageActions}}"
+                  wx:for-item="action"
+                  wx:key="key"
+                  catchtap="onFeedManageActionTap"
+                  data-key="{{action.key}}"
+                  data-id="{{item.id}}"
+                  data-is-essence="{{item.isEssence}}"
+                  data-is-pinned="{{item.isPinned}}"
+                >
+                  {{action.label}}
+                </view>
+              </view>
             </view>
           </view>
           <text class="planet-feed-title">{{item.title}}</text>
+          <view wx:if="{{item.columnTitle}}" class="planet-feed-column-tag">
+            <text class="planet-feed-column-tag-text">专栏 {{item.columnTitle}}</text>
+          </view>
           <view class="planet-feed-bar">
             <view class="planet-feed-action">
               <view class="feed-icon-like"></view>
@@ -186,6 +392,67 @@
       <view class="planet-publish-pen"></view>
     </view>
   </view>
+
+  <view wx:if="{{publishMenuVisible}}" class="planet-publish-mask" bindtap="onClosePublishMenu">
+    <view class="planet-publish-panel" catchtap="onPublishPanelTap">
+      <view
+        class="planet-publish-option"
+        wx:for="{{publishActions}}"
+        wx:key="key"
+        data-type="{{item.key}}"
+        bindtap="onPublishOptionTap"
+      >
+        <view class="planet-publish-option-icon {{item.iconClass}}"></view>
+        <view class="planet-publish-option-copy">
+          <text class="planet-publish-option-label">{{item.label}}</text>
+          <text class="planet-publish-option-desc">{{item.description}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{columnPickerVisible}}" class="planet-column-picker-mask" bindtap="onCloseColumnPicker">
+    <view class="planet-column-picker-sheet" catchtap="onColumnPickerPanelTap">
+      <view class="planet-column-picker-handle"></view>
+      <view class="planet-column-picker-head">
+        <text class="planet-column-picker-title">归类到专栏</text>
+        <text class="planet-column-picker-close" bindtap="onCloseColumnPicker">取消</text>
+      </view>
+      <text class="planet-column-picker-desc">为“{{columnPickerPostTitle}}”选择一个专栏目录，方便后续统一沉淀。</text>
+
+      <view wx:if="{{columnPickerLoading}}" class="planet-column-picker-loading">
+        <text class="planet-column-picker-loading-text">专栏加载中...</text>
+      </view>
+
+      <view wx:elif="{{columnPickerColumns.length}}" class="planet-column-picker-list">
+        <view class="planet-column-picker-item planet-column-picker-item-clear" bindtap="onSelectPostColumn" data-column-id="">
+          <view class="planet-column-picker-copy">
+            <text class="planet-column-picker-name">不归类到任何专栏</text>
+            <text class="planet-column-picker-meta">让这条帖子继续留在公共主题流里</text>
+          </view>
+          <text wx:if="{{!columnPickerCurrentColumnId}}" class="planet-column-picker-check">当前</text>
+        </view>
+
+        <view
+          wx:for="{{columnPickerColumns}}"
+          wx:key="id"
+          class="planet-column-picker-item {{item.isCurrent ? 'planet-column-picker-item-active' : ''}}"
+          bindtap="onSelectPostColumn"
+          data-column-id="{{item.id}}"
+        >
+          <view class="planet-column-picker-copy">
+            <text class="planet-column-picker-name">{{item.title}}</text>
+            <text class="planet-column-picker-meta">{{item.count}} 篇内容</text>
+          </view>
+          <text wx:if="{{item.isCurrent}}" class="planet-column-picker-check">当前</text>
+        </view>
+      </view>
+
+      <view wx:else class="planet-column-picker-empty">
+        <text class="planet-column-picker-empty-text">这个星球还没有专栏，先去“专栏”页创建一个吧</text>
+      </view>
+    </view>
+  </view>
 </block>
 
 <block wx:else>
@@ -206,7 +473,10 @@
               </view>
             </view>
           </view>
-          <image class="planet-summary-avatar" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+          <view class="planet-summary-avatar planet-avatar-frame {{avatarClass}}">
+            <image wx:if="{{avatarImageUrl}}" class="planet-summary-avatar-image" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+            <text wx:else class="planet-summary-avatar-text">{{planetName.slice(0, 1) || '星'}}</text>
+          </view>
         </view>
 
         <view class="planet-summary-metrics">
@@ -224,7 +494,10 @@
         </view>
 
         <view class="planet-owner-card" bindtap="onOwnerTap">
-          <image class="planet-owner-avatar" src="{{avatarImageUrl}}" mode="aspectFill"></image>
+          <view class="planet-owner-avatar">
+            <image wx:if="{{ownerAvatarImageUrl}}" class="planet-owner-avatar-image" src="{{ownerAvatarImageUrl}}" mode="aspectFill"></image>
+            <text wx:else class="planet-owner-avatar-text">{{ownerName.slice(0, 1) || '主'}}</text>
+          </view>
           <view class="planet-owner-copy">
             <text class="planet-owner-name">星主：#{{ownerName}}</text>
             <text class="planet-owner-active">{{ownerActiveText}}</text>
@@ -242,6 +515,52 @@
         </text>
       </view>
 
+      <view wx:if="{{paywallHighlights.length}}" class="planet-section">
+        <view class="planet-section-head">
+          <text class="planet-section-title">星球亮点</text>
+          <text class="planet-section-side">{{paywallHighlights.length}}张</text>
+        </view>
+
+        <view class="planet-highlight-grid">
+          <view
+            wx:for="{{paywallHighlights}}"
+            wx:key="url"
+            class="planet-highlight-card"
+            data-url="{{item.url}}"
+            bindtap="onPaywallHighlightTap"
+          >
+            <view class="planet-highlight-standee">
+              <view class="planet-highlight-board">
+                <view class="planet-highlight-paper">
+                  <image class="planet-highlight-image" src="{{item.displayUrl}}" mode="aspectFit" lazy-load="true"></image>
+                </view>
+                <view class="planet-highlight-sheen"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{showRenewalEntry}}" class="planet-section">
+        <view class="planet-section-head">
+          <text class="planet-section-title">成员续期</text>
+          <text class="planet-section-side">{{renewalBadgeText}}</text>
+        </view>
+
+        <view class="planet-renewal-card">
+          <view class="planet-renewal-copy">
+            <text class="planet-renewal-title">{{renewalTitle}}</text>
+            <text class="planet-renewal-hint">{{renewalHint}}</text>
+            <view class="planet-renewal-price-row">
+              <text class="planet-renewal-price">{{renewalPriceText}}</text>
+              <text wx:if="{{renewalOriginalPriceText}}" class="planet-renewal-original">{{renewalOriginalPriceText}}</text>
+              <text wx:if="{{renewalDiscountText}}" class="planet-renewal-discount">{{renewalDiscountText}}</text>
+            </view>
+          </view>
+          <button class="planet-renewal-button" loading="{{joinLoading}}" disabled="{{joinLoading}}" bindtap="onRenewTap">{{renewalActionText}}</button>
+        </view>
+      </view>
+
       <view class="planet-section">
         <view class="planet-section-head">
           <text class="planet-section-title">付费须知</text>
@@ -255,12 +574,47 @@
         </view>
       </view>
 
+      <view wx:if="{{!isJoined && !showRenewalEntry && priceText !== '免费'}}" class="planet-section">
+        <view class="planet-section-head">
+          <text class="planet-section-title">优惠券</text>
+          <text class="planet-section-side">{{joinCouponLoading ? '加载中' : joinCouponSummary}}</text>
+        </view>
+
+        <view wx:if="{{joinCoupons.length}}" class="planet-coupon-list">
+          <view
+            wx:for="{{joinCoupons}}"
+            wx:key="code"
+            class="planet-coupon-card {{item.selected ? 'planet-coupon-card-selected' : ''}}"
+            data-code="{{item.code}}"
+            bindtap="onCouponTap"
+          >
+            <view class="planet-coupon-copy">
+              <view class="planet-coupon-title-row">
+                <text class="planet-coupon-title">{{item.name}}</text>
+                <text wx:if="{{item.isRecommended}}" class="planet-coupon-tag">推荐</text>
+              </view>
+              <text class="planet-coupon-meta">
+                {{item.remainingQuantity !== null ? '剩余 ' + item.remainingQuantity + ' 张' : '库存充足'}} · 截止 {{item.validTo}}
+              </text>
+            </view>
+            <view class="planet-coupon-amount">
+              <text class="planet-coupon-amount-value">{{item.amountText}}</text>
+              <text class="planet-coupon-action">{{item.selected ? '已选中' : '点击使用'}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view wx:elif="{{!joinCouponLoading}}" class="planet-coupon-empty">
+          <text class="planet-coupon-empty-text">当前没有可直接使用的拉新券，管理端新建并生效后，这里会自动接上。</text>
+        </view>
+      </view>
+
       <view class="planet-section">
         <view class="planet-section-head">
           <text class="planet-section-title">部分主题预览</text>
         </view>
 
-        <view class="planet-preview-list">
+        <view wx:if="{{allowPreview && previewList.length}}" class="planet-preview-list">
           <view
             class="planet-preview-item"
             wx:for="{{previewList}}"
@@ -278,14 +632,53 @@
 
             <text class="planet-preview-title">{{item.title}}</text>
             <text class="planet-preview-summary">{{item.summary}}</text>
-            <image class="planet-preview-image" src="{{item.image}}" mode="aspectFill"></image>
+            <image wx:if="{{item.image}}" class="planet-preview-image" src="{{item.image}}" mode="aspectFill"></image>
           </view>
+        </view>
+
+        <view wx:else class="planet-preview-locked">
+          <text class="planet-preview-locked-title">{{allowPreview ? '当前还没有可预览的主题' : '当前星球不开放预览'}}</text>
+          <text class="planet-preview-locked-text">
+            {{allowPreview ? '后续有公开样本后，会在这里展示部分主题内容。' : '只有正式加入后，才能查看完整主题与互动内容。'}}
+          </text>
         </view>
       </view>
     </view>
   </scroll-view>
 
   <view class="planet-join-bar">
-    <button class="planet-join-button" loading="{{joinLoading}}" bindtap="onJoinTap">{{joinButtonText}}</button>
+    <view wx:if="{{showRenewalEntry}}" class="planet-join-summary">
+      <view class="planet-join-summary-copy">
+        <text class="planet-join-summary-label">{{renewalSummaryLabel}}</text>
+        <text class="planet-join-summary-price">{{renewalPriceText}}</text>
+      </view>
+      <text class="planet-join-summary-hint">{{renewalSummaryHint}}</text>
+    </view>
+
+    <view wx:elif="{{!isJoined && priceText !== '免费'}}" class="planet-join-summary">
+      <view class="planet-join-summary-copy">
+        <text class="planet-join-summary-label">应付金额</text>
+        <text class="planet-join-summary-price">{{displayPriceText}}</text>
+      </view>
+      <text wx:if="{{selectedCouponName}}" class="planet-join-summary-hint">
+        {{selectedCouponName}} 已抵扣 {{selectedCouponAmountText}}
+      </text>
+      <text wx:elif="{{priceText !== displayPriceText}}" class="planet-join-summary-hint">已自动应用最优优惠券</text>
+      <text wx:else class="planet-join-summary-hint">原价 {{priceText}}</text>
+    </view>
+
+    <button wx:if="{{showRenewalEntry}}" class="planet-join-button" loading="{{joinLoading}}" disabled="{{joinLoading}}" bindtap="onRenewTap">
+      {{renewalActionText}}
+    </button>
+
+    <button
+      wx:else
+      class="planet-join-button {{joinButtonDisabled ? 'planet-join-button-disabled' : ''}}"
+      loading="{{joinLoading}}"
+      disabled="{{joinButtonDisabled}}"
+      bindtap="onJoinTap"
+    >
+      {{joinButtonText}}
+    </button>
   </view>
 </block>

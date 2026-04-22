@@ -1,31 +1,383 @@
 <navigation-bar
   title="商城"
   back="{{false}}"
-  color="#e6f0ff"
-  background="rgba(10, 18, 32, 0.96)"
+  color="#333333"
+  background="#ffffff"
 ></navigation-bar>
 
-<view class="page grid-bg">
-    <view class="section card store-hero">
-      <text class="store-title">安全工具与课程礼包</text>
-      <text class="store-sub">精选实战工具、课程与情报包</text>
-      <button class="btn btn-primary" bindtap="goMembership">会员专享优惠</button>
+<view class="page mall-store-page">
+  <view class="mall-search-row">
+    <view class="mall-search-box" bindtap="onSearchTap">
+      <view class="mall-search-icon"></view>
+      <text class="mall-search-placeholder">搜索商品</text>
+    </view>
+  </view>
+
+  <view wx:if="{{heroSlides.length}}" class="mall-hero-swiper-shell">
+    <swiper
+      class="mall-hero-swiper"
+      autoplay="{{heroSlides.length > 1}}"
+      circular="{{heroSlides.length > 1}}"
+      indicator-dots="{{heroSlides.length > 1}}"
+      indicator-color="rgba(255,255,255,0.34)"
+      indicator-active-color="#ffffff"
+      interval="{{4200}}"
+      duration="{{360}}"
+    >
+      <swiper-item wx:for="{{heroSlides}}" wx:key="id">
+        <view
+          class="mall-hero-slide mall-hero-slide-{{item.tone}}"
+          data-action="{{item.action}}"
+          data-product-id="{{item.productId}}"
+          bindtap="onHeroSlideTap"
+        >
+          <image
+            wx:if="{{item.imageUrl}}"
+            class="mall-hero-slide-image"
+            mode="aspectFill"
+            src="{{item.imageUrl}}"
+            binderror="onHeroSlideImageError"
+            data-index="{{index}}"
+            data-slide-id="{{item.id}}"
+          ></image>
+          <view class="mall-hero-slide-overlay"></view>
+          <view class="mall-hero-slide-body">
+            <text class="mall-hero-slide-tag">{{item.tag}}</text>
+            <text class="mall-hero-slide-title">{{item.title}}</text>
+            <text class="mall-hero-slide-subtitle">{{item.subtitle}}</text>
+            <view class="mall-hero-slide-foot">
+              <text class="mall-hero-slide-footer">{{item.footerText}}</text>
+              <view class="mall-hero-slide-button">{{item.buttonText}}</view>
+            </view>
+          </view>
+          <text wx:if="{{!item.imageUrl}}" class="mall-hero-slide-fallback">{{item.fallbackText}}</text>
+        </view>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <view wx:if="{{memberSpotlight}}" class="mall-member-spotlight-card">
+    <view class="mall-member-spotlight-copy">
+      <text class="mall-member-spotlight-title">{{memberSpotlight.title}}</text>
+      <text class="mall-member-spotlight-subtitle">{{memberSpotlight.subtitle}}</text>
+      <text class="mall-member-spotlight-caption">{{memberSpotlight.caption}}</text>
     </view>
 
-    <view class="section">
-      <view class="section-title">精选商品</view>
-      <view class="product-grid">
-        <view class="product-card" wx:for="{{products}}" wx:key="id">
-          <view class="product-badge">{{item.tag}}</view>
-          <text class="product-title">{{item.title}}</text>
-          <text class="product-desc">{{item.desc}}</text>
-          <view class="product-footer">
-            <text class="product-price">{{item.price}}</text>
-            <button class="btn btn-ghost" data-id="{{item.id}}" bindtap="onBuy">购买</button>
+    <view wx:if="{{memberSpotlight.previewTitles.length}}" class="mall-member-spotlight-preview-row">
+      <text wx:for="{{memberSpotlight.previewTitles}}" wx:key="*this" class="mall-member-spotlight-preview-tag">{{item}}</text>
+    </view>
+
+    <view class="mall-member-spotlight-action-row">
+      <button class="mall-member-spotlight-button mall-member-spotlight-button-primary" bindtap="onOpenMemberZone">逛会员商品</button>
+      <button
+        wx:if="{{!memberSpotlight.membershipActive}}"
+        class="mall-member-spotlight-button mall-member-spotlight-button-secondary"
+        bindtap="onOpenMembershipFromHome"
+      >
+        去开会员
+      </button>
+    </view>
+  </view>
+
+  <view wx:if="{{categories.length}}" id="mallCategorySection" class="mall-category-shell {{tabsPinned ? 'mall-category-shell-pinned' : ''}}">
+    <scroll-view class="mall-category-scroll" scroll-x="{{true}}" show-scrollbar="{{false}}">
+      <view class="mall-category-track">
+        <view
+          wx:for="{{categories}}"
+          wx:key="id"
+          class="mall-category-chip {{activeCategoryId === item.id ? 'mall-category-chip-active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onSelectCategory"
+        >
+          <text class="mall-category-label">{{item.label}}</text>
+          <text class="mall-category-count">{{item.count}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="mall-section-card">
+    <view class="mall-section-head">
+      <text class="mall-section-title">商品列表</text>
+      <text class="mall-section-subtitle">标题、简介、价格、库存和封面都会随后台内容实时更新</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="mall-empty-state">
+      <text class="mall-empty-title">{{loadingText}}</text>
+      <text class="mall-empty-subtitle">商城数据正在从真实接口拉取。</text>
+    </view>
+
+    <view wx:elif="{{products.length}}" class="mall-product-grid">
+      <view wx:for="{{products}}" wx:key="id" class="mall-product-card" data-id="{{item.id}}" bindtap="onOpenProduct">
+        <view class="mall-product-cover">
+          <image
+            wx:if="{{item.coverImageUrl}}"
+            class="mall-cover-image"
+            mode="aspectFill"
+            src="{{item.coverImageUrl}}"
+            binderror="onProductImageError"
+            data-index="{{index}}"
+            data-product-id="{{item.id}}"
+          ></image>
+          <text wx:else class="mall-cover-fallback">{{item.coverFallbackText}}</text>
+        </view>
+        <view class="mall-product-body">
+          <text class="mall-product-title">{{item.title}}</text>
+          <text class="mall-product-subtitle">{{item.subtitle}}</text>
+          <view wx:if="{{item.memberBenefitType !== 'NONE'}}" class="mall-product-member-row">
+            <text class="mall-product-member-badge">{{item.memberBenefitLabel}}</text>
+            <text wx:if="{{item.memberPromptText}}" class="mall-product-member-prompt">{{item.memberPromptText}}</text>
+          </view>
+          <view class="mall-product-meta">
+            <text class="mall-product-stock">库存 {{item.stock}}</text>
+            <text class="mall-product-cart-count" wx:if="{{item.cartCount}}">已加购 {{item.cartCount}}</text>
+          </view>
+          <view class="mall-product-foot mall-product-foot-link">
+            <view class="mall-product-price-group">
+              <text class="mall-product-price">{{item.priceText}}</text>
+              <text wx:if="{{item.originalPriceText}}" class="mall-product-original">{{item.originalPriceText}}</text>
+            </view>
           </view>
         </view>
       </view>
     </view>
 
-  <view class="section safe-bottom"></view>
+    <view wx:else class="mall-empty-state">
+      <text class="mall-empty-title">{{emptyStateTitle}}</text>
+      <text class="mall-empty-subtitle">{{emptyStateSubtitle}}</text>
+    </view>
+  </view>
+
+  <view class="mall-page-tail mall-page-tail-with-cart"></view>
+
+  <view class="mall-cart-summary {{hideNativeTabBar ? 'mall-cart-summary-docked' : 'mall-cart-summary-raised'}}">
+    <view class="mall-cart-summary-main" bindtap="onToggleCartPanel">
+      <view class="mall-cart-summary-icon-shell">
+        <view class="mall-cart-summary-icon">车</view>
+        <text wx:if="{{cartCount}}" class="mall-cart-summary-badge">{{cartCount}}</text>
+      </view>
+      <view class="mall-cart-summary-copy">
+        <text class="mall-cart-summary-title">购物车</text>
+        <text class="mall-cart-summary-count">{{cartCount ? (cartAmountText + ' / ' + cartCount + '件') : '点击查看'}}</text>
+      </view>
+    </view>
+    <button class="mall-cart-summary-btn" bindtap="onCheckout">{{submittingOrder ? '下单中...' : '去下单'}}</button>
+    <button class="mall-cart-summary-mine" bindtap="onOpenMine">我的</button>
+  </view>
+
 </view>
+
+<block wx:if="{{mineMenuVisible}}">
+  <view class="mall-mine-menu-overlay" bindtap="onCloseMineMenu"></view>
+  <view class="mall-mine-menu {{hideNativeTabBar ? 'mall-mine-menu-docked' : 'mall-mine-menu-raised'}} {{mineMenuOpen ? 'mall-mine-menu-open' : ''}}" catchtap="noop">
+    <view
+      wx:for="{{mineMenuItems}}"
+      wx:key="id"
+      class="mall-mine-menu-item {{mineMenuOpen ? 'mall-mine-menu-item-open' : ''}}"
+      data-id="{{item.id}}"
+      bindtap="onMineMenuItemTap"
+      style="transition-delay: {{mineMenuOpen ? item.delay : 0}}ms;"
+    >
+      <text class="mall-mine-menu-item-title">{{item.title}}</text>
+      <text class="mall-mine-menu-item-subtitle">{{item.subtitle}}</text>
+    </view>
+  </view>
+</block>
+
+<block wx:if="{{cartVisible}}">
+  <view class="mall-overlay" bindtap="onCloseCartPanel">
+    <view class="mall-sheet mall-cart-sheet" catchtap="noop">
+      <view class="mall-sheet-handle"></view>
+      <view class="mall-cart-sheet-head">
+        <view>
+          <text class="mall-sheet-title">购物车</text>
+          <text class="mall-sheet-subtitle">已选商品会统一结算，下单前可随时增减数量。</text>
+        </view>
+        <text wx:if="{{cartItems.length}}" class="mall-cart-clear" bindtap="onClearCart">清空</text>
+      </view>
+
+      <scroll-view class="mall-cart-item-scroll" scroll-y="{{true}}">
+        <block wx:if="{{cartItems.length}}">
+          <view wx:for="{{cartItems}}" wx:key="id" class="mall-cart-item">
+            <view class="mall-cart-item-cover">
+              <image
+                wx:if="{{item.coverImageUrl}}"
+                class="mall-cover-image"
+                mode="aspectFill"
+                src="{{item.coverImageUrl}}"
+                binderror="onCartItemImageError"
+                data-index="{{index}}"
+                data-cart-item-id="{{item.id}}"
+              ></image>
+              <text wx:else class="mall-cover-fallback">{{item.coverFallbackText}}</text>
+            </view>
+            <view class="mall-cart-item-body">
+              <text class="mall-cart-item-title">{{item.title}}</text>
+              <text class="mall-cart-item-subtitle">{{item.subtitle}}</text>
+              <view wx:if="{{item.memberBenefitType !== 'NONE'}}" class="mall-cart-item-member-row">
+                <text class="mall-product-member-badge">{{item.memberBenefitLabel}}</text>
+                <text wx:if="{{item.memberPromptText}}" class="mall-cart-item-member-prompt">{{item.memberPromptText}}</text>
+              </view>
+              <view class="mall-cart-item-foot">
+                <view>
+                  <text class="mall-product-price">{{item.priceText}}</text>
+                  <text class="mall-cart-item-total">{{item.totalPriceText}}</text>
+                </view>
+                <view class="mall-stepper">
+                  <view class="mall-stepper-btn" data-id="{{item.productId}}" bindtap="onDecreaseCartItem">-</view>
+                  <text class="mall-stepper-value">{{item.quantity}}</text>
+                  <view class="mall-stepper-btn" data-id="{{item.productId}}" bindtap="onIncreaseCartItem">+</view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </block>
+        <view wx:else class="mall-cart-empty">
+          <text class="mall-cart-empty-title">购物车还是空的</text>
+          <text class="mall-cart-empty-subtitle">先选几个商品加进来，再回来下单。</text>
+        </view>
+      </scroll-view>
+
+      <view class="mall-cart-address-card">
+        <view class="mall-cart-address-head">
+          <view class="mall-cart-address-copy">
+            <text class="mall-cart-address-title">收货地址</text>
+            <text class="mall-cart-address-caption">确认页只展示当前地址，右上角可切换本次收货地址。</text>
+          </view>
+          <button wx:if="{{shippingAddresses.length}}" class="mall-cart-address-action" bindtap="onOpenAddressPicker">选择地址</button>
+          <button wx:elif="{{addressLoginRequired}}" class="mall-cart-address-action" bindtap="promptLogin">去登录</button>
+          <button wx:elif="{{!addressLoading}}" class="mall-cart-address-action" bindtap="onOpenAddressManager">去新增</button>
+        </view>
+
+        <view wx:if="{{addressLoading}}" class="mall-cart-address-status">
+          <text class="mall-cart-address-status-copy">收货地址加载中...</text>
+        </view>
+
+        <view wx:elif="{{addressLoginRequired}}" class="mall-cart-address-status">
+          <text class="mall-cart-address-status-copy">登录后可在这里选择收货地址并继续下单。</text>
+        </view>
+
+        <view wx:elif="{{shippingAddresses.length}}">
+          <view wx:if="{{shippingAddress}}" class="mall-address-current mall-cart-address-saved mall-cart-address-saved-active">
+            <text class="mall-address-current-title">当前收货地址</text>
+            <view class="mall-cart-address-saved-user-row">
+              <text class="mall-cart-address-saved-name">{{shippingAddress.recipientName}}</text>
+              <text class="mall-cart-address-saved-phone">{{shippingAddress.phone}}</text>
+            </view>
+            <text class="mall-cart-address-saved-full">{{shippingAddress.fullAddress}}</text>
+          </view>
+        </view>
+
+        <view wx:else class="mall-cart-address-status">
+          <text class="mall-cart-address-status-copy">你还没有地址，先新增一条收货地址，再回来完成下单。</text>
+        </view>
+      </view>
+
+      <block wx:if="{{addressPickerVisible}}">
+        <view class="mall-address-picker-overlay" bindtap="onCloseAddressPicker">
+          <view class="mall-address-picker-sheet" catchtap="noop">
+            <view class="mall-address-picker-handle"></view>
+            <view class="mall-address-picker-head">
+              <view class="mall-address-picker-copy">
+                <text class="mall-address-picker-title">选择收货地址</text>
+                <text class="mall-address-picker-caption">这里只切换本次订单使用的地址，不会改动默认地址。</text>
+              </view>
+              <text class="mall-address-picker-close" bindtap="onCloseAddressPicker">取消</text>
+            </view>
+
+            <scroll-view class="mall-address-picker-scroll" scroll-y="{{true}}">
+              <view class="mall-address-list">
+                <view
+                  wx:for="{{shippingAddresses}}"
+                  wx:key="id"
+                  class="mall-address-item {{selectedAddressId == item.id ? 'mall-address-item-selected' : ''}}"
+                  data-id="{{item.id}}"
+                  bindtap="onSelectAddress"
+                >
+                  <view class="mall-address-item-head">
+                    <view class="mall-address-item-user">
+                      <text class="mall-address-item-name">{{item.recipientName}}</text>
+                      <text class="mall-address-item-phone">{{item.phone}}</text>
+                    </view>
+                    <view class="mall-address-item-tags">
+                      <text wx:if="{{selectedAddressId == item.id}}" class="mall-address-tag mall-address-tag-selected">本次下单</text>
+                      <text wx:if="{{item.isDefault}}" class="mall-address-tag">默认</text>
+                    </view>
+                  </view>
+                  <text class="mall-address-item-full">{{item.fullAddress}}</text>
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+        </view>
+      </block>
+
+      <view wx:if="{{cartItems.length}}" class="mall-cart-coupon-card">
+        <view class="mall-cart-coupon-head">
+          <text class="mall-cart-coupon-title">优惠券</text>
+          <text class="mall-cart-coupon-caption">
+            {{couponLoading ? '优惠券加载中...' : (cartCouponSummary ? cartCouponSummary.hintText : '当前订单暂无可用优惠券')}}
+          </text>
+        </view>
+        <view
+          wx:if="{{cartCouponSummary && !cartCouponSummary.loginRequired && cartCouponSummary.availableCount > 0}}"
+          class="mall-cart-coupon-row"
+          bindtap="onSelectCartCoupon"
+        >
+          <text class="mall-cart-coupon-name">
+            {{cartCouponSummary.selectionMode === 'NONE' ? '本次不使用优惠券' : (cartCouponSummary.couponName || '自动匹配最优券')}}
+          </text>
+          <text class="mall-cart-coupon-discount">
+            {{cartCouponSummary.selectionMode === 'NONE' ? '去切换' : (cartCouponSummary.discountAmount > 0 ? ('-' + cartCouponSummary.discountAmountText) : '去切换')}}
+          </text>
+        </view>
+      </view>
+
+      <view class="mall-cart-total-row">
+        <text class="mall-cart-total-label">{{cartPricingSummary && cartPricingSummary.memberDiscountApplied ? '商品原价合计' : '商品合计'}}</text>
+        <text class="mall-cart-total-price">
+          {{cartPricingSummary ? (cartPricingSummary.memberDiscountApplied ? cartPricingSummary.publicAmountText : cartPricingSummary.orderAmountText) : cartAmountText}}
+        </text>
+      </view>
+
+      <view wx:if="{{cartPricingSummary && cartPricingSummary.memberDiscountApplied}}" class="mall-cart-total-row">
+        <text class="mall-cart-total-label">会员优惠</text>
+        <text class="mall-cart-total-discount">-{{cartPricingSummary.memberDiscountAmountText}}</text>
+      </view>
+
+      <view wx:if="{{cartPricingSummary && cartPricingSummary.couponDiscountApplied}}" class="mall-cart-total-row">
+        <text class="mall-cart-total-label">优惠券抵扣</text>
+        <text class="mall-cart-total-discount">-{{cartPricingSummary.couponDiscountAmountText}}</text>
+      </view>
+
+      <view wx:if="{{cartPricingSummary && cartPricingSummary.totalDiscountAmount > 0}}" class="mall-cart-total-row">
+        <text class="mall-cart-total-label">已省合计</text>
+        <text class="mall-cart-total-discount">-{{cartPricingSummary.totalDiscountAmountText}}</text>
+      </view>
+
+      <view class="mall-cart-total-row">
+        <text class="mall-cart-total-label">应付金额</text>
+        <text class="mall-cart-total-price">{{cartPricingSummary ? cartPricingSummary.payableAmountText : (cartCouponSummary ? cartCouponSummary.payableAmountText : cartAmountText)}}</text>
+      </view>
+
+      <text wx:if="{{cartPricingSummary && cartPricingSummary.couponStackingRuleText}}" class="mall-cart-pricing-note">
+        {{cartPricingSummary.couponStackingRuleText}}
+      </text>
+
+      <view class="mall-sheet-footer">
+        <button class="mall-sheet-secondary" bindtap="onCloseCartPanel">继续逛</button>
+        <button class="mall-sheet-primary" bindtap="onCheckout">{{submittingOrder ? '下单中...' : '提交订单'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <mall-coupon-picker
+    visible="{{cartCouponPopupVisible}}"
+    theme="store"
+    overlay-z-index="{{62}}"
+    options="{{cartCouponPopupOptions}}"
+    subtitle="{{cartCouponSummary ? ('当前可用 ' + cartCouponSummary.availableCount + ' 张，按预计优惠从高到低展示；会员优惠会同步参与应付金额。') : '选择本次购物车结算要使用的优惠券。'}}"
+    bindclose="onCloseCartCouponPopup"
+    bindselect="onSelectCartCouponOption"
+  ></mall-coupon-picker>
+</block>

@@ -1,32 +1,62 @@
-<navigation-bar
-  title="全部打卡挑战"
-  back="{{true}}"
-  color="#222222"
-  background="#ffffff"
-></navigation-bar>
+<navigation-bar title="{{pageTitle}}" back="{{true}}" color="#222222" background="#ffffff"></navigation-bar>
 
-<scroll-view class="page checkin-page" scroll-y="{{true}}">
-  <view class="checkin-tip">
-    <view class="checkin-tip-avatar"></view>
-    <text class="checkin-tip-text">只有知识星球 App 才能打卡哦~</text>
+<scroll-view class="checkin-page" scroll-y="{{true}}">
+  <view class="checkin-tab-row">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="checkin-tab {{activeTab === item.key ? 'checkin-tab-active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onTabTap"
+    >
+      <text>{{item.label}}</text>
+      <view wx:if="{{activeTab === item.key}}" class="checkin-tab-line"></view>
+    </view>
   </view>
 
   <view class="checkin-list">
-    <view class="checkin-card" wx:for="{{items}}" wx:key="id">
-      <text class="checkin-title">{{item.title}}</text>
-      <view class="checkin-meta">
-        <text>{{item.days}}</text>
-        <text>|</text>
-        <text>{{item.status}}</text>
-      </view>
-      <view class="checkin-members">
-        <view wx:if="{{item.showAvatars}}" class="checkin-avatars">
-          <view class="checkin-avatar avatar-a"></view>
-          <view class="checkin-avatar avatar-b"></view>
-          <view class="checkin-avatar avatar-c"></view>
+    <view wx:for="{{items}}" wx:key="id" class="checkin-card" data-id="{{item.id}}" bindtap="onChallengeTap">
+      <view class="checkin-card-head">
+        <view>
+          <text class="checkin-title">{{item.title}}</text>
+          <view class="checkin-meta">
+            <text>{{item.dayText}}</text>
+            <text class="checkin-meta-divider">|</text>
+            <text>{{item.validityText}}</text>
+          </view>
         </view>
-        <text class="checkin-members-text">{{item.members}}</text>
+        <view
+          class="checkin-card-action {{item.canCheckin ? 'checkin-card-action-joined' : ''}} {{item.primaryActionDisabled ? 'checkin-card-action-disabled' : ''}}"
+        >
+          {{item.primaryActionText}}
+        </view>
+      </view>
+
+      <view class="checkin-members">
+        <view class="checkin-avatar-stack">
+          <image
+            wx:for="{{item.avatarUrls}}"
+            wx:key="*this"
+            class="checkin-avatar"
+            src="{{item}}"
+            mode="aspectFill"
+          ></image>
+        </view>
+        <text class="checkin-members-text">{{item.currentJoinedCount}}人已报名</text>
       </view>
     </view>
+
+    <view wx:if="{{!items.length}}" class="checkin-empty">
+      <text class="checkin-empty-text">没有更多内容</text>
+    </view>
   </view>
+
+  <view class="checkin-end-text">没有更多内容</view>
 </scroll-view>
+
+<view wx:if="{{canCreateChallenge}}" class="checkin-create-fab" bindtap="onCreateChallenge">
+  <view class="checkin-create-fab-button">
+    <text class="checkin-create-fab-plus">+</text>
+  </view>
+  <text class="checkin-create-fab-text">创办新的打卡挑战</text>
+</view>

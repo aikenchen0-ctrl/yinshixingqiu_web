@@ -1,5 +1,5 @@
 <navigation-bar
-  title="知识星球"
+  title="饮视星球"
   back="{{true}}"
   back-url="/pages/index/index"
   color="#22160d"
@@ -32,8 +32,16 @@
           bindtap="onPlanetTap"
         >
           <view class="planet-row-left">
-            <view class="planet-avatar {{item.avatarClass}}">
-              <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+            <view class="planet-avatar planet-avatar-frame {{item.avatarClass}}">
+              <image
+                wx:if="{{item.avatarImageUrl}}"
+                class="planet-avatar-image"
+                src="{{item.avatarImageUrl}}"
+                mode="aspectFill"
+                data-id="{{item.id}}"
+                binderror="onAvatarError"
+              ></image>
+              <text wx:else class="planet-avatar-text">{{item.avatarText}}</text>
             </view>
             <text class="planet-name">{{item.name}}</text>
           </view>
@@ -65,8 +73,16 @@
             bindtap="onPlanetTap"
           >
             <view class="planet-row-left">
-              <view class="planet-avatar {{item.avatarClass}}">
-                <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+              <view class="planet-avatar planet-avatar-frame {{item.avatarClass}}">
+                <image
+                  wx:if="{{item.avatarImageUrl}}"
+                  class="planet-avatar-image"
+                  src="{{item.avatarImageUrl}}"
+                  mode="aspectFill"
+                  data-id="{{item.id}}"
+                  binderror="onAvatarError"
+                ></image>
+                <text wx:else class="planet-avatar-text">{{item.avatarText}}</text>
               </view>
               <text class="planet-name">{{item.name}}</text>
             </view>
@@ -93,8 +109,16 @@
             bindtap="onPlanetTap"
           >
             <view class="planet-row-left">
-              <view class="planet-avatar {{item.avatarClass}}">
-                <text class="planet-avatar-text">{{item.name.slice(0, 1)}}</text>
+              <view class="planet-avatar planet-avatar-frame {{item.avatarClass}}">
+                <image
+                  wx:if="{{item.avatarImageUrl}}"
+                  class="planet-avatar-image"
+                  src="{{item.avatarImageUrl}}"
+                  mode="aspectFill"
+                  data-id="{{item.id}}"
+                  binderror="onAvatarError"
+                ></image>
+                <text wx:else class="planet-avatar-text">{{item.avatarText}}</text>
               </view>
               <text class="planet-name">{{item.name}}</text>
             </view>

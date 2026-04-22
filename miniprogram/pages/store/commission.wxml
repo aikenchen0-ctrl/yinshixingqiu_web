@@ -1,0 +1,116 @@
+<navigation-bar
+  title="分享佣金"
+  back="{{true}}"
+  color="#333333"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page mall-commission-page">
+  <view class="mall-commission-hero-card">
+    <text class="mall-commission-hero-title">分享佣金</text>
+    <text class="mall-commission-hero-subtitle">这里汇总你通过商城分享带来的佣金订单。佣金由商家承担，买家确认收货或系统自动收货后才会结算到账。</text>
+  </view>
+
+  <view class="mall-commission-summary-grid">
+    <view class="mall-commission-summary-card">
+      <text class="mall-commission-summary-label">佣金订单</text>
+      <text class="mall-commission-summary-value">{{summary.orderCount}}</text>
+    </view>
+    <view class="mall-commission-summary-card">
+      <text class="mall-commission-summary-label">累计佣金</text>
+      <text class="mall-commission-summary-value">{{summary.totalAmountText}}</text>
+    </view>
+    <view class="mall-commission-summary-card">
+      <text class="mall-commission-summary-label">待结算</text>
+      <text class="mall-commission-summary-value">{{summary.pendingAmountText}}</text>
+    </view>
+    <view class="mall-commission-summary-card">
+      <text class="mall-commission-summary-label">已结算</text>
+      <text class="mall-commission-summary-value">{{summary.confirmedAmountText}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="mall-commission-empty-card">
+    <text class="mall-commission-empty-title">{{emptyText}}</text>
+    <text class="mall-commission-empty-copy">正在读取商城分享佣金数据。</text>
+  </view>
+
+  <block wx:elif="{{allCommissions.length}}">
+    <view class="mall-commission-filter-row">
+      <view
+        wx:for="{{filterOptions}}"
+        wx:key="key"
+        class="mall-commission-filter-chip {{filterKey === item.key ? 'is-active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onChangeFilter"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view wx:if="{{commissions.length}}" class="mall-commission-list">
+      <view wx:for="{{commissions}}" wx:key="id" class="mall-commission-card">
+        <view class="mall-commission-card-head">
+          <view class="mall-commission-card-copy">
+            <text class="mall-commission-order-no">{{item.orderNo}}</text>
+            <text class="mall-commission-order-time">下单时间 {{item.createdAtText}}</text>
+          </view>
+
+          <view class="mall-commission-amount-stack">
+            <text class="mall-commission-amount">{{item.commissionAmountText}}</text>
+            <text class="mall-commission-status mall-commission-status-{{item.statusClassName}}">{{item.commissionStatusLabel}}</text>
+          </view>
+        </view>
+
+        <view class="mall-commission-product-row">
+          <view class="mall-commission-cover">
+            <image
+              wx:if="{{item.coverImageUrl}}"
+              class="mall-commission-image"
+              src="{{item.coverImageUrl}}"
+              mode="aspectFill"
+              binderror="onCommissionImageError"
+              data-index="{{index}}"
+              data-commission-id="{{item.id}}"
+            ></image>
+            <text wx:else class="mall-commission-fallback">{{item.coverFallbackText}}</text>
+          </view>
+
+          <view class="mall-commission-product-copy">
+            <text class="mall-commission-product-title">{{item.productTitle}}</text>
+            <text class="mall-commission-product-subtitle">佣金基数 {{item.commissionBaseAmountText}} · 比例 {{item.commissionRateText}} · 商家承担</text>
+          </view>
+        </view>
+
+        <view class="mall-commission-meta-list">
+          <view class="mall-commission-meta-row">
+            <text class="mall-commission-meta-label">订单状态</text>
+            <text class="mall-commission-meta-value">{{item.orderStatusLabel}}</text>
+          </view>
+          <view class="mall-commission-meta-row">
+            <text class="mall-commission-meta-label">处理说明</text>
+            <text class="mall-commission-meta-value">{{item.statusHint}}</text>
+          </view>
+          <view wx:if="{{item.settledAtText}}" class="mall-commission-meta-row">
+            <text class="mall-commission-meta-label">结算时间</text>
+            <text class="mall-commission-meta-value">{{item.settledAtText}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:else class="mall-commission-empty-card">
+      <text class="mall-commission-empty-title">{{emptyText}}</text>
+      <text class="mall-commission-empty-copy">切换上面的筛选条件，可以看不同状态的佣金订单。</text>
+    </view>
+  </block>
+
+  <view wx:else class="mall-commission-empty-card">
+    <text class="mall-commission-empty-title">{{emptyText}}</text>
+    <text class="mall-commission-empty-copy">{{loginRequired ? '登录后才能查看你的分享佣金。' : '先分享商城商品，成交后佣金会显示在这里。'}}</text>
+    <view class="mall-commission-empty-actions">
+      <button wx:if="{{loginRequired}}" class="mall-commission-primary" bindtap="onOpenLogin">去登录</button>
+      <button wx:else class="mall-commission-primary" bindtap="onGoStore">去逛商城</button>
+    </view>
+  </view>
+</view>

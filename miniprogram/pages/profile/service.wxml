@@ -1,0 +1,38 @@
+<navigation-bar
+  title="商城服务"
+  back="{{true}}"
+  backUrl="/pages/profile/index"
+  color="#333333"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page profile-service-page">
+  <view class="profile-service-hero-card">
+    <text class="profile-service-hero-title">商城服务</text>
+    <text class="profile-service-hero-subtitle">商城相关的地址、订单、退款和分享佣金统一放这里处理，避免和知识星球功能混在一起。</text>
+  </view>
+
+  <view class="profile-service-list">
+    <view
+      wx:for="{{entries}}"
+      wx:key="id"
+      class="profile-service-card"
+      data-id="{{item.id}}"
+      bindtap="onEntryTap"
+    >
+      <view class="profile-service-card-copy">
+        <text class="profile-service-card-title">{{item.title}}</text>
+        <text class="profile-service-card-desc">{{item.desc}}</text>
+      </view>
+      <view class="profile-service-card-action">
+        <text class="profile-service-card-action-text">{{item.actionText}}</text>
+        <text class="profile-service-card-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="profile-service-tip-card">
+    <text class="profile-service-tip-title">当前处理方式</text>
+    <text class="profile-service-tip-desc">商城退款入口会直接打开订单页的“退款相关”筛选，先保证能用，后面再单独细化商城售后页面。</text>
+  </view>
+</view>

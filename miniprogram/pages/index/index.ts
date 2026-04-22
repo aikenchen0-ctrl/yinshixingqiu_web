@@ -52,9 +52,9 @@ Page({
     ] as PulseItem[],
   },
   onQuickAction(e: WechatMiniprogram.TouchEvent) {
-    const action = e.currentTarget.dataset.action
-    if (action === 'calendar') {
-      wx.switchTab({ url: '/pages/calendar/index' })
+    const action = String(e.currentTarget.dataset.action || '')
+    if (action === 'course') {
+      wx.switchTab({ url: '/pages/course/list' })
       return
     }
     if (action === 'articles') {

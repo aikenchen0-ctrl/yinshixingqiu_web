@@ -6,125 +6,109 @@
 ></navigation-bar>
 
 <view class="page create-page">
-  <block wx:if="{{mode === 'paid'}}">
-    <view class="create-shell">
-      <view class="create-card">
-        <view class="create-step-title">
-          <text class="create-step-index">{{currentStep}}/{{totalStep}}</text>
-          <text class="create-step-text">{{currentStep === 1 ? '完善基本信息' : '设置加入价格'}}</text>
-        </view>
-        <view class="create-divider"></view>
-
-        <block wx:if="{{currentStep === 1}}">
-          <input
-            class="create-input"
-            placeholder="输入星球名称（15字内）"
-            placeholder-class="create-input-placeholder"
-            maxlength="15"
-            value="{{planetName}}"
-            bindinput="onNameInput"
-          />
-        </block>
-
-        <block wx:else>
-          <view class="price-input-box">
-            <text class="price-unit">¥</text>
-            <input
-              class="price-input"
-              type="number"
-              maxlength="4"
-              value="{{priceValue}}"
-              bindinput="onPriceInput"
-            />
-          </view>
-          <text class="price-tip">创建后支持修改价格</text>
-        </block>
+  <view class="create-shell">
+    <view class="create-card">
+      <view class="create-step-title">
+        <text class="create-step-index">{{currentStep}}/{{totalStep}}</text>
+        <text class="create-step-text">{{currentStep === 1 ? '完善基本信息' : '设置加入价格'}}</text>
       </view>
+      <view class="create-divider"></view>
 
       <block wx:if="{{currentStep === 1}}">
-        <view class="create-tip-card">
-          <text class="create-tip-text">
-            包含时政、新闻、盗版、低俗、色情、封建迷信等内容的星球，将会被封停星球和帐号。
-          </text>
-          <text class="create-tip-icon">?</text>
-        </view>
+        <input
+          class="create-input"
+          placeholder="输入星球名称（15字内）"
+          placeholder-class="create-input-placeholder"
+          maxlength="15"
+          value="{{planetName}}"
+          bindinput="onNameInput"
+        />
       </block>
 
       <block wx:else>
-        <view class="join-type-card">
-          <text class="join-type-title">选择年费类型</text>
-          <view class="join-type-list">
-            <view
-              class="join-type-item {{item.checked ? 'join-type-item-active' : ''}}"
-              wx:for="{{joinTypes}}"
-              wx:key="key"
-              data-key="{{item.key}}"
-              bindtap="onSelectJoinType"
-            >
-              <view class="join-type-radio {{item.checked ? 'join-type-radio-active' : ''}}"></view>
-              <view class="join-type-copy">
-                <text class="join-type-name">{{item.title}}</text>
-                <text wx:if="{{item.desc}}" class="join-type-desc">{{item.desc}}</text>
-              </view>
-            </view>
-          </view>
+        <view class="price-input-box">
+          <text class="price-unit">¥</text>
+          <input
+            class="price-input"
+            type="number"
+            placeholder="0"
+            maxlength="4"
+            value="{{priceValue}}"
+            bindinput="onPriceInput"
+          />
         </view>
-
-        <view class="free-entry" bindtap="goFreeMode">想要创建免费星球</view>
+        <text class="price-tip">价格可从 0 开始，输入 0 为免费星球，输入 1 及以上为付费星球</text>
       </block>
     </view>
 
-    <view class="create-footer">
-      <view
-        wx:if="{{currentStep === 2}}"
-        class="agreement-row"
-        bindtap="onToggleAgreement"
-      >
-        <view class="agreement-check {{agreementChecked ? 'agreement-check-active' : ''}}"></view>
-        <text class="agreement-text">我已阅读并同意《知识星球星主规则》</text>
+    <block wx:if="{{currentStep === 1}}">
+      <view class="create-tip-card">
+        <text class="create-tip-text">
+          包含时政、新闻、盗版、低俗、色情、封建迷信等内容的星球，将会被封停星球和帐号。
+        </text>
+        <text class="create-tip-icon">?</text>
       </view>
-      <button
-        wx:if="{{currentStep === 1}}"
-        class="create-submit-button {{!planetName ? 'create-submit-button-disabled' : ''}}"
-        disabled="{{!planetName || submitting}}"
-        bindtap="goNextStep"
-      >
-        继续
-      </button>
-      <button
-        wx:else
-        class="create-submit-button {{submitting ? 'create-submit-button-loading' : ''}}"
-        disabled="{{submitting}}"
-        bindtap="onSubmit"
-      >
-        立即创建
-      </button>
-    </view>
-  </block>
+    </block>
 
-  <block wx:else>
-    <view class="create-shell">
-      <view class="create-card create-card-free">
-        <view class="free-card-copy">
-          <text class="free-card-title">免费星球</text>
-          <text class="free-card-desc">所有用户，无需付费即可加入星球</text>
-        </view>
-        <view class="create-divider"></view>
-        <view class="free-rule-title">仅支持使用「邀请码」创建免费星球</view>
-        <view class="free-rule-panel">
-          <view class="free-rule-question-row">
-            <text class="free-rule-icon">≡</text>
-            <text class="free-rule-question">如何获取「邀请码」？</text>
+    <block wx:elif="{{priceValue !== '0'}}">
+      <view class="join-type-card">
+        <text class="join-type-title">选择年费类型</text>
+        <view class="join-type-list">
+          <view
+            class="join-type-item {{item.checked ? 'join-type-item-active' : ''}}"
+            wx:for="{{joinTypes}}"
+            wx:key="key"
+            data-key="{{item.key}}"
+            bindtap="onSelectJoinType"
+          >
+            <view class="join-type-radio {{item.checked ? 'join-type-radio-active' : ''}}"></view>
+            <view class="join-type-copy">
+              <text class="join-type-name">{{item.title}}</text>
+              <text wx:if="{{item.desc}}" class="join-type-desc">{{item.desc}}</text>
+            </view>
           </view>
-          <text class="free-rule-item">• 在知识星球 App，付费购买邀请码；</text>
-          <text class="free-rule-item">• 请其他有邀请码的星主赠送给你吧～</text>
-          <text class="free-rule-item">• 在 App 内的 我-邀请码 内，可查看和使用你的邀请码。</text>
         </view>
       </view>
-    </view>
 
-    <view class="create-footer">
-      <button class="create-submit-button" bindtap="goPaidMode">去创建付费星球</button>
+      <view class="free-entry" bindtap="goFreeMode">免费星球就是把加入价格设为 0</view>
+    </block>
+
+    <block wx:else>
+      <view class="join-type-card free-mode-card">
+        <text class="join-type-title">当前将创建免费星球</text>
+        <view class="free-mode-panel">
+          <text class="free-mode-text">加入价格为 0，所有成员都可以直接加入星球。</text>
+          <text class="free-mode-text">后端会自动按免费星球处理，并展示为“免费加入”。</text>
+        </view>
+        <view class="free-reset-entry" bindtap="goPaidMode">改回付费星球</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="create-footer">
+    <view
+      wx:if="{{currentStep === 2}}"
+      class="agreement-row"
+      bindtap="onToggleAgreement"
+    >
+      <view class="agreement-check {{agreementChecked ? 'agreement-check-active' : ''}}"></view>
+      <text class="agreement-text">我已阅读并同意《饮视星球星主规则》</text>
     </view>
-  </block>
+    <button
+      wx:if="{{currentStep === 1}}"
+      class="create-submit-button {{!planetName ? 'create-submit-button-disabled' : ''}}"
+      disabled="{{!planetName || submitting}}"
+      bindtap="goNextStep"
+    >
+      继续
+    </button>
+    <button
+      wx:else
+      class="create-submit-button {{submitting ? 'create-submit-button-loading' : ''}}"
+      disabled="{{submitting}}"
+      bindtap="onSubmit"
+    >
+      {{priceValue === '0' ? '立即创建免费星球' : '立即创建'}}
+    </button>
+  </view>
 </view>

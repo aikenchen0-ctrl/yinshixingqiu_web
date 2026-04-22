@@ -1,5 +1,5 @@
 <navigation-bar
-  title="知识星球"
+  title="饮视星球"
   back="{{true}}"
   color="#111111"
   background="#ffffff"

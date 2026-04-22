@@ -1,0 +1,162 @@
+<navigation-bar
+  title="退款审批"
+  back="{{true}}"
+  color="#22160d"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="refunds-page">
+  <view wx:if="{{loading}}" class="refunds-loading">
+    <text class="refunds-loading-text">退款审批加载中...</text>
+  </view>
+
+  <view wx:else class="refunds-shell">
+    <view class="refunds-hero">
+      <text class="refunds-title">退款审批</text>
+      <text class="refunds-subtitle">这里统一查看我创建的星球退款审批，以及我加入的星球退款审批状态。</text>
+      <text class="refunds-note">加入侧仅在退款期内可申请，创建侧通过审批后会自动退款并移出成员。</text>
+    </view>
+
+    <view class="refunds-tab-row">
+      <view
+        class="refunds-tab {{activeTab === 'created' ? 'refunds-tab-active' : ''}}"
+        data-key="created"
+        bindtap="onTabTap"
+      >
+        <text class="refunds-tab-title">我创建的星球</text>
+        <text class="refunds-tab-desc">待我审批</text>
+        <text class="refunds-tab-badge">{{createdPendingCount}}</text>
+      </view>
+      <view
+        class="refunds-tab {{activeTab === 'joined' ? 'refunds-tab-active' : ''}}"
+        data-key="joined"
+        bindtap="onTabTap"
+      >
+        <text class="refunds-tab-title">我加入的星球</text>
+        <text class="refunds-tab-desc">审批状态</text>
+        <text class="refunds-tab-badge">{{joinedPendingCount}}</text>
+      </view>
+    </view>
+
+    <block wx:if="{{activeTab === 'created'}}">
+      <view class="refunds-summary">
+        <view class="refunds-summary-card">
+          <text class="refunds-summary-value">{{createdPendingCount}}</text>
+          <text class="refunds-summary-label">待处理申请</text>
+        </view>
+        <view class="refunds-summary-card">
+          <text class="refunds-summary-value">{{createdItems.length}}</text>
+          <text class="refunds-summary-label">当前列表</text>
+        </view>
+      </view>
+
+      <view wx:if="{{createdItems.length}}" class="refunds-list">
+        <view wx:for="{{createdItems}}" wx:key="orderNo" class="refunds-card">
+          <view class="refunds-card-head">
+            <view class="refunds-user">
+              <image wx:if="{{item.avatarUrl}}" class="refunds-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+              <view wx:else class="refunds-avatar refunds-avatar-fallback">
+                <text class="refunds-avatar-text">{{item.avatarText}}</text>
+              </view>
+              <view class="refunds-user-copy">
+                <text class="refunds-user-name">{{item.nickname}}</text>
+                <text class="refunds-user-meta">{{item.mobile || '未绑定手机号'}}</text>
+              </view>
+            </view>
+            <view class="refunds-amount-box">
+              <text class="refunds-amount-label">退款金额</text>
+              <text class="refunds-amount-value">{{item.refundAmountText}}</text>
+            </view>
+          </view>
+
+          <view class="refunds-body">
+            <text class="refunds-body-line">所属星球：{{item.groupName}}</text>
+            <text class="refunds-body-line">申请时间：{{item.requestedAt || '未知时间'}}</text>
+            <text class="refunds-body-line">订单号：{{item.orderNo || '暂无'}}</text>
+            <text class="refunds-body-hint">{{item.refundHint || '等待审批'}}</text>
+          </view>
+
+          <view wx:if="{{item.canReview}}" class="refunds-actions refunds-actions-split">
+            <view
+              class="refunds-action refunds-action-secondary"
+              data-group-id="{{item.groupId}}"
+              data-order-no="{{item.orderNo}}"
+              data-nickname="{{item.nickname}}"
+              bindtap="onRejectTap"
+            >
+              {{submittingKey === ('REJECT:' + item.orderNo) ? '处理中...' : '驳回'}}
+            </view>
+            <view
+              class="refunds-action"
+              data-group-id="{{item.groupId}}"
+              data-order-no="{{item.orderNo}}"
+              data-nickname="{{item.nickname}}"
+              bindtap="onApproveTap"
+            >
+              {{submittingKey === ('APPROVE:' + item.orderNo) ? '处理中...' : '通过并退款'}}
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:else class="refunds-empty">
+        <text class="refunds-empty-title">暂无待审批退款</text>
+        <text class="refunds-empty-text">你创建的星球里，当前没有成员提交退款申请。</text>
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="refunds-summary">
+        <view class="refunds-summary-card">
+          <text class="refunds-summary-value">{{joinedPendingCount}}</text>
+          <text class="refunds-summary-label">审批中</text>
+        </view>
+        <view class="refunds-summary-card">
+          <text class="refunds-summary-value refunds-summary-value-accent">{{joinedActionableCount}}</text>
+          <text class="refunds-summary-label">可申请</text>
+        </view>
+      </view>
+
+      <view wx:if="{{joinedItems.length}}" class="refunds-list">
+        <view wx:for="{{joinedItems}}" wx:key="orderNo" class="refunds-card">
+          <view class="refunds-card-head refunds-card-head-top">
+            <view class="refunds-group-copy">
+              <text class="refunds-group-name">{{item.groupName}}</text>
+              <text class="refunds-group-meta">星主 {{item.ownerName}}</text>
+            </view>
+            <text class="refunds-status {{item.statusClass}}">
+              {{item.statusLabel}}
+            </text>
+          </view>
+
+          <view class="refunds-body">
+            <text class="refunds-body-line">订单号：{{item.orderNo || '暂无'}}</text>
+            <text class="refunds-body-line">退款金额：{{item.refundAmountText}}</text>
+            <text wx:if="{{item.submittedAt}}" class="refunds-body-line">提交时间：{{item.submittedAt}}</text>
+            <text wx:if="{{item.reviewedAt}}" class="refunds-body-line">审批时间：{{item.reviewedAt}}</text>
+            <text wx:if="{{!item.submittedAt && !item.reviewedAt && item.updatedAt}}" class="refunds-body-line">更新时间：{{item.updatedAt}}</text>
+            <text wx:if="{{item.reviewReason}}" class="refunds-body-line">审批说明：{{item.reviewReason}}</text>
+            <text class="refunds-body-hint">{{item.hint || '暂无说明'}}</text>
+          </view>
+
+          <view wx:if="{{item.actionable}}" class="refunds-actions">
+            <view
+              class="refunds-action"
+              data-group-id="{{item.groupId}}"
+              data-group-name="{{item.groupName}}"
+              data-action-label="{{item.actionLabel}}"
+              bindtap="onJoinedRequestTap"
+            >
+              {{submittingKey === ('request:' + item.groupId) ? '提交中...' : item.actionLabel}}
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:else class="refunds-empty">
+        <text class="refunds-empty-title">暂无退款状态</text>
+        <text class="refunds-empty-text">你加入的付费星球还没有可展示的退款审批记录。</text>
+      </view>
+    </block>
+  </view>
+</view>

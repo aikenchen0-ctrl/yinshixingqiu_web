@@ -1,0 +1,5 @@
+{
+  "usingComponents": {
+    "page-back-button": "/components/page-back-button/page-back-button"
+  }
+}

@@ -1,6 +1,6 @@
-import { createPlanet } from '../../utils/planet'
-import { request } from '../../utils/request'
-import { getStoredSession } from '../../utils/auth'
+import { upsertRemotePlanets } from '../../utils/planet'
+import { clearSession, getStoredSession, shouldClearSessionByError } from '../../utils/auth'
+import { createPlanet as createPlanetRequest } from '../../utils/planet-api'
 import { ensureWechatSession } from '../../utils/wechat-login'
 
 interface JoinTypeOption {
@@ -10,23 +10,13 @@ interface JoinTypeOption {
   checked: boolean
 }
 
-interface CreateResponse {
-  ok: boolean
-  message?: string
-  data: {
-    id: string
-    name: string
-    ownerName: string
-  }
-}
-
 Page({
   data: {
-    mode: 'paid',
     currentStep: 1,
     totalStep: 2,
     planetName: '',
-    priceValue: '50',
+    priceValue: '',
+    lastPaidPriceValue: '',
     agreementChecked: true,
     joinTypes: [
       {
@@ -46,53 +36,13 @@ Page({
   },
 
   async onLoad() {
-    let session = getStoredSession()
+    const session = getStoredSession()
     if (!session || !session.sessionToken) {
       try {
-        wx.showLoading({
-          title: '登录中',
-          mask: true,
-        })
         await ensureWechatSession()
-        wx.hideLoading()
-        session = getStoredSession()
       } catch {
-        wx.hideLoading()
-        wx.showModal({
-          title: '提示',
-          content: '创建星球需要先登录，是否前往登录？',
-          confirmText: '去登录',
-          cancelText: '取消',
-          success: (res) => {
-            if (res.confirm) {
-              wx.redirectTo({
-                url: '/pages/planet/mine',
-              })
-            } else {
-              wx.navigateBack()
-            }
-          },
-        })
-        return
+        // 进入页面时不阻断，提交时再提示明确错误
       }
-    }
-
-    if (!session || !session.mobile) {
-      wx.showModal({
-        title: '提示',
-        content: '创建星球前需要先完成手机号一键登录，是否前往我的页完成？',
-        confirmText: '去完成',
-        cancelText: '取消',
-        success: (res) => {
-          if (res.confirm) {
-            wx.redirectTo({
-              url: '/pages/planet/mine',
-            })
-          } else {
-            wx.navigateBack()
-          }
-        },
-      })
     }
   },
 
@@ -105,6 +55,14 @@ Page({
 
   onPriceInput(e: WechatMiniprogram.Input) {
     const priceValue = `${e.detail.value}`.replace(/[^\d]/g, '').slice(0, 4)
+    if (priceValue && priceValue !== '0') {
+      this.setData({
+        priceValue,
+        lastPaidPriceValue: priceValue,
+      })
+      return
+    }
+
     this.setData({
       priceValue,
     })
@@ -125,15 +83,23 @@ Page({
   },
 
   goFreeMode() {
+    const currentPriceValue = `${this.data.priceValue || ''}`.trim()
+    if (currentPriceValue && currentPriceValue !== '0') {
+      this.setData({
+        priceValue: '0',
+        lastPaidPriceValue: currentPriceValue,
+      })
+      return
+    }
+
     this.setData({
-      mode: 'free',
+      priceValue: '0',
     })
   },
 
   goPaidMode() {
     this.setData({
-      mode: 'paid',
-      currentStep: 1,
+      priceValue: this.data.lastPaidPriceValue || '',
     })
   },
 
@@ -157,11 +123,13 @@ Page({
     })
   },
 
-  onSubmit() {
+  async onSubmit() {
     const planetName = this.data.planetName.trim()
-    const price = Number(this.data.priceValue || '0')
+    const priceText = `${this.data.priceValue || ''}`.trim()
+    const price = Number(priceText || '0')
     const selectedJoinType = this.data.joinTypes.find((item) => item.checked)
     const joinType = selectedJoinType ? selectedJoinType.key : 'rolling'
+    const effectiveJoinType = price === 0 ? 'rolling' : joinType
 
     if (!planetName) {
       wx.showToast({
@@ -171,7 +139,7 @@ Page({
       return
     }
 
-    if (!price) {
+    if (!priceText) {
       wx.showToast({
         title: '请输入加入价格',
         icon: 'none',
@@ -187,84 +155,84 @@ Page({
       return
     }
 
-    const session = getStoredSession()
-    if (!session || !session.sessionToken) {
-      wx.showToast({
-        title: '请先登录',
-        icon: 'none',
-      })
-      wx.redirectTo({
-        url: '/pages/planet/mine',
-      })
-      return
-    }
-
-    if (!session.mobile) {
-      wx.showToast({
-        title: '请先完成手机号一键登录',
-        icon: 'none',
-      })
-      wx.redirectTo({
-        url: '/pages/planet/mine',
-      })
-      return
-    }
-
     this.setData({ submitting: true })
 
     wx.showLoading({ title: '创建中...' })
 
-    request<CreateResponse>({
-      url: '/api/planets/create',
-      method: 'POST',
-      sessionToken: session.sessionToken,
-      data: {
-        name: planetName,
-        price,
-        joinType,
-      },
-    })
-      .then((res) => {
-        wx.hideLoading()
-        if (res.ok && res.data) {
-          createPlanet(
-            {
-              name: planetName,
-              price,
-              joinType,
-            },
-            {
-              id: res.data.id,
-              ownerName: res.data.ownerName,
-            }
-          )
-          wx.showToast({
-            title: '创建成功',
-            icon: 'success',
-          })
-          this.setData({
-            submitting: false,
-          })
-          setTimeout(() => {
-            wx.redirectTo({
-              url: `/pages/planet/home?id=${res.data.id}&name=${encodeURIComponent(res.data.name)}&creator=${encodeURIComponent(res.data.ownerName)}`,
-            })
-          }, 1500)
-        } else {
-          this.setData({ submitting: false })
-          wx.showToast({
-            title: res.message || '创建失败',
-            icon: 'none',
-          })
-        }
-      })
-      .catch((err: Error) => {
-        wx.hideLoading()
-        this.setData({ submitting: false })
-        wx.showToast({
-          title: err.message || '创建失败',
-          icon: 'none',
+    try {
+      let session = getStoredSession()
+      if (!session || !session.sessionToken) {
+        session = await ensureWechatSession()
+      }
+
+      let res: Awaited<ReturnType<typeof createPlanetRequest>>
+
+      try {
+        res = await createPlanetRequest({
+          name: planetName,
+          price,
+          joinType: effectiveJoinType,
+          sessionToken: session.sessionToken,
         })
+      } catch (error) {
+        if (!shouldClearSessionByError(error)) {
+          throw error
+        }
+
+        clearSession()
+        const app = getApp<IAppOption>()
+        app.globalData.userSession = null
+
+        session = await ensureWechatSession(true)
+        res = await createPlanetRequest({
+          name: planetName,
+          price,
+          joinType: effectiveJoinType,
+          sessionToken: session.sessionToken,
+        })
+      }
+
+      if (!res.ok || !res.data) {
+        throw new Error(res.message || '创建失败，未写入服务器')
+      }
+
+      upsertRemotePlanets([
+        {
+          ...res.data,
+          joined: true,
+        },
+      ])
+
+      const targetPlanetId = res.data.id
+      const targetPlanetName = res.data.name
+      const creatorName = String(res.data.ownerName || '')
+
+      wx.hideLoading()
+
+      wx.showToast({
+        title: '创建成功',
+        icon: 'success',
       })
+      this.setData({
+        submitting: false,
+      })
+      setTimeout(() => {
+        if (!targetPlanetId) {
+          return
+        }
+
+        wx.redirectTo({
+          url: `/pages/planet/home?id=${targetPlanetId}&name=${encodeURIComponent(targetPlanetName)}&creator=${encodeURIComponent(creatorName)}`,
+        })
+      }, 800)
+    } catch (err) {
+      console.error('[planet/create] create failed', err)
+      wx.hideLoading()
+      this.setData({ submitting: false })
+      wx.showToast({
+        title: err instanceof Error ? err.message : '创建失败，未写入服务器',
+        icon: 'none',
+      })
+    }
   },
 })

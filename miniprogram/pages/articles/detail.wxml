@@ -1,64 +1,105 @@
 <navigation-bar
-  title="详情"
+  title="{{article.navTitle}}"
   back="{{true}}"
   color="#22160d"
   background="#ffffff"
 ></navigation-bar>
 
-<scroll-view class="article-detail-page" scroll-y="{{true}}">
-  <view class="article-detail-shell">
-    <view class="article-author">
-      <image class="article-author-avatar" src="{{article.authorAvatar}}" mode="aspectFill"></image>
-      <view class="article-author-copy">
-        <view class="article-author-head">
-          <text wx:if="{{article.authorTag}}" class="article-author-tag">{{article.authorTag}}</text>
-          <text class="article-author-name">{{article.author}}</text>
-        </view>
-        <text class="article-author-time">{{article.time}}</text>
-      </view>
-    </view>
-
-    <text class="article-title">{{article.title}}</text>
-    <text class="article-summary">{{article.summary}}</text>
-
-    <image class="article-cover" src="{{article.coverImage}}" mode="aspectFill"></image>
-
-    <view class="article-action-row">
-      <view class="article-action-item">
-        <view class="article-icon article-icon-like"></view>
-        <text class="article-action-count">{{article.likeCount}}</text>
-      </view>
-      <view class="article-action-item">
-        <view class="article-icon article-icon-comment"></view>
-        <text class="article-action-count">{{article.commentCount}}</text>
-      </view>
-      <text class="article-hidden-hint">{{article.hiddenHint}}</text>
-    </view>
-
-    <button class="article-more-button" bindtap="onOpenMoreContent">{{article.actionText}}</button>
-
-    <view class="article-divider-title">
-      <view class="article-divider-line"></view>
-      <text class="article-divider-text">{{article.recommendTitle}}</text>
-      <view class="article-divider-line"></view>
-    </view>
-
-    <view
-      class="article-planet-card"
-      data-id="{{article.planetCard.id}}"
-      data-name="{{article.planetCard.name}}"
-      data-creator="{{article.planetCard.creator || article.author}}"
-      bindtap="onPlanetCardTap"
-    >
-      <image class="article-planet-avatar" src="{{article.planetCard.avatar}}" mode="aspectFill"></image>
-      <view class="article-planet-copy">
-        <view class="article-planet-head">
-          <text class="article-planet-name">{{article.planetCard.name}}</text>
-          <text class="article-planet-enter">进入</text>
-        </view>
-        <text class="article-planet-intro">{{article.planetCard.intro}}</text>
-        <text class="article-planet-meta">{{article.planetCard.meta}}</text>
-      </view>
-    </view>
+<scroll-view class="article-detail-page {{article.isWechatArticle ? 'article-detail-page-wechat' : 'article-detail-page-planet'}}" scroll-y="{{true}}">
+  <view wx:if="{{loading}}" class="article-detail-state-card">
+    <text class="article-detail-state-title">正在加载文章</text>
+    <text class="article-detail-state-subtitle">正在从真实后台读取文章内容。</text>
   </view>
+
+  <view wx:elif="{{error}}" class="article-detail-state-card is-error" bindtap="onReload">
+    <text class="article-detail-state-title">文章加载失败</text>
+    <text class="article-detail-state-subtitle">{{error}}</text>
+    <text class="article-detail-state-action">点击重试</text>
+  </view>
+
+  <block wx:else>
+  <block wx:if="{{article.isWechatArticle}}">
+    <view class="wechat-article-shell">
+      <text class="wechat-article-title">{{article.title}}</text>
+
+      <view class="wechat-article-meta">
+        <text class="wechat-article-author">{{article.author}}</text>
+        <text class="wechat-article-time">{{article.time}}</text>
+        <text wx:if="{{article.authorTag}}" class="wechat-article-author-tag">{{article.authorTag}}</text>
+      </view>
+
+      <text wx:if="{{article.showStandaloneSummary}}" class="wechat-article-summary">{{article.summary}}</text>
+
+      <image wx:if="{{article.showStandaloneCover}}" class="wechat-article-cover" src="{{article.coverImage}}" mode="widthFix"></image>
+
+      <rich-text
+        wx:if="{{article.isRichContent}}"
+        class="wechat-article-rich-text"
+        nodes="{{article.visibleRichContent}}"
+      ></rich-text>
+
+      <view wx:else class="wechat-article-content">
+        <text
+          class="wechat-article-paragraph"
+          wx:for="{{article.visibleContent}}"
+          wx:key="index"
+        >{{item}}</text>
+      </view>
+
+      <view wx:if="{{article.showPaywallCard}}" class="wechat-article-paywall-card">
+        <view class="wechat-article-paywall-mask"></view>
+        <view class="wechat-article-paywall-copy">
+          <text class="wechat-article-paywall-badge">付费阅读</text>
+          <text class="wechat-article-paywall-title">{{article.paywallTitle}}</text>
+          <text class="wechat-article-paywall-subtitle">{{article.paywallSubtitle}}</text>
+          <text class="wechat-article-paywall-hint">{{article.hiddenHint}}</text>
+        </view>
+        <button class="wechat-article-paywall-button" bindtap="onOpenMoreContent">{{article.paywallButtonText}}</button>
+      </view>
+
+      <view class="wechat-article-footer">
+        <view class="wechat-article-footer-line"></view>
+        <text class="wechat-article-footer-meta">作者 {{article.author}} · {{article.readDuration}} · {{article.wordCount}}</text>
+      </view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="planet-article-shell">
+      <text class="planet-article-title">{{article.title}}</text>
+
+      <view class="planet-article-meta">
+        <text class="planet-article-author">作者 {{article.author}}</text>
+      </view>
+
+      <text wx:if="{{article.showStandaloneSummary}}" class="wechat-article-summary">{{article.summary}}</text>
+
+      <image wx:if="{{article.showStandaloneCover}}" class="planet-article-cover" src="{{article.coverImage}}" mode="widthFix"></image>
+
+      <rich-text
+        wx:if="{{article.isRichContent}}"
+        class="planet-article-rich-text"
+        nodes="{{article.visibleRichContent}}"
+      ></rich-text>
+
+      <view wx:else class="planet-article-content">
+        <text
+          class="planet-article-paragraph"
+          wx:for="{{article.visibleContent}}"
+          wx:key="index"
+        >{{item}}</text>
+      </view>
+
+      <view wx:if="{{article.showPaywallCard}}" class="planet-article-paywall-card">
+        <view class="planet-article-paywall-copy">
+          <text class="planet-article-paywall-badge">付费全文</text>
+          <text class="planet-article-paywall-title">{{article.paywallTitle}}</text>
+          <text class="planet-article-paywall-subtitle">{{article.paywallSubtitle}}</text>
+          <text class="planet-article-paywall-hint">{{article.hiddenHint}}</text>
+        </view>
+        <button class="planet-article-paywall-button" bindtap="onOpenMoreContent">{{article.paywallButtonText}}</button>
+      </view>
+    </view>
+  </block>
+  </block>
 </scroll-view>

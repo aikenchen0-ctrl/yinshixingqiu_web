@@ -1,0 +1,291 @@
+page {
+  background: #f5f5f5;
+  color: #333333;
+}
+
+.mall-orders-page {
+  min-height: 100vh;
+  padding: 20rpx 24rpx 48rpx;
+  background: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.mall-orders-hero-card {
+  padding: 32rpx 28rpx;
+  border-radius: 32rpx;
+  background: linear-gradient(135deg, #ff8d6d, #ff5f6b 62%, #ffc26b);
+  color: #ffffff;
+  box-shadow: 0 18rpx 36rpx rgba(255, 95, 107, 0.18);
+}
+
+.mall-orders-hero-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
+.mall-orders-hero-subtitle {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.mall-orders-list {
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.mall-orders-filter-row {
+  margin-top: 20rpx;
+  display: flex;
+  gap: 14rpx;
+  flex-wrap: wrap;
+}
+
+.mall-orders-filter-chip {
+  min-width: 148rpx;
+  padding: 18rpx 26rpx;
+  border-radius: 999rpx;
+  background: #ffffff;
+  color: #7d8794;
+  font-size: 24rpx;
+  line-height: 1;
+  box-shadow: 0 10rpx 22rpx rgba(15, 23, 42, 0.05);
+}
+
+.mall-orders-filter-chip.is-active {
+  background: linear-gradient(135deg, #ff8d6d, #ff5f6b);
+  color: #ffffff;
+  box-shadow: 0 14rpx 28rpx rgba(255, 95, 107, 0.18);
+}
+
+.mall-orders-card,
+.mall-orders-empty-card {
+  padding: 24rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 14rpx 30rpx rgba(15, 23, 42, 0.05);
+}
+
+.mall-orders-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.mall-orders-order-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mall-orders-order-no {
+  display: block;
+  color: #121826;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.mall-orders-order-time {
+  display: block;
+  margin-top: 10rpx;
+  color: #8b94a4;
+  font-size: 22rpx;
+}
+
+.mall-orders-status-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+  align-items: flex-end;
+}
+
+.mall-orders-status-pill {
+  min-height: 40rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #ffebe8;
+  color: #ff5c68;
+  font-size: 20rpx;
+  line-height: 40rpx;
+  text-align: center;
+}
+
+.mall-orders-status-pill-soft {
+  background: #fff6da;
+  color: #9c6b00;
+}
+
+.mall-orders-status-pill-refund {
+  background: #eef3ff;
+  color: #4b5fcf;
+}
+
+.mall-orders-preview-list {
+  margin-top: 18rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.mall-orders-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.mall-orders-preview-cover {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ff9b7d, #ffc06a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mall-orders-preview-image {
+  width: 100%;
+  height: 100%;
+}
+
+.mall-orders-preview-fallback {
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.mall-orders-preview-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mall-orders-preview-title {
+  color: #1f2937;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.mall-orders-preview-quantity {
+  color: #8b94a4;
+  font-size: 24rpx;
+}
+
+.mall-orders-more-copy {
+  display: block;
+  margin-top: 14rpx;
+  color: #9aa3b2;
+  font-size: 22rpx;
+}
+
+.mall-orders-card-foot {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #eef1f4;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.mall-orders-total-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.mall-orders-item-count {
+  display: block;
+  color: #596273;
+  font-size: 22rpx;
+}
+
+.mall-orders-shipping-note {
+  display: block;
+  margin-top: 10rpx;
+  color: #8b94a4;
+  font-size: 22rpx;
+  line-height: 1.6;
+}
+
+.mall-orders-total-side {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
+.mall-orders-total-label {
+  color: #8b94a4;
+  font-size: 22rpx;
+}
+
+.mall-orders-total-price {
+  color: #ff5c68;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.mall-orders-card-actions {
+  margin-top: 18rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mall-orders-pay-button {
+  min-width: 180rpx;
+  height: 72rpx;
+  padding: 0 28rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #ff7a66, #ff5c68);
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 72rpx;
+}
+
+.mall-orders-pay-button::after {
+  border: none;
+}
+
+.mall-orders-empty-title {
+  display: block;
+  color: #121826;
+  font-size: 30rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.mall-orders-empty-copy {
+  display: block;
+  margin-top: 14rpx;
+  color: #8b94a4;
+  font-size: 24rpx;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.mall-orders-empty-actions {
+  margin-top: 24rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.mall-orders-primary {
+  min-width: 220rpx;
+  height: 80rpx;
+  border-radius: 999rpx;
+  background: linear-gradient(135deg, #ff7a66, #ff5c68);
+  color: #ffffff;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 80rpx;
+}
+
+.mall-orders-primary::after {
+  border: none;
+}

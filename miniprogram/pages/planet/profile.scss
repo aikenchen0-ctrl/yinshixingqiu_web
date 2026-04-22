@@ -1,20 +1,57 @@
 .planet-profile-page {
   min-height: 100vh;
-  background: #ffffff;
+  background: #f7f7f5;
+}
+
+.planet-profile-loading {
+  padding-top: 240rpx;
+  display: flex;
+  justify-content: center;
+}
+
+.planet-profile-loading-text {
+  color: #9aa2a9;
+  font-size: 26rpx;
 }
 
 .planet-profile-shell {
-  padding: 72rpx 56rpx 120rpx;
+  padding: 32rpx 28rpx calc(48rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.planet-profile-hero,
+.planet-profile-section {
+  border-radius: 28rpx;
+  background: #ffffff;
+  box-shadow: 0 14rpx 36rpx rgba(26, 35, 44, 0.05);
+}
+
+.planet-profile-hero {
+  padding: 42rpx 36rpx 38rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .planet-profile-avatar {
-  width: 308rpx;
-  height: 308rpx;
-  border-radius: 16rpx;
-  background: #f3f3f3;
+  width: 240rpx;
+  height: 240rpx;
+  border-radius: 24rpx;
+  background: #eef1f3;
+}
+
+.planet-profile-avatar-trigger {
+  margin-top: 20rpx;
+  min-width: 164rpx;
+  height: 58rpx;
+  padding: 0 26rpx;
+  border-radius: 999rpx;
+  background: var(--theme-accent-subtle);
+  color: var(--theme-accent);
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .planet-profile-name {
@@ -39,12 +76,176 @@
   justify-content: center;
 }
 
+.planet-profile-input,
+.planet-profile-textarea {
+  width: 100%;
+  border-radius: 20rpx;
+  background: #f7f8f9;
+  box-sizing: border-box;
+}
+
+.planet-profile-input {
+  height: 90rpx;
+  padding: 0 26rpx;
+  color: #243140;
+  font-size: 30rpx;
+}
+
+.planet-profile-name-input {
+  margin-top: 28rpx;
+}
+
+.planet-profile-category-input {
+  margin-top: 18rpx;
+}
+
+.planet-profile-section {
+  margin-top: 24rpx;
+  padding: 32rpx 28rpx 36rpx;
+}
+
+.planet-profile-section-label {
+  color: #243140;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
 .planet-profile-intro {
   display: block;
-  width: 100%;
-  margin-top: 62rpx;
+  margin-top: 26rpx;
   color: #555555;
-  font-size: 24px;
-  line-height: 1.65;
+  font-size: 30rpx;
+  line-height: 1.7;
   white-space: pre-wrap;
+}
+
+.planet-profile-textarea {
+  min-height: 320rpx;
+  margin-top: 24rpx;
+  padding: 24rpx 26rpx;
+  color: #243140;
+  font-size: 28rpx;
+  line-height: 1.7;
+}
+
+.planet-profile-placeholder {
+  color: #a8b1b8;
+}
+
+.planet-profile-link-item {
+  margin-top: 24rpx;
+  min-height: 108rpx;
+  padding: 24rpx 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+  border-bottom: 1rpx solid #edf1f4;
+}
+
+.planet-profile-link-item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.planet-profile-link-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.planet-profile-link-title {
+  color: #243140;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.planet-profile-link-desc {
+  color: #8d99a4;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.planet-profile-link-value,
+.planet-profile-link-arrow {
+  flex-shrink: 0;
+  color: #7c8a96;
+  font-size: 26rpx;
+}
+
+.planet-profile-link-arrow {
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.planet-profile-actions {
+  margin-top: 28rpx;
+  display: flex;
+  gap: 18rpx;
+}
+
+.planet-profile-action {
+  flex: 1;
+  height: 92rpx;
+  border-radius: 22rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-profile-action-single {
+  width: 100%;
+}
+
+.planet-profile-action-primary {
+  background: linear-gradient(180deg, var(--theme-accent-soft) 0%, var(--theme-accent) 100%);
+  color: #ffffff;
+}
+
+.planet-profile-action-secondary {
+  background: #eff2f4;
+  color: #6f7c86;
+}
+
+.planet-profile-danger-section {
+  border: 1rpx solid rgba(169, 48, 57, 0.08);
+}
+
+.planet-profile-danger-hint {
+  display: block;
+  margin-top: 20rpx;
+  color: #8f7471;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.planet-profile-danger-action {
+  margin-top: 28rpx;
+  width: 100%;
+  height: 88rpx;
+  border-radius: 22rpx;
+  background: linear-gradient(180deg, #c85b52 0%, #a93039 100%);
+  color: #ffffff;
+  font-size: 30rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planet-profile-danger-action-disabled {
+  background: #f3e8e7;
+  color: #b89a97;
+}
+
+.planet-profile-danger-note {
+  display: block;
+  margin-top: 18rpx;
+  color: #b08a86;
+  font-size: 22rpx;
+  line-height: 1.6;
 }

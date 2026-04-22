@@ -1,0 +1,249 @@
+<navigation-bar
+  title="订单详情"
+  back="{{true}}"
+  color="#333333"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="page mall-order-detail-page">
+  <view wx:if="{{loading}}" class="mall-order-detail-empty-card">
+    <text class="mall-order-detail-empty-title">{{emptyText}}</text>
+    <text class="mall-order-detail-empty-copy">正在读取这笔订单的真实详情。</text>
+  </view>
+
+  <block wx:elif="{{order}}">
+    <view class="mall-order-detail-hero-card">
+      <text class="mall-order-detail-status">{{order.statusLabel}}</text>
+      <text class="mall-order-detail-order-no">{{order.orderNo}}</text>
+      <text class="mall-order-detail-hero-copy">{{order.shippingStatusLabel}} · 下单时间 {{order.createdAtText}}</text>
+      <text wx:if="{{order.refundStatusLabel}}" class="mall-order-detail-hero-refund">{{order.refundStatusLabel}}</text>
+    </view>
+
+    <view class="mall-order-detail-section">
+      <text class="mall-order-detail-section-title">收货信息</text>
+      <view class="mall-order-detail-address-card">
+        <view class="mall-order-detail-address-row">
+          <text class="mall-order-detail-address-name">{{order.shippingAddress.recipientName}}</text>
+          <text class="mall-order-detail-address-phone">{{order.shippingAddress.phone}}</text>
+        </view>
+        <text class="mall-order-detail-address-full">{{order.shippingAddress.fullAddress}}</text>
+      </view>
+    </view>
+
+    <view class="mall-order-detail-section">
+      <text class="mall-order-detail-section-title">商品清单</text>
+      <view class="mall-order-detail-items-card">
+        <view wx:for="{{order.items}}" wx:key="id" class="mall-order-detail-item">
+          <view class="mall-order-detail-cover">
+            <image
+              wx:if="{{item.coverImageUrl}}"
+              class="mall-order-detail-image"
+              src="{{item.coverImageUrl}}"
+              mode="aspectFill"
+              binderror="onOrderItemImageError"
+              data-item-index="{{index}}"
+              data-item-id="{{item.id}}"
+            ></image>
+            <text wx:else class="mall-order-detail-fallback">{{item.coverFallbackText}}</text>
+          </view>
+
+          <view class="mall-order-detail-copy">
+            <text class="mall-order-detail-title">{{item.title}}</text>
+            <text wx:if="{{item.subtitle}}" class="mall-order-detail-subtitle">{{item.subtitle}}</text>
+            <view class="mall-order-detail-price-row">
+              <text class="mall-order-detail-unit-price">{{item.unitPriceText}}</text>
+              <text class="mall-order-detail-quantity">{{item.quantityText}}</text>
+            </view>
+          </view>
+
+          <text class="mall-order-detail-item-total">{{item.totalAmountText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="mall-order-detail-section">
+      <text class="mall-order-detail-section-title">订单信息</text>
+      <view class="mall-order-detail-meta-card">
+        <view class="mall-order-detail-status-note">
+          <text class="mall-order-detail-status-note-text">{{order.statusNotice}}</text>
+        </view>
+        <view class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">订单状态</text>
+          <text class="mall-order-detail-meta-value">{{order.statusLabel}}</text>
+        </view>
+        <view class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">发货状态</text>
+          <text class="mall-order-detail-meta-value">{{order.shippingStatusLabel}}</text>
+        </view>
+        <view wx:if="{{order.refundStatusLabel}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">退款状态</text>
+          <text class="mall-order-detail-meta-value">{{order.refundStatusLabel}}</text>
+        </view>
+        <view wx:if="{{order.shareApplied && order.shareCommissionRecipientText}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">佣金获得者</text>
+          <text class="mall-order-detail-meta-value">{{order.shareCommissionRecipientText}}</text>
+        </view>
+        <view wx:if="{{order.shareApplied && order.shareCommissionAmountText}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">佣金金额</text>
+          <text class="mall-order-detail-meta-value">{{order.shareCommissionAmountText}}</text>
+        </view>
+        <view wx:if="{{order.shareApplied && order.shareCommissionStatusLabel}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">佣金状态</text>
+          <text class="mall-order-detail-meta-value">{{order.shareCommissionStatusLabel}}</text>
+        </view>
+        <view wx:if="{{order.refundReason}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">退款原因</text>
+          <text class="mall-order-detail-meta-value">{{order.refundReason}}</text>
+        </view>
+        <view wx:if="{{order.refundAmountText && order.refundStatus !== 'NONE'}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">退款金额</text>
+          <text class="mall-order-detail-meta-value">{{order.refundAmountText}}</text>
+        </view>
+        <view wx:if="{{order.refundReviewedAtText}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">处理时间</text>
+          <text class="mall-order-detail-meta-value">{{order.refundReviewedAtText}}</text>
+        </view>
+        <view wx:if="{{order.refundedAtText}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">退款完成</text>
+          <text class="mall-order-detail-meta-value">{{order.refundedAtText}}</text>
+        </view>
+        <view wx:if="{{order.refundReviewRemark}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">处理说明</text>
+          <text class="mall-order-detail-meta-value">{{order.refundReviewRemark}}</text>
+        </view>
+        <view wx:if="{{order.refundUserReceivedAccount}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">退款去向</text>
+          <text class="mall-order-detail-meta-value">{{order.refundUserReceivedAccount}}</text>
+        </view>
+        <view class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">{{order.memberDiscountApplied ? '商品原价合计' : '订单金额'}}</text>
+          <text class="mall-order-detail-meta-value">{{order.memberDiscountApplied ? order.publicAmountText : order.orderAmountText}}</text>
+        </view>
+        <view wx:if="{{order.memberDiscountApplied}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">会员优惠</text>
+          <text class="mall-order-detail-meta-value">-{{order.memberDiscountAmountText}}</text>
+        </view>
+        <view wx:if="{{order.couponName}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">使用优惠券</text>
+          <text class="mall-order-detail-meta-value">{{order.couponName}}{{order.couponStageLabel ? (' · ' + order.couponStageLabel) : ''}}</text>
+        </view>
+        <view wx:if="{{order.discountAmount > 0}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">优惠券抵扣</text>
+          <text class="mall-order-detail-meta-value">-{{order.discountAmountText}}</text>
+        </view>
+        <view wx:if="{{order.totalDiscountAmount > 0}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">已省合计</text>
+          <text class="mall-order-detail-meta-value">-{{order.totalDiscountAmountText}}</text>
+        </view>
+        <view class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">应付金额</text>
+          <text class="mall-order-detail-meta-value">{{order.payableAmountText}}</text>
+        </view>
+        <view wx:if="{{order.pricingInspectionVisible}}" class="mall-order-detail-pricing-inspection {{order.pricingInspectionToneClass}}">
+          <view class="mall-order-detail-pricing-inspection-head">
+            <text class="mall-order-detail-pricing-inspection-title">优惠说明</text>
+            <text class="mall-order-detail-pricing-inspection-badge">{{order.pricingInspectionLabel}}</text>
+          </view>
+          <text class="mall-order-detail-pricing-inspection-summary">{{order.pricingInspectionSummary}}</text>
+          <view wx:if="{{order.pricingInspectionIssues.length}}" class="mall-order-detail-pricing-inspection-list">
+            <view wx:for="{{order.pricingInspectionIssues}}" wx:key="code" class="mall-order-detail-pricing-inspection-item">
+              <text class="mall-order-detail-pricing-inspection-item-title">{{item.title}}</text>
+              <text class="mall-order-detail-pricing-inspection-item-detail">{{item.detail}}</text>
+            </view>
+          </view>
+        </view>
+        <text wx:if="{{order.couponStackingRuleText}}" class="mall-order-detail-pricing-note">{{order.couponStackingRuleText}}</text>
+        <view wx:if="{{order.shippingCompany || order.shippingTrackingNo}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">物流信息</text>
+          <text class="mall-order-detail-meta-value">{{order.shippingCompany}} {{order.shippingTrackingNo}}</text>
+        </view>
+        <view wx:if="{{order.shippedAtText}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">发货时间</text>
+          <text class="mall-order-detail-meta-value">{{order.shippedAtText}}</text>
+        </view>
+        <view wx:if="{{order.shippingRemark}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">物流备注</text>
+          <text class="mall-order-detail-meta-value">{{order.shippingRemark}}</text>
+        </view>
+        <view wx:if="{{order.remark}}" class="mall-order-detail-meta-row">
+          <text class="mall-order-detail-meta-label">订单备注</text>
+          <text class="mall-order-detail-meta-value">{{order.remark}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{order.canRequestRefund || order.refundStatusLabel}}" class="mall-order-detail-section">
+      <view class="mall-order-detail-pay-card">
+        <view class="mall-order-detail-pay-copy">
+          <text class="mall-order-detail-pay-title">{{order.canRequestRefund ? '售后处理' : order.refundStatusLabel || '退款处理'}}</text>
+          <text class="mall-order-detail-pay-note">
+            {{order.canRequestRefund ? '当前订单还没发货，可以直接提交退款申请。地址新增和修改请到“我的-商城服务-收货地址管理”里处理。' : order.statusNotice}}
+          </text>
+        </view>
+        <view wx:if="{{order.canRequestRefund}}" class="mall-order-detail-action-row">
+          <button
+            class="mall-order-detail-secondary"
+            bindtap="onRequestRefund"
+            loading="{{refunding}}"
+            disabled="{{refunding}}"
+          >
+            申请退款
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{order.canConfirmReceipt}}" class="mall-order-detail-section">
+      <view class="mall-order-detail-pay-card">
+        <view class="mall-order-detail-pay-copy">
+          <text class="mall-order-detail-pay-title">确认收货后订单才算完成</text>
+          <text class="mall-order-detail-pay-note">如这笔订单关联了分享佣金，佣金由商家承担，会在你确认收货或系统自动收货后结算到账。</text>
+        </view>
+        <button
+          class="mall-order-detail-primary"
+          bindtap="onConfirmReceipt"
+          loading="{{confirmingReceipt}}"
+          disabled="{{confirmingReceipt}}"
+        >
+          确认收货
+        </button>
+      </view>
+    </view>
+
+    <view wx:if="{{order.canPay}}" class="mall-order-detail-section">
+      <view class="mall-order-detail-pay-card">
+        <view class="mall-order-detail-pay-copy">
+          <text class="mall-order-detail-pay-title">这笔订单还没有完成支付</text>
+          <text class="mall-order-detail-pay-note">支付完成后商家才会开始发货。超时未支付的订单会自动关闭，你也可以在关闭前回到这里继续支付。</text>
+        </view>
+        <button
+          class="mall-order-detail-primary"
+          bindtap="onPayOrder"
+          loading="{{paying}}"
+          disabled="{{paying}}"
+        >
+          {{order.payButtonText}}
+        </button>
+      </view>
+    </view>
+
+    <view wx:if="{{order.status === 'CLOSED'}}" class="mall-order-detail-section">
+      <view class="mall-order-detail-pay-card">
+        <view class="mall-order-detail-pay-copy">
+          <text class="mall-order-detail-pay-title">这笔订单已经关闭</text>
+          <text class="mall-order-detail-pay-note">如果还想购买，可以回到商城重新下单。</text>
+        </view>
+        <button class="mall-order-detail-secondary" bindtap="onGoStore">去逛商城</button>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="mall-order-detail-empty-card">
+    <text class="mall-order-detail-empty-title">{{emptyText}}</text>
+    <text class="mall-order-detail-empty-copy">{{loginRequired ? '登录后才能查看这笔订单。' : '这笔订单可能不存在，或者当前账号无权查看。'}}</text>
+    <view class="mall-order-detail-empty-actions">
+      <button wx:if="{{loginRequired}}" class="mall-order-detail-primary" bindtap="onOpenLogin">去登录</button>
+      <button wx:else class="mall-order-detail-primary" bindtap="onRetry">重试</button>
+    </view>
+  </view>
+</view>

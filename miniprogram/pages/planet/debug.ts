@@ -1,6 +1,15 @@
 import { fetchSessionProfile, pingBackend } from '../../utils/auth-api'
 import { getStoredSession } from '../../utils/auth'
-import { fetchDiscoverPlanets, fetchJoinedPlanets, fetchMyPlanetPosts } from '../../utils/planet-api'
+import {
+  fetchCheckinChallengeDetail,
+  fetchCheckinChallenges,
+  fetchDiscoverPlanets,
+  fetchJoinedPlanets,
+  fetchMyPlanetPosts,
+  fetchMyPlanets,
+  joinPlanetCheckinChallenge,
+  publishPlanetCheckinPost,
+} from '../../utils/planet-api'
 import { getApiBaseUrl, request } from '../../utils/request'
 
 interface DebugActionItem {
@@ -45,6 +54,26 @@ const debugActions: DebugActionItem[] = [
     title: '调试状态',
     desc: '查看后端调试快照数据',
   },
+  {
+    id: 'checkin-list',
+    title: '打卡挑战列表',
+    desc: '读取当前星球的真实打卡挑战列表',
+  },
+  {
+    id: 'checkin-detail',
+    title: '打卡挑战详情',
+    desc: '读取一个真实挑战详情和打卡动态',
+  },
+  {
+    id: 'checkin-join',
+    title: '报名打卡挑战',
+    desc: '对一个进行中的真实挑战执行报名',
+  },
+  {
+    id: 'checkin-post',
+    title: '发布打卡测试',
+    desc: '往当前挑战发一条真实打卡测试内容',
+  },
 ]
 
 const formatResponse = (payload: unknown) => {
@@ -63,6 +92,10 @@ Page({
     sessionTokenDisplay: '当前还没有 sessionToken',
     sessionNickname: '未登录',
     sessionMobile: '未绑定',
+    debugGroupTitle: '尚未解析',
+    debugGroupId: '',
+    debugChallengeTitle: '尚未解析',
+    debugChallengeId: '',
     loadingAction: '',
     responseTitle: '接口返回',
     responseText: '点下面任意一个调试操作，就会把真实接口回包展示在这里。',
@@ -83,6 +116,51 @@ Page({
       sessionNickname: session && session.nickname ? session.nickname : '未登录',
       sessionMobile: session && session.mobile ? session.mobile : '未绑定',
     })
+  },
+
+  async resolveCheckinDebugContext(sessionToken: string) {
+    const joinedResponse = sessionToken ? await fetchJoinedPlanets(sessionToken) : { ok: false, data: [] }
+    const joinedPlanets = joinedResponse && joinedResponse.ok && Array.isArray(joinedResponse.data) ? joinedResponse.data : []
+
+    let targetGroup = joinedPlanets.length ? joinedPlanets[0] : null
+    if (!targetGroup && sessionToken) {
+      const myResponse = await fetchMyPlanets(sessionToken)
+      const myPlanets = myResponse && myResponse.ok && Array.isArray(myResponse.data) ? myResponse.data : []
+      targetGroup = myPlanets.length ? myPlanets[0] : null
+    }
+
+    if (!targetGroup || !targetGroup.id) {
+      throw new Error('当前账号还没有可用于打卡调试的星球')
+    }
+
+    const challengeResponse = await fetchCheckinChallenges({
+      groupId: String(targetGroup.id),
+      status: 'ongoing',
+      sessionToken,
+    })
+    const challengeItems =
+      challengeResponse && challengeResponse.ok && challengeResponse.data && Array.isArray(challengeResponse.data.items)
+        ? challengeResponse.data.items
+        : []
+
+    const targetChallenge = challengeItems.length ? challengeItems[0] : null
+    if (!targetChallenge || !targetChallenge.id) {
+      throw new Error('当前星球还没有可调试的打卡挑战')
+    }
+
+    this.setData({
+      debugGroupId: String(targetGroup.id),
+      debugGroupTitle: String(targetGroup.name || '未命名星球'),
+      debugChallengeId: String(targetChallenge.id),
+      debugChallengeTitle: String(targetChallenge.title || '未命名挑战'),
+    })
+
+    return {
+      groupId: String(targetGroup.id),
+      groupTitle: String(targetGroup.name || '未命名星球'),
+      challengeId: String(targetChallenge.id),
+      challengeTitle: String(targetChallenge.title || '未命名挑战'),
+    }
   },
 
   async onActionTap(e: WechatMiniprogram.TouchEvent) {
@@ -166,7 +244,8 @@ Page({
       }
 
       return request({
-        url: `/api/planets/mine?sessionToken=${encodeURIComponent(sessionToken)}`,
+        url: '/api/planets/mine',
+        sessionToken,
       })
     }
 
@@ -232,6 +311,82 @@ Page({
       return request({
         url: '/api/debug/state',
       })
+    }
+
+    if (action === 'checkin-list') {
+      if (!sessionToken) {
+        throw new Error('当前没有 sessionToken，请先去“我的”完成登录')
+      }
+
+      const context = await this.resolveCheckinDebugContext(sessionToken)
+      const payload = await fetchCheckinChallenges({
+        groupId: context.groupId,
+        status: 'ongoing',
+        sessionToken,
+      })
+
+      return {
+        ...payload,
+        debugContext: context,
+      }
+    }
+
+    if (action === 'checkin-detail') {
+      if (!sessionToken) {
+        throw new Error('当前没有 sessionToken，请先去“我的”完成登录')
+      }
+
+      const context = await this.resolveCheckinDebugContext(sessionToken)
+      const payload = await fetchCheckinChallengeDetail({
+        challengeId: context.challengeId,
+        sessionToken,
+      })
+
+      return {
+        ...payload,
+        debugContext: context,
+      }
+    }
+
+    if (action === 'checkin-join') {
+      if (!sessionToken) {
+        throw new Error('当前没有 sessionToken，请先去“我的”完成登录')
+      }
+
+      const context = await this.resolveCheckinDebugContext(sessionToken)
+      const payload = await joinPlanetCheckinChallenge({
+        challengeId: context.challengeId,
+        sessionToken,
+      })
+
+      return {
+        ...payload,
+        debugContext: context,
+      }
+    }
+
+    if (action === 'checkin-post') {
+      if (!sessionToken) {
+        throw new Error('当前没有 sessionToken，请先去“我的”完成登录')
+      }
+
+      const context = await this.resolveCheckinDebugContext(sessionToken)
+      await joinPlanetCheckinChallenge({
+        challengeId: context.challengeId,
+        sessionToken,
+      })
+
+      const payload = await publishPlanetCheckinPost({
+        challengeId: context.challengeId,
+        content: `调试面板打卡测试 ${new Date().toISOString()}`,
+        images: [],
+        sessionToken,
+      })
+
+      return {
+        ...payload,
+        debugContext: context,
+      }
     }
 
     throw new Error('暂不支持的调试动作')

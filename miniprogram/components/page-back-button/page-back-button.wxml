@@ -1,0 +1,10 @@
+<view
+  class="page-back-button {{extClass}}"
+  bindtap="onTap"
+  aria-role="button"
+  aria-label="返回"
+  style="color: {{color}};"
+>
+  <text class="page-back-button-icon">‹</text>
+  <text wx:if="{{showText}}" class="page-back-button-text">{{text}}</text>
+</view>

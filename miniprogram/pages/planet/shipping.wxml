@@ -1,0 +1,12 @@
+<navigation-bar
+  title="商城发货"
+  back="{{true}}"
+  color="#22160d"
+  background="#ffffff"
+></navigation-bar>
+
+<view class="shipping-page">
+  <view class="shipping-loading">
+    <text class="shipping-loading-text">正在切换到独立商城发货页...</text>
+  </view>
+</view>

@@ -1,95 +1,133 @@
-interface ArticleItem {
-  id: string
-  category: string
-  title: string
-  summary: string
-  author: string
-  time: string
-  price: string
-  locked: boolean
-}
+import { loadArticleCatalog } from '../../utils/article-data'
+import { decorateStaticArticleCard, mapRemoteArticleToCard, sortArticleCards, type ArticleCardItem } from '../../utils/article-view'
+import { clearSession, getStoredSession, shouldClearSessionByError } from '../../utils/auth'
+import { fetchArticles } from '../../utils/planet-api'
 
-interface CategoryItem {
-  id: string
-  label: string
-}
+type ContentSource = 'wechat' | 'planet'
+
+const buildWechatArticles = () =>
+  sortArticleCards(loadArticleCatalog().filter((item) => item.contentSource === 'wechat').map((item) => decorateStaticArticleCard(item)))
 
 Page({
   data: {
-    categories: [
-      { id: 'all', label: '全部' },
-      { id: 'risk', label: '风控' },
-      { id: 'case', label: '案例' },
-      { id: 'defense', label: '防护' },
-      { id: 'ai', label: 'AI安全' },
-    ] as CategoryItem[],
-    activeCategory: 'all',
-    articles: [
-      {
-        id: 'a1',
-        category: 'defense',
-        title: '高净值资产防护的六层结构',
-        summary: '以攻防视角梳理资产边界与关键漏洞。',
-        author: '血饮',
-        time: '今天',
-        price: '¥49',
-        locked: true,
-      },
-      {
-        id: 'a2',
-        category: 'case',
-        title: '链上洗钱路径的识别与阻断',
-        summary: '结合真实案例拆解资金流轨迹。',
-        author: '血饮',
-        time: '昨天',
-        price: '¥79',
-        locked: true,
-      },
-      {
-        id: 'a3',
-        category: 'risk',
-        title: '多维风控指标体系设计',
-        summary: '构建可执行的风险评分与响应策略。',
-        author: '血饮',
-        time: '03/08',
-        price: '¥39',
-        locked: false,
-      },
-      {
-        id: 'a4',
-        category: 'ai',
-        title: 'AI风控模型的对抗评测',
-        summary: '通过红队思维强化模型防线。',
-        author: '血饮',
-        time: '03/06',
-        price: '¥59',
-        locked: true,
-      },
-    ] as ArticleItem[],
-    filteredArticles: [] as ArticleItem[],
+    activeContentSource: 'wechat' as ContentSource,
+    wechatArticles: [] as ArticleCardItem[],
+    planetArticles: [] as ArticleCardItem[],
+    displayArticles: [] as ArticleCardItem[],
+    loadingPlanetArticles: false,
+    planetError: '',
   },
+
   onLoad() {
-    // 初始化分类筛选
-    this.updateFiltered()
+    this.refreshContent()
   },
-  onCategoryChange(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id
-    this.setData({ activeCategory: id })
-    this.updateFiltered()
+
+  onShow() {
+    this.refreshContent()
   },
-  updateFiltered() {
-    const { activeCategory, articles } = this.data
-    const nextList = activeCategory === 'all'
-      ? articles
-      : articles.filter((item) => item.category === activeCategory)
+
+  refreshContent() {
+    const wechatArticles = buildWechatArticles()
+
     this.setData({
-      filteredArticles: nextList,
+      wechatArticles,
+      displayArticles: this.data.activeContentSource === 'wechat' ? wechatArticles : this.data.planetArticles,
     })
+
+    void this.loadPlanetArticles()
   },
+
+  async loadPlanetArticles() {
+    this.setData({
+      loadingPlanetArticles: true,
+      planetError: '',
+    })
+
+    const storedSession = getStoredSession()
+    const sessionToken = storedSession && storedSession.sessionToken ? storedSession.sessionToken : ''
+
+    const requestWithFallback = async () => {
+      try {
+        return await fetchArticles({
+          contentSource: 'planet',
+          status: 'PUBLISHED',
+          page: 1,
+          pageSize: 50,
+          sessionToken: sessionToken || undefined,
+        })
+      } catch (error) {
+        if (sessionToken) {
+          if (shouldClearSessionByError(error)) {
+            clearSession()
+          }
+
+          return fetchArticles({
+            contentSource: 'planet',
+            status: 'PUBLISHED',
+            page: 1,
+            pageSize: 50,
+          })
+        }
+
+        throw error
+      }
+    }
+
+    try {
+      const response = await requestWithFallback()
+      const responseData = response && response.data ? response.data : null
+      const responseItems = responseData && Array.isArray(responseData.items) ? responseData.items : []
+      const planetArticles = responseItems.length
+        ? responseItems.map((item) => mapRemoteArticleToCard(item))
+        : []
+
+      this.setData({
+        planetArticles,
+        displayArticles: this.data.activeContentSource === 'planet' ? planetArticles : this.data.wechatArticles,
+        loadingPlanetArticles: false,
+        planetError: '',
+      })
+    } catch (error) {
+      const planetError = error instanceof Error ? error.message : '加载星球文章失败'
+
+      this.setData({
+        planetArticles: [],
+        displayArticles: this.data.activeContentSource === 'planet' ? [] : this.data.wechatArticles,
+        loadingPlanetArticles: false,
+        planetError,
+      })
+    }
+  },
+
+  onContentSourceChange(e: WechatMiniprogram.TouchEvent) {
+    const source = String(e.currentTarget.dataset.source || '') as ContentSource
+    if (source !== 'wechat' && source !== 'planet') {
+      return
+    }
+
+    if (source === this.data.activeContentSource) {
+      return
+    }
+
+    this.setData({
+      activeContentSource: source,
+      displayArticles: source === 'planet' ? this.data.planetArticles : this.data.wechatArticles,
+    })
+
+    if (source === 'planet' && !this.data.planetArticles.length && !this.data.loadingPlanetArticles) {
+      void this.loadPlanetArticles()
+    }
+  },
+
   goDetail(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id
+    const id = String(e.currentTarget.dataset.id || '')
+    const source = String(e.currentTarget.dataset.source || '')
+    if (!id) {
+      return
+    }
+
     wx.navigateTo({
-      url: `/pages/articles/detail?id=${id}`,
+      url: `/pages/articles/detail?id=${encodeURIComponent(id)}&source=${encodeURIComponent(source || this.data.activeContentSource)}`,
     })
   },
 })

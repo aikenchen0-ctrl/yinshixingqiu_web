@@ -1,75 +1,299 @@
+import { getStoredSession } from '../../utils/auth'
+import { createLocalPlanetColumn, getLocalPlanetColumnDetail, listLocalPlanetColumns } from '../../utils/column'
+import { createPlanetColumn, fetchColumnDetail, fetchPlanetColumns } from '../../utils/planet-api'
+import { navigateToPlanetIndex, resolvePlanetIdFromOptions } from '../../utils/planet-route'
+
 interface ColumnItem {
   id: string
   title: string
-  count: string
+  count: number
   expanded: boolean
+  loading: boolean
+  loaded: boolean
   items: string[]
 }
 
 Page({
   data: {
-    columns: [
-      {
-        id: 'col1',
-        title: '100个MCP案例',
-        count: '3',
-        expanded: true,
-        items: [
-          '飞书MCP这里面的可玩性太多了，除了我文章里的案例外随便提几个。',
-          '手把手教你用Firecrawl MCP做知识星球分析',
-          '手把手教你用高德地图API和Claude的MCP功能打造智能旅游助手！',
-        ],
-      },
-      {
-        id: 'col2',
-        title: '商业案例拆解',
-        count: '3',
+    groupId: '',
+    groupName: '专栏',
+    totalColumnsText: '0',
+    canCreateColumn: false,
+    loading: true,
+    columns: [] as ColumnItem[],
+    createPopupVisible: false,
+    createTitle: '',
+    creating: false,
+  },
+
+  onLoad(options: Record<string, string | undefined>) {
+    const groupId = resolvePlanetIdFromOptions(options, ['groupId', 'planetId'])
+    if (!groupId) {
+      navigateToPlanetIndex('请先选择星球')
+      return
+    }
+
+    this.setData({ groupId })
+    void this.loadColumns()
+  },
+
+  async loadColumns() {
+    if (!this.data.groupId) {
+      this.setData({ loading: false })
+      wx.showToast({ title: '缺少星球ID', icon: 'none' })
+      return
+    }
+
+    const session = getStoredSession()
+    this.setData({ loading: true })
+
+    try {
+      const timeout = setTimeout(() => {
+        this.setData({ loading: false })
+        wx.showToast({ title: '请求超时，请检查网络', icon: 'none' })
+      }, 5000)
+
+      const response = await fetchPlanetColumns({
+        groupId: this.data.groupId,
+        sessionToken: session ? session.sessionToken : '',
+        userId: session ? session.id : '',
+      })
+
+      clearTimeout(timeout)
+
+      if (!response.ok || !response.data) {
+        throw new Error('获取专栏列表失败')
+      }
+
+      const payload = response.data
+      const columns: ColumnItem[] = payload.items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        count: item.count,
         expanded: false,
-        items: [
-          '拆解一条爆款内容从选题、转化到复购的完整路径。',
-          '分析知识付费项目如何用低成本验证用户需求。',
-          '复盘社群项目中高留存运营机制的关键动作。',
-        ],
-      },
-      {
-        id: 'col3',
-        title: 'AI编程',
-        count: '9',
+        loading: false,
+        loaded: false,
+        items: [],
+      }))
+
+      this.setData({
+        loading: false,
+        groupName: payload.groupName || '专栏',
+        totalColumnsText: String(payload.totalColumns),
+        canCreateColumn: payload.canCreateColumn === true,
+        columns,
+      })
+    } catch {
+      const localColumns = listLocalPlanetColumns(this.data.groupId)
+      const columns: ColumnItem[] = localColumns.items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        count: item.count,
         expanded: false,
-        items: [
-          '从0到1搭建可复用的AI工作流。',
-          '用原生能力做小程序功能，而不是先堆库。',
-          'AI协作开发里怎样拆任务最省心。',
-        ],
-      },
-      { id: 'col4', title: '100个创业项目', count: '67', expanded: false, items: [] },
-      { id: 'col5', title: 'AI工具测评', count: '13', expanded: false, items: [] },
-      { id: 'col6', title: '易安AI工具库', count: '4', expanded: false, items: [] },
-      { id: 'col7', title: 'DeepSeek', count: '5', expanded: false, items: [] },
-      { id: 'col8', title: '商业洞察', count: '4', expanded: false, items: [] },
-      { id: 'col9', title: '2025勤商', count: '57', expanded: false, items: [] },
-      { id: 'col10', title: '易安学思维模型', count: '15', expanded: false, items: [] },
-    ] as ColumnItem[],
+        loading: false,
+        loaded: false,
+        items: [],
+      }))
+
+      this.setData({
+        loading: false,
+        groupName: localColumns.groupName || '专栏',
+        totalColumnsText: String(localColumns.totalColumns),
+        canCreateColumn: localColumns.canCreateColumn === true,
+        columns,
+      })
+    }
+  },
+
+  async loadColumnDetail(columnId: string) {
+    if (!columnId || !this.data.groupId) return
+
+    const currentColumn = this.data.columns.find((item) => item.id === columnId)
+    if (!currentColumn || currentColumn.loading || currentColumn.loaded) return
+
+    const session = getStoredSession()
+    const loadingColumns = this.data.columns.map((item) =>
+      item.id === columnId ? { ...item, loading: true } : item
+    )
+    this.setData({ columns: loadingColumns })
+
+    try {
+      const timeout = setTimeout(() => {
+        const nextColumns = this.data.columns.map((item) =>
+          item.id === columnId ? { ...item, loading: false } : item
+        )
+        this.setData({ columns: nextColumns })
+        wx.showToast({ title: '请求超时', icon: 'none' })
+      }, 5000)
+
+      const response = await fetchColumnDetail({
+        columnId,
+        groupId: this.data.groupId,
+        sessionToken: session ? session.sessionToken : '',
+        userId: session ? session.id : '',
+      })
+
+      clearTimeout(timeout)
+
+      if (!response.ok || !response.data) {
+        throw new Error('加载失败')
+      }
+
+      const payload = response.data
+      const items = payload.items.map((item) => {
+        const text = String(item.title || item.content || '').trim()
+        return text.length > 48 ? `${text.slice(0, 48)}...` : text
+      })
+
+      const nextColumns = this.data.columns.map((item) =>
+        item.id === columnId ? { ...item, loading: false, loaded: true, items } : item
+      )
+      this.setData({ columns: nextColumns })
+    } catch {
+      const localDetail = getLocalPlanetColumnDetail(columnId, this.data.groupId)
+      if (localDetail) {
+        const nextColumns = this.data.columns.map((item) =>
+          item.id === columnId ? { ...item, loading: false, loaded: true, items: localDetail.items } : item
+        )
+        this.setData({ columns: nextColumns })
+        return
+      }
+
+      const nextColumns = this.data.columns.map((item) =>
+        item.id === columnId ? { ...item, loading: false } : item
+      )
+      this.setData({ columns: nextColumns })
+    }
   },
 
   onToggleColumn(e: WechatMiniprogram.TouchEvent) {
-    const id = e.currentTarget.dataset.id || ''
-    const nextColumns = this.data.columns.map((column) => {
-      if (column.id === id) {
-        return {
-          ...column,
-          expanded: !column.expanded,
-        }
-      }
+    const id = String(e.currentTarget.dataset.id || '')
+    if (!id) return
 
-      return {
-        ...column,
-        expanded: false,
-      }
-    })
+    const targetColumn = this.data.columns.find((column) => column.id === id)
+    if (!targetColumn) return
+
+    const nextExpanded = !targetColumn.expanded
+
+    const nextColumns = this.data.columns.map((column) =>
+      column.id === id ? { ...column, expanded: nextExpanded } : { ...column, expanded: false }
+    )
+
+    this.setData({ columns: nextColumns })
+
+    if (nextExpanded) {
+      void this.loadColumnDetail(id)
+    }
+  },
+
+  onOpenCreatePopup() {
+    if (!this.data.canCreateColumn || this.data.creating) {
+      return
+    }
 
     this.setData({
-      columns: nextColumns,
+      createPopupVisible: true,
+      createTitle: '',
     })
+  },
+
+  onCloseCreatePopup() {
+    if (this.data.creating) {
+      return
+    }
+
+    this.setData({
+      createPopupVisible: false,
+      createTitle: '',
+    })
+  },
+
+  onCreatePopupTap() {},
+
+  onCreateTitleInput(e: WechatMiniprogram.Input) {
+    this.setData({
+      createTitle: String(e.detail.value || '').slice(0, 24),
+    })
+  },
+
+  async onCreateColumnConfirm() {
+    const title = this.data.createTitle.trim()
+    if (!title) {
+      wx.showToast({
+        title: '请输入专栏标题',
+        icon: 'none',
+      })
+      return
+    }
+
+    if (!this.data.groupId) {
+      wx.showToast({
+        title: '缺少星球ID',
+        icon: 'none',
+      })
+      return
+    }
+
+    const session = getStoredSession()
+
+    this.setData({
+      creating: true,
+    })
+
+    wx.showLoading({
+      title: '创建中',
+      mask: true,
+    })
+
+    try {
+      let useLocalFallback = false
+
+      try {
+        if (!session || !session.sessionToken || !session.id) {
+          throw new Error('使用本地专栏创建')
+        }
+
+        const response = await createPlanetColumn({
+          groupId: this.data.groupId,
+          title,
+          sessionToken: session.sessionToken,
+          userId: session.id,
+        })
+
+        if (!response.ok || !response.data) {
+          throw new Error('创建专栏失败')
+        }
+      } catch {
+        useLocalFallback = true
+        createLocalPlanetColumn({
+          groupId: this.data.groupId,
+          title,
+        })
+      }
+
+      wx.hideLoading()
+      this.setData({
+        createPopupVisible: false,
+        createTitle: '',
+        creating: false,
+      })
+
+      wx.showToast({
+        title: useLocalFallback ? '已创建本地专栏' : '专栏已创建',
+        icon: 'success',
+      })
+
+      await this.loadColumns()
+    } catch (error) {
+      wx.hideLoading()
+      this.setData({
+        creating: false,
+      })
+
+      wx.showToast({
+        title: error instanceof Error ? error.message : '创建专栏失败',
+        icon: 'none',
+      })
+    }
   },
 })
