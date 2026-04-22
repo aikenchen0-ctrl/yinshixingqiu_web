@@ -12,3 +12,47 @@ $RECYCLE.BIN/
 
 # Node.js
 node_modules/
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+*.log.*
+
+# Environment
+.env
+.env.*
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Uploads
+uploads/
+
+# Build outputs
+dist/
+build/
+
+# IDE logs
+.codex-*/
+.codex-*.log
+
+# MCP
+.mcp-*/
+
+# Playwright
+.playwright-*/
+
+# Backend temp
+backend/temp/
+backend/deploy/.docker-*/
+backend/deploy/.openwebui-*/
+
+# Untracked directories
+hermes-webui/
+mall/
+official_website/
