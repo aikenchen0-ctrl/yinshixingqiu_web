@@ -49,6 +49,7 @@ const routerMap = {
   deployment: '/console/deployment',
   playground: '/console/playground',
   personal: '/console/personal',
+  agent_rebate: '/console/agent-rebate',
 };
 
 const SiderBar = ({ onNavigate = () => {} }) => {
@@ -57,6 +58,7 @@ const SiderBar = ({ onNavigate = () => {} }) => {
   const {
     isModuleVisible,
     hasSectionVisibleModules,
+    isAgentUser,
     loading: sidebarLoading,
   } = useSidebar();
 
@@ -134,16 +136,24 @@ const SiderBar = ({ onNavigate = () => {} }) => {
         itemKey: 'personal',
         to: '/personal',
       },
+      {
+        text: t('代理返利'),
+        itemKey: 'agent_rebate',
+        to: '/agent-rebate',
+      },
     ];
 
     // 根据配置过滤项目
     const filteredItems = items.filter((item) => {
+      if (item.itemKey === 'agent_rebate' && !isAgentUser) {
+        return false;
+      }
       const configVisible = isModuleVisible('personal', item.itemKey);
       return configVisible;
     });
 
     return filteredItems;
-  }, [t, isModuleVisible]);
+  }, [t, isModuleVisible, isAgentUser]);
 
   const adminItems = useMemo(() => {
     const items = [

@@ -43,6 +43,7 @@ export const DEFAULT_ADMIN_CONFIG = {
     enabled: true,
     topup: true,
     personal: true,
+    agent_rebate: true,
   },
   admin: {
     enabled: true,
@@ -79,6 +80,7 @@ export const mergeAdminConfig = (savedConfig) => {
 export const useSidebar = () => {
   const [statusState] = useContext(StatusContext);
   const [userConfig, setUserConfig] = useState(null);
+  const [isAgentUser, setIsAgentUser] = useState(false);
   const [loading, setLoading] = useState(true);
   const instanceIdRef = useRef(null);
   const hasLoadedOnceRef = useRef(false);
@@ -114,6 +116,7 @@ export const useSidebar = () => {
       }
 
       const res = await API.get('/api/user/self');
+      setIsAgentUser(Boolean(res.data?.data?.is_agent));
       if (res.data.success && res.data.data.sidebar_modules) {
         let config;
         // 检查sidebar_modules是字符串还是对象
@@ -124,6 +127,9 @@ export const useSidebar = () => {
         }
         setUserConfig(config);
       } else {
+        if (!res.data.success) {
+          setIsAgentUser(false);
+        }
         // 当用户没有配置时，生成一个基于管理员配置的默认用户配置
         // 这样可以确保权限控制正确生效
         const defaultUserConfig = {};
@@ -144,6 +150,7 @@ export const useSidebar = () => {
         setUserConfig(defaultUserConfig);
       }
     } catch (error) {
+      setIsAgentUser(false);
       // 出错时也生成默认配置，而不是设置为空对象
       const defaultUserConfig = {};
       Object.keys(adminConfig).forEach((sectionKey) => {
@@ -292,6 +299,7 @@ export const useSidebar = () => {
     loading,
     adminConfig,
     userConfig,
+    isAgentUser,
     finalConfig,
     isModuleVisible,
     hasSectionVisibleModules,

@@ -29,7 +29,17 @@ import {
   Dropdown,
 } from '@douyinfe/semi-ui';
 import { IconMore } from '@douyinfe/semi-icons';
-import { renderGroup, renderNumber, renderQuota } from '../../../helpers';
+import {
+  getCurrencyConfig,
+  renderGroup,
+  renderNumber,
+  renderQuota,
+} from '../../../helpers';
+
+const formatAgentMoney = (amount) => {
+  const symbol = getCurrencyConfig().symbol || '$';
+  return `${symbol}${Number(amount || 0).toFixed(6)}`;
+};
 
 /**
  * Render user role
@@ -193,6 +203,31 @@ const renderInviteInfo = (text, record, t) => {
   );
 };
 
+const renderAgentInfo = (text, record, t) => {
+  if (!record.is_agent) {
+    return (
+      <Tag color='grey' shape='circle' className='!text-xs'>
+        {t('普通用户')}
+      </Tag>
+    );
+  }
+  return (
+    <div>
+      <Space spacing={1}>
+        <Tag color='green' shape='circle' className='!text-xs'>
+          {t('代理人')}
+        </Tag>
+        <Tag color='white' shape='circle' className='!text-xs'>
+          {t('返点')}: {(Number(record.agent_rebate_rate_bps || 0) / 100).toFixed(2)}%
+        </Tag>
+        <Tag color='white' shape='circle' className='!text-xs'>
+          {t('返利余额')}: {formatAgentMoney(record.agent_rebate_balance || 0)}
+        </Tag>
+      </Space>
+    </div>
+  );
+};
+
 /**
  * Render operations column
  */
@@ -349,6 +384,11 @@ export const getUsersColumns = ({
       title: t('邀请信息'),
       dataIndex: 'invite',
       render: (text, record, index) => renderInviteInfo(text, record, t),
+    },
+    {
+      title: t('代理返利'),
+      dataIndex: 'agent_rebate',
+      render: (text, record) => renderAgentInfo(text, record, t),
     },
     {
       title: '',

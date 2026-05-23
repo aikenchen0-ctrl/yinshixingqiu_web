@@ -45,6 +45,7 @@ import {
   Row,
   Col,
   InputNumber,
+  Input,
   RadioGroup,
   Radio,
 } from '@douyinfe/semi-ui';
@@ -69,6 +70,12 @@ const EditUserModal = (props) => {
   const [adjustAmountLocal, setAdjustAmountLocal] = useState('');
   const [adjustMode, setAdjustMode] = useState('add');
   const [adjustLoading, setAdjustLoading] = useState(false);
+  const [agentAdjustModalOpen, setAgentAdjustModalOpen] = useState(false);
+  const [agentAdjustMode, setAgentAdjustMode] = useState('add');
+  const [agentAdjustAmount, setAgentAdjustAmount] = useState('');
+  const [agentAdjustNote, setAgentAdjustNote] = useState('');
+  const [agentAdjustLoading, setAgentAdjustLoading] = useState(false);
+  const [agentToggleLoading, setAgentToggleLoading] = useState(false);
   const isMobile = useIsMobile();
   const [groupOptions, setGroupOptions] = useState([]);
   const [bindingModalVisible, setBindingModalVisible] = useState(false);
@@ -94,6 +101,10 @@ const EditUserModal = (props) => {
     quota_amount: 0,
     group: 'default',
     remark: '',
+    is_agent: false,
+    agent_rebate_rate_percent: 0,
+    agent_rebate_balance: 0,
+    agent_rebate_history_amount: 0,
   });
 
   const fetchGroups = async () => {
@@ -116,6 +127,9 @@ const EditUserModal = (props) => {
       data.password = '';
       data.quota_amount = Number(
         quotaToDisplayAmount(data.quota || 0).toFixed(6),
+      );
+      data.agent_rebate_rate_percent = Number(
+        (Number(data.agent_rebate_rate_bps || 0) / 100).toFixed(2),
       );
       setInputs({ ...getInitValues(), ...data });
     } else {
@@ -144,12 +158,28 @@ const EditUserModal = (props) => {
     setBindingModalVisible(false);
   };
 
+  const formatAgentMoney = (amount) => {
+    const symbol = getCurrencyConfig().symbol || '$';
+    return `${symbol}${Number(amount || 0).toFixed(6)}`;
+  };
+
+  const refreshLoadedUser = async () => {
+    await loadUser();
+    props.refresh();
+  };
+
   /* ----------------------- submit ----------------------- */
   const submit = async (values) => {
     setLoading(true);
     let payload = { ...values };
     delete payload.quota;
     delete payload.quota_amount;
+    payload.agent_rebate_rate_bps = Math.round(
+      Number(payload.agent_rebate_rate_percent || 0) * 100,
+    );
+    delete payload.agent_rebate_rate_percent;
+    delete payload.agent_rebate_balance;
+    delete payload.agent_rebate_history_amount;
     if (userId) {
       payload.id = parseInt(userId);
     }
@@ -215,16 +245,7 @@ const EditUserModal = (props) => {
         setAdjustModalOpen(false);
         setAdjustQuotaLocal('');
         setAdjustAmountLocal('');
-        const userRes = await API.get(`/api/user/${userId}`);
-        if (userRes.data.success) {
-          const data = userRes.data.data;
-          data.password = '';
-          data.quota_amount = Number(
-            quotaToDisplayAmount(data.quota || 0).toFixed(6),
-          );
-          setInputs({ ...getInitValues(), ...data });
-        }
-        props.refresh();
+        await refreshLoadedUser();
       } else {
         showError(message);
       }
@@ -232,6 +253,117 @@ const EditUserModal = (props) => {
       showError(e.message);
     }
     setAdjustLoading(false);
+  };
+
+  const getAgentAdjustPreviewText = () => {
+    const current = Number(inputs?.agent_rebate_balance || 0);
+    const val = Number(agentAdjustAmount || 0);
+    switch (agentAdjustMode) {
+      case 'add':
+        return `${t('当前返利余额')}：${formatAgentMoney(current)}，+${formatAgentMoney(Math.abs(val))} = ${formatAgentMoney(current + Math.abs(val))}`;
+      case 'subtract':
+        return `${t('当前返利余额')}：${formatAgentMoney(current)}，-${formatAgentMoney(Math.abs(val))} = ${formatAgentMoney(Math.max(current - Math.abs(val), 0))}`;
+      case 'override':
+        return `${t('当前返利余额')}：${formatAgentMoney(current)} → ${formatAgentMoney(val)}`;
+      default:
+        return '';
+    }
+  };
+
+  const adjustAgentRebate = async () => {
+    const amount = Number(agentAdjustAmount || 0);
+    if (!Number.isFinite(amount) || amount < 0) {
+      showError(t('请输入有效的返利金额'));
+      return;
+    }
+    if (
+      (agentAdjustMode === 'add' || agentAdjustMode === 'subtract') &&
+      amount <= 0
+    ) {
+      showError(t('请输入有效的返利金额'));
+      return;
+    }
+
+    setAgentAdjustLoading(true);
+    try {
+      const res = await API.post(`/api/user/${userId}/agent_rebate/adjust`, {
+        mode: agentAdjustMode,
+        amount,
+        note: agentAdjustNote,
+      });
+      const { success, message } = res.data;
+      if (success) {
+        showSuccess(t('代理返利余额调整成功'));
+        setAgentAdjustModalOpen(false);
+        setAgentAdjustMode('add');
+        setAgentAdjustAmount('');
+        setAgentAdjustNote('');
+        await refreshLoadedUser();
+      } else {
+        showError(message);
+      }
+    } catch (e) {
+      showError(e.message);
+    }
+    setAgentAdjustLoading(false);
+  };
+
+  const toggleAgentStatus = async (checked) => {
+    if (!userId) {
+      return;
+    }
+
+    const previous = Boolean(inputs?.is_agent);
+    const nextInputs = {
+      ...(inputs || getInitValues()),
+      is_agent: checked,
+      agent_rebate_rate_percent: Number(inputs?.agent_rebate_rate_percent || 0),
+    };
+    setInputs(nextInputs);
+    formApiRef.current?.setValues(nextInputs);
+    setAgentToggleLoading(true);
+
+    try {
+      const rebateRateBps = checked
+        ? Math.round(Number(nextInputs.agent_rebate_rate_percent || 0) * 100)
+        : undefined;
+      const res = await API.patch(`/api/user/${userId}/agent`, {
+        is_agent: checked,
+        ...(rebateRateBps === undefined
+          ? {}
+          : { agent_rebate_rate_bps: rebateRateBps }),
+      });
+      const { success, message, data } = res.data;
+      if (!success) {
+        throw new Error(message || t('代理人状态更新失败'));
+      }
+
+      const updatedInputs = {
+        ...nextInputs,
+        is_agent: Boolean(data?.is_agent),
+        agent_rebate_rate_percent: Number(
+          (Number(data?.agent_rebate_rate_bps || 0) / 100).toFixed(2),
+        ),
+        agent_rebate_balance: Number(data?.agent_rebate_balance || 0),
+        agent_rebate_history_amount: Number(
+          data?.agent_rebate_history_amount || 0,
+        ),
+      };
+      setInputs(updatedInputs);
+      formApiRef.current?.setValues(updatedInputs);
+      showSuccess(checked ? t('已开启代理人身份') : t('已关闭代理人身份'));
+      props.refresh();
+    } catch (error) {
+      const rolledBackInputs = {
+        ...(inputs || getInitValues()),
+        is_agent: previous,
+      };
+      setInputs(rolledBackInputs);
+      formApiRef.current?.setValues(rolledBackInputs);
+      showError(error.message || t('代理人状态更新失败'));
+    }
+
+    setAgentToggleLoading(false);
   };
 
   const getPreviewText = () => {
@@ -431,7 +563,10 @@ const EditUserModal = (props) => {
                             ? `▾ ${t('收起原生额度输入')}`
                             : `▸ ${t('使用原生额度输入')}`}
                         </div>
-                        <div style={{ display: showQuotaInput ? 'block' : 'none' }} className='mt-2'>
+                        <div
+                          style={{ display: showQuotaInput ? 'block' : 'none' }}
+                          className='mt-2'
+                        >
                           <Form.InputNumber
                             field='quota'
                             label={t('额度')}
@@ -440,6 +575,87 @@ const EditUserModal = (props) => {
                             readonly
                           />
                         </div>
+                      </Col>
+                    </Row>
+                  </Card>
+                )}
+
+                {userId && (
+                  <Card className='!rounded-2xl shadow-sm border-0'>
+                    <div className='flex items-center mb-2'>
+                      <Avatar
+                        size='small'
+                        color='orange'
+                        className='mr-2 shadow-md'
+                      >
+                        <IconUserGroup size={16} />
+                      </Avatar>
+                      <div>
+                        <Text className='text-lg font-medium'>
+                          {t('代理返利')}
+                        </Text>
+                        <div className='text-xs text-gray-600'>
+                          {t('代理身份、返点比例和独立返利余额')}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Row gutter={12}>
+                      <Col span={24}>
+                        <Form.Switch
+                          field='is_agent'
+                          label={t('是否为代理人')}
+                          disabled={agentToggleLoading}
+                          onChange={toggleAgentStatus}
+                        />
+                      </Col>
+
+                      <Col span={24}>
+                        <Form.InputNumber
+                          field='agent_rebate_rate_percent'
+                          label={t('返点比例 (%)')}
+                          min={0}
+                          max={100}
+                          precision={2}
+                          step={0.1}
+                          style={{ width: '100%' }}
+                          disabled={!values.is_agent}
+                        />
+                      </Col>
+
+                      <Col span={12}>
+                        <Form.Slot label={t('当前返利余额')}>
+                          <Text strong>
+                            {formatAgentMoney(inputs?.agent_rebate_balance)}
+                          </Text>
+                        </Form.Slot>
+                      </Col>
+
+                      <Col span={12}>
+                        <Form.Slot label={t('累计返利')}>
+                          <Text strong>
+                            {formatAgentMoney(
+                              inputs?.agent_rebate_history_amount,
+                            )}
+                          </Text>
+                        </Form.Slot>
+                      </Col>
+
+                      <Col span={24}>
+                        <Form.Slot label={t('人工调整返利余额')}>
+                          <Button
+                            icon={<IconEdit />}
+                            disabled={!values.is_agent}
+                            onClick={() => setAgentAdjustModalOpen(true)}
+                          >
+                            {t('调整返利余额')}
+                          </Button>
+                        </Form.Slot>
+                        {!values.is_agent ? (
+                          <div className='text-xs text-gray-600 mt-1'>
+                            {t('仅代理人账号可使用独立返利余额')}
+                          </div>
+                        ) : null}
                       </Col>
                     </Row>
                   </Card>
@@ -491,6 +707,79 @@ const EditUserModal = (props) => {
       />
 
       {/* 调整额度模态框 */}
+      <Modal
+        centered
+        visible={agentAdjustModalOpen}
+        onOk={adjustAgentRebate}
+        onCancel={() => {
+          setAgentAdjustModalOpen(false);
+          setAgentAdjustMode('add');
+          setAgentAdjustAmount('');
+          setAgentAdjustNote('');
+        }}
+        confirmLoading={agentAdjustLoading}
+        closable={null}
+        title={
+          <div className='flex items-center'>
+            <IconEdit className='mr-2' />
+            {t('调整代理返利余额')}
+          </div>
+        }
+      >
+        <div className='mb-4'>
+          <Text type='secondary' className='block mb-2'>
+            {getAgentAdjustPreviewText()}
+          </Text>
+        </div>
+        <div className='mb-3'>
+          <div className='mb-1'>
+            <Text size='small'>{t('操作')}</Text>
+          </div>
+          <RadioGroup
+            type='button'
+            value={agentAdjustMode}
+            onChange={(e) => {
+              setAgentAdjustMode(e.target.value);
+              setAgentAdjustAmount('');
+            }}
+            style={{ width: '100%' }}
+          >
+            <Radio value='add'>{t('添加')}</Radio>
+            <Radio value='subtract'>{t('减少')}</Radio>
+            <Radio value='override'>{t('覆盖')}</Radio>
+          </RadioGroup>
+        </div>
+        <div className='mb-3'>
+          <div className='mb-1'>
+            <Text size='small'>{t('返利金额')}</Text>
+          </div>
+          <InputNumber
+            prefix={getCurrencyConfig().symbol}
+            placeholder={t('输入返利金额')}
+            value={agentAdjustAmount}
+            precision={6}
+            min={0}
+            step={0.000001}
+            onChange={(val) =>
+              setAgentAdjustAmount(val === '' || val == null ? '' : val)
+            }
+            style={{ width: '100%' }}
+            showClear
+          />
+        </div>
+        <div>
+          <div className='mb-1'>
+            <Text size='small'>{t('备注')}</Text>
+          </div>
+          <Input
+            value={agentAdjustNote}
+            onChange={(value) => setAgentAdjustNote(value)}
+            placeholder={t('例如：退款手动扣减')}
+            showClear
+          />
+        </div>
+      </Modal>
+
       <Modal
         centered
         visible={adjustModalOpen}
@@ -569,7 +858,10 @@ const EditUserModal = (props) => {
             ? `▾ ${t('收起原生额度输入')}`
             : `▸ ${t('使用原生额度输入')}`}
         </div>
-        <div style={{ display: showAdjustQuotaRaw ? 'block' : 'none' }} className='mt-2'>
+        <div
+          style={{ display: showAdjustQuotaRaw ? 'block' : 'none' }}
+          className='mt-2'
+        >
           <div className='mb-1'>
             <Text size='small'>{t('额度')}</Text>
           </div>

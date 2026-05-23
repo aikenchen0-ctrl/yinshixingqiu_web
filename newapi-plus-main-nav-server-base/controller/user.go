@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -106,12 +107,16 @@ func setupLogin(user *model.User, c *gin.Context) {
 		"message": "",
 		"success": true,
 		"data": map[string]any{
-			"id":           user.Id,
-			"username":     user.Username,
-			"display_name": user.DisplayName,
-			"role":         user.Role,
-			"status":       user.Status,
-			"group":        user.Group,
+			"id":                          user.Id,
+			"username":                    user.Username,
+			"display_name":                user.DisplayName,
+			"role":                        user.Role,
+			"status":                      user.Status,
+			"group":                       user.Group,
+			"is_agent":                    user.IsAgent,
+			"agent_rebate_rate_bps":       user.AgentRebateRateBps,
+			"agent_rebate_balance":        user.AgentRebateBalance,
+			"agent_rebate_history_amount": user.AgentRebateHistoryAmount,
 		},
 	})
 }
@@ -389,31 +394,35 @@ func GetSelf(c *gin.Context) {
 
 	// 构建响应数据，包含用户信息和权限
 	responseData := map[string]interface{}{
-		"id":                user.Id,
-		"username":          user.Username,
-		"display_name":      user.DisplayName,
-		"role":              user.Role,
-		"status":            user.Status,
-		"email":             user.Email,
-		"github_id":         user.GitHubId,
-		"discord_id":        user.DiscordId,
-		"oidc_id":           user.OidcId,
-		"wechat_id":         user.WeChatId,
-		"telegram_id":       user.TelegramId,
-		"group":             user.Group,
-		"quota":             user.Quota,
-		"used_quota":        user.UsedQuota,
-		"request_count":     user.RequestCount,
-		"aff_code":          user.AffCode,
-		"aff_count":         user.AffCount,
-		"aff_quota":         user.AffQuota,
-		"aff_history_quota": user.AffHistoryQuota,
-		"inviter_id":        user.InviterId,
-		"linux_do_id":       user.LinuxDOId,
-		"setting":           user.Setting,
-		"stripe_customer":   user.StripeCustomer,
-		"sidebar_modules":   userSetting.SidebarModules, // 正确提取sidebar_modules字段
-		"permissions":       permissions,                // 新增权限字段
+		"id":                          user.Id,
+		"username":                    user.Username,
+		"display_name":                user.DisplayName,
+		"role":                        user.Role,
+		"status":                      user.Status,
+		"email":                       user.Email,
+		"github_id":                   user.GitHubId,
+		"discord_id":                  user.DiscordId,
+		"oidc_id":                     user.OidcId,
+		"wechat_id":                   user.WeChatId,
+		"telegram_id":                 user.TelegramId,
+		"group":                       user.Group,
+		"quota":                       user.Quota,
+		"used_quota":                  user.UsedQuota,
+		"request_count":               user.RequestCount,
+		"aff_code":                    user.AffCode,
+		"aff_count":                   user.AffCount,
+		"aff_quota":                   user.AffQuota,
+		"aff_history_quota":           user.AffHistoryQuota,
+		"inviter_id":                  user.InviterId,
+		"is_agent":                    user.IsAgent,
+		"agent_rebate_rate_bps":       user.AgentRebateRateBps,
+		"agent_rebate_balance":        user.AgentRebateBalance,
+		"agent_rebate_history_amount": user.AgentRebateHistoryAmount,
+		"linux_do_id":                 user.LinuxDOId,
+		"setting":                     user.Setting,
+		"stripe_customer":             user.StripeCustomer,
+		"sidebar_modules":             userSetting.SidebarModules, // 正确提取sidebar_modules字段
+		"permissions":                 permissions,                // 新增权限字段
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -475,9 +484,10 @@ func generateDefaultSidebarConfig(userRole int) string {
 
 	// 个人中心区域 - 所有用户都可以访问
 	defaultConfig["personal"] = map[string]interface{}{
-		"enabled":  true,
-		"topup":    true,
-		"personal": true,
+		"enabled":      true,
+		"topup":        true,
+		"personal":     true,
+		"agent_rebate": true,
 	}
 
 	// 管理员区域 - 根据角色决定
@@ -542,9 +552,21 @@ func GetUserModels(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+
 	var updatedUser model.User
-	err := json.NewDecoder(c.Request.Body).Decode(&updatedUser)
+	err = json.Unmarshal(bodyBytes, &updatedUser)
 	if err != nil || updatedUser.Id == 0 {
+		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
+		return
+	}
+
+	var payloadFields map[string]json.RawMessage
+	if err := json.Unmarshal(bodyBytes, &payloadFields); err != nil {
 		common.ApiErrorI18n(c, i18n.MsgInvalidParams)
 		return
 	}
@@ -568,6 +590,12 @@ func UpdateUser(c *gin.Context) {
 	if myRole <= updatedUser.Role && myRole != common.RoleRootUser {
 		common.ApiErrorI18n(c, i18n.MsgUserCannotCreateHigherLevel)
 		return
+	}
+	if _, ok := payloadFields["is_agent"]; !ok {
+		updatedUser.IsAgent = originUser.IsAgent
+	}
+	if _, ok := payloadFields["agent_rebate_rate_bps"]; !ok {
+		updatedUser.AgentRebateRateBps = originUser.AgentRebateRateBps
 	}
 	if updatedUser.Password == "$I_LOVE_U" {
 		updatedUser.Password = "" // rollback to what it should be
