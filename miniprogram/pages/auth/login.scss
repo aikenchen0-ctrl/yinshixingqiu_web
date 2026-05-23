@@ -218,6 +218,13 @@
   border: 2rpx solid var(--theme-accent-subtle-heavy);
 }
 
+.auth-submit-plain {
+  margin-top: 18rpx;
+  background: transparent;
+  color: #6f7782;
+  border: 2rpx solid rgba(125, 133, 143, 0.28);
+}
+
 .auth-tip-card {
   margin-top: 28rpx;
   padding: 26rpx 28rpx;

@@ -1,4 +1,10 @@
-import { API_BASE_URLS, getApiBaseUrl, prepareImageUploadPath, request, setApiBaseUrl } from './request'
+import {
+  API_BASE_URLS,
+  getApiBaseUrl,
+  prepareImageUploadPath,
+  request,
+  setApiBaseUrl,
+} from './request'
 import type { PlanetRemoteProfile } from './planet'
 
 interface DiscoverPlanetsResponse {
@@ -662,6 +668,20 @@ interface PlanetArticleDetailResponse {
   data: PlanetArticleItem
 }
 
+interface ArticleShareLinkResponse {
+  ok: boolean
+  data: {
+    openlink: string
+    path: string
+    query: string
+    envVersion: 'develop' | 'trial' | 'release' | string
+  }
+}
+
+function getArticleApiBaseUrl() {
+  return getApiBaseUrl()
+}
+
 interface PlanetCommentsResponse {
   ok: boolean
   data: Array<Record<string, any>>
@@ -1010,6 +1030,7 @@ export function createArticleUnlockOrder(payload: {
     url: '/api/articles/unlock-orders',
     method: 'POST',
     data: payload,
+    baseUrl: getArticleApiBaseUrl(),
     sessionToken: payload.sessionToken,
     retryOnRouteNotFound: true,
     routeNotFoundMessage: '当前后端未部署文章解锁接口，请更新正在运行的 backend 服务后重试',
@@ -1048,6 +1069,7 @@ export function mockArticleUnlockPayment(payload: {
     url: '/api/payments/mock-callback',
     method: 'POST',
     data: payload,
+    baseUrl: getArticleApiBaseUrl(),
   })
 }
 
@@ -1064,6 +1086,7 @@ export function fetchOrderDetail(payload: {
 
   return request<OrderDetailResponse>({
     url: `/api/orders/detail?${query.join('&')}`,
+    baseUrl: getArticleApiBaseUrl(),
     sessionToken: payload.sessionToken,
   })
 }
@@ -1402,6 +1425,7 @@ export function fetchArticles(payload: {
 
   return request<PlanetArticleListResponse>({
     url: `/api/articles?${query.join('&')}`,
+    baseUrl: getArticleApiBaseUrl(),
     sessionToken: payload.sessionToken,
   })
 }
@@ -1409,7 +1433,26 @@ export function fetchArticles(payload: {
 export function fetchArticleDetail(articleId: string, incrementRead = true, sessionToken?: string) {
   return request<PlanetArticleDetailResponse>({
     url: `/api/articles/detail?articleId=${encodeURIComponent(articleId)}&incrementRead=${incrementRead ? '1' : '0'}`,
+    baseUrl: getArticleApiBaseUrl(),
     sessionToken,
+  })
+}
+
+export function createArticleShareLink(payload: {
+  path: string
+  envVersion?: 'develop' | 'trial' | 'release'
+  sessionToken?: string
+}) {
+  return request<ArticleShareLinkResponse>({
+    url: '/api/articles/share-link',
+    method: 'POST',
+    data: {
+      path: payload.path,
+      envVersion: payload.envVersion,
+    },
+    baseUrl: getApiBaseUrl(),
+    sessionToken: payload.sessionToken,
+    timeout: 2500,
   })
 }
 

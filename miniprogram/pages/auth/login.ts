@@ -19,7 +19,6 @@ const TAB_PAGE_PATHS = [
   '/pages/index/index',
   '/pages/course/list',
   '/pages/articles/index',
-  '/pages/store/index',
   '/pages/profile/index',
 ]
 
@@ -40,6 +39,27 @@ function resolveRedirectUrl(rawRedirectUrl?: string) {
   }
 
   return DEFAULT_REDIRECT_URL
+}
+
+function navigateWithoutLogin(redirectUrl: string) {
+  const redirectPath = redirectUrl.split('?')[0]
+
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    wx.navigateBack()
+    return
+  }
+
+  if (TAB_PAGE_PATHS.indexOf(redirectPath) >= 0) {
+    wx.switchTab({
+      url: redirectPath,
+    })
+    return
+  }
+
+  wx.switchTab({
+    url: '/pages/profile/index',
+  })
 }
 
 function buildLoginSceneConfig(redirectUrl: string): LoginSceneConfig {
@@ -77,7 +97,7 @@ function buildLoginSceneConfig(redirectUrl: string): LoginSceneConfig {
     sceneBadge: '饮视星球登录',
     heroMark: '星球',
     sceneTitle: '手机号一键登录',
-    sceneSubtitle: '进入饮视星球会先静默建立微信身份，这里用于一键补充手机号，完成统一登录。',
+    sceneSubtitle: '你可以按需登录，完成后会自动回到刚才的页面。',
     panelTitle: '这一步会做什么',
     panelDesc: '星球、资料页和商城都共用同一个账号体系，登录完成后会自动回到你刚才的页面。',
     footerTitle: '登录后可以继续什么',
@@ -96,7 +116,7 @@ Page({
     sceneBadge: '饮视星球登录',
     heroMark: '星球',
     sceneTitle: '手机号一键登录',
-    sceneSubtitle: '进入饮视星球会先静默建立微信身份，这里用于一键补充手机号，完成统一登录。',
+    sceneSubtitle: '你可以按需登录，完成后会自动回到刚才的页面。',
     panelTitle: '这一步会做什么',
     panelDesc: '星球、资料页和商城都共用同一个账号体系，登录完成后会自动回到你刚才的页面。',
     footerTitle: '登录后可以继续什么',
@@ -167,6 +187,11 @@ Page({
     wx.redirectTo({
       url: redirectUrl,
     })
+  },
+
+  onSkipLogin() {
+    clearPendingLoginRedirect()
+    navigateWithoutLogin(this.data.redirectUrl || DEFAULT_REDIRECT_URL)
   },
 
   async onSubmit() {

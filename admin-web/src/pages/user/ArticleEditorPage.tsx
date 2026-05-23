@@ -23,6 +23,13 @@ import {
   type ArticleContentSource,
   type ArticleItem,
 } from '../../services/articleWebService'
+import {
+  buildParagraphHtmlFromText,
+  collectArticleBlockHtmlList,
+  extractTextFromHtml,
+  normalizeEditorHtml,
+  shouldUsePreservedHtmlEditor,
+} from './articleRichContent'
 import { VideoBlock } from './VideoBlock'
 
 const MAX_CONTENT_LENGTH = 5000
@@ -31,6 +38,7 @@ const MAX_VIDEO_COUNT = 5
 const VIDEO_FILE_EXTENSION_PATTERN = /\.(mp4|m4v|mov|webm|ogv|ogg)$/i
 type ArticleAccessType = 'free' | 'paid'
 type ArticlePreviewMode = 'paragraph' | 'ratio'
+type ArticleEditorMode = 'rich' | 'preserve'
 
 interface EditorSnapshot {
   html: string
@@ -230,65 +238,9 @@ function extractVideoAttachments(html: string) {
     .slice(0, MAX_VIDEO_COUNT)
 }
 
-function normalizeEditorHtml(html: string) {
-  const normalized = html.trim()
-  if (!normalized || normalized === '<p></p>') {
-    return ''
-  }
-
-  return normalized
-}
-
-function escapeHtmlText(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
-
 function formatArticlePriceLabel(priceAmount: number) {
   const normalizedPrice = Number.isFinite(priceAmount) ? Math.max(0, Math.round(priceAmount)) : 0
   return normalizedPrice > 0 ? `¥${normalizedPrice}` : '免费'
-}
-
-function collectArticleBlockHtmlList(html: string) {
-  const normalizedHtml = normalizeEditorHtml(html)
-  if (!normalizedHtml || typeof DOMParser === 'undefined') {
-    return [] as string[]
-  }
-
-  const document = new DOMParser().parseFromString(normalizedHtml, 'text/html')
-  const blockTags = new Set(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'ul', 'ol', 'pre', 'figure', 'video', 'img', 'hr'])
-
-  return Array.from(document.body.childNodes)
-    .map((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const textContent = node.textContent?.trim() || ''
-        return textContent ? `<p>${escapeHtmlText(textContent)}</p>` : ''
-      }
-
-      if (node.nodeType !== Node.ELEMENT_NODE) {
-        return ''
-      }
-
-      const element = node as HTMLElement
-      const tagName = element.tagName.toLowerCase()
-      const textContent = element.textContent?.replace(/\s+/g, ' ').trim() || ''
-      const hasMeaningfulMedia = tagName === 'img' || tagName === 'hr' || tagName === 'video' || tagName === 'figure'
-
-      if (!blockTags.has(tagName) && !textContent) {
-        return ''
-      }
-
-      if (!textContent && !hasMeaningfulMedia) {
-        return ''
-      }
-
-      return element.outerHTML
-    })
-    .filter(Boolean)
 }
 
 function splitEditorTextToParagraphs(text: string) {
@@ -412,8 +364,10 @@ export function ArticleEditorPage() {
   const { groupId } = useParams()
   const imageInputRef = useRef<HTMLInputElement | null>(null)
   const videoInputRef = useRef<HTMLInputElement | null>(null)
+  const rawEditorRef = useRef<HTMLDivElement | null>(null)
   const savedSelectionRef = useRef<{ from: number; to: number } | null>(null)
   const hydratedArticleIdRef = useRef('')
+  const rawEditorHydrationKeyRef = useRef('')
 
   const [home, setHome] = useState<GroupHomePayload | null>(null)
   const [editingArticle, setEditingArticle] = useState<ArticleItem | null>(null)
@@ -421,6 +375,7 @@ export function ArticleEditorPage() {
   const [summary, setSummary] = useState('')
   const [tagInput, setTagInput] = useState('')
   const [contentSource, setContentSource] = useState<ArticleContentSource>('planet')
+  const [editorMode, setEditorMode] = useState<ArticleEditorMode>('rich')
   const [accessType, setAccessType] = useState<ArticleAccessType>('free')
   const [priceInput, setPriceInput] = useState('')
   const [previewMode, setPreviewMode] = useState<ArticlePreviewMode>('paragraph')
@@ -619,10 +574,22 @@ export function ArticleEditorPage() {
       characters: currentEditor.storage.characterCount.characters(),
     }),
   }) ?? defaultToolbarState
+  const currentCharacterCount = editorMode === 'preserve' ? editorSnapshot.text.length : toolbarState.characters
 
-  const publishDisabled = loadingHome || loadingArticle || uploading || submitting || !resolvedGroupId || !canPublish || !editor
+  const publishDisabled =
+    loadingHome || loadingArticle || uploading || submitting || !resolvedGroupId || !canPublish || (editorMode === 'rich' && !editor)
 
   function syncSnapshot() {
+    if (editorMode === 'preserve') {
+      const currentNode = rawEditorRef.current
+      const nextHtml = normalizeEditorHtml(currentNode?.innerHTML || '')
+      setEditorSnapshot({
+        html: nextHtml,
+        text: extractTextFromHtml(nextHtml),
+      })
+      return
+    }
+
     if (!editor) return
     setEditorSnapshot(readEditorSnapshot(editor))
   }
@@ -676,6 +643,11 @@ export function ArticleEditorPage() {
   }
 
   async function uploadAndInsertMedia(files: File[], selection: { from: number; to: number } | null) {
+    if (editorMode === 'preserve') {
+      setNotice('当前为保真编辑模式，暂不支持通过工具栏插入媒体')
+      return false
+    }
+
     if (!editor) {
       setError('编辑器还没有准备好')
       return false
@@ -792,6 +764,7 @@ export function ArticleEditorPage() {
   useEffect(() => {
     if (!articleId) {
       hydratedArticleIdRef.current = ''
+      rawEditorHydrationKeyRef.current = ''
       setEditingArticle(null)
       setLoadingArticle(false)
       return undefined
@@ -875,16 +848,45 @@ export function ArticleEditorPage() {
     setPriceInput(nextAccessType === 'paid' && editingArticle.access?.priceAmount ? String(editingArticle.access.priceAmount) : '')
     setPreviewMode(nextPreviewMode)
     setPreviewValueInput(nextAccessType === 'paid' && nextPreviewValue ? String(nextPreviewValue) : '')
+    const sourceHtml =
+      normalizeEditorHtml(editingArticle.richContent || '') || buildParagraphHtmlFromText(editingArticle.contentText || '')
+    const nextEditorMode = shouldUsePreservedHtmlEditor(sourceHtml) ? 'preserve' : 'rich'
 
-    editor.commands.setContent(
-      normalizeEditorHtml(editingArticle.richContent || '') ||
-        (editingArticle.contentText
-          ? `<p>${escapeHtmlText(editingArticle.contentText).replace(/\n/g, '</p><p>')}</p>`
-          : '<p></p>'),
-      { emitUpdate: false },
-    )
+    setEditorMode(nextEditorMode)
+
+    if (nextEditorMode === 'preserve') {
+      rawEditorHydrationKeyRef.current = ''
+      setEditorSnapshot({
+        html: sourceHtml === '<p></p>' ? '' : sourceHtml,
+        text: extractTextFromHtml(sourceHtml),
+      })
+      editor.commands.setContent('<p></p>', { emitUpdate: false })
+      return
+    }
+
+    rawEditorHydrationKeyRef.current = ''
+    editor.commands.setContent(sourceHtml, { emitUpdate: false })
     setEditorSnapshot(readEditorSnapshot(editor))
   }, [editingArticle, editor])
+
+  useEffect(() => {
+    if (editorMode !== 'preserve') {
+      return
+    }
+
+    const currentNode = rawEditorRef.current
+    if (!currentNode) {
+      return
+    }
+
+    const hydrateKey = editingArticle ? editingArticle.id : 'draft'
+    if (rawEditorHydrationKeyRef.current === hydrateKey) {
+      return
+    }
+
+    currentNode.innerHTML = editorSnapshot.html || '<p></p>'
+    rawEditorHydrationKeyRef.current = hydrateKey
+  }, [editingArticle, editorMode, editorSnapshot.html])
 
   function handleImageButtonMouseDown(event: MouseEvent<HTMLButtonElement>) {
     event.preventDefault()
@@ -948,12 +950,19 @@ export function ArticleEditorPage() {
       return
     }
 
-    if (!editor) {
+    if (editorMode === 'rich' && !editor) {
       setError('编辑器还没有准备好')
       return
     }
 
-    const latestSnapshot = readEditorSnapshot(editor)
+    const latestSnapshot =
+      editorMode === 'preserve'
+        ? {
+            html: normalizeEditorHtml(rawEditorRef.current?.innerHTML || ''),
+            text: extractTextFromHtml(rawEditorRef.current?.innerHTML || ''),
+          }
+        : readEditorSnapshot(editor)
+    const latestCharacterCount = latestSnapshot.text.length
     const latestImages = extractImageUrls(latestSnapshot.html)
     const latestVideos = extractVideoAttachments(latestSnapshot.html)
     const latestVideoUrls = latestVideos.map((item) => item.url)
@@ -971,7 +980,7 @@ export function ArticleEditorPage() {
       return
     }
 
-    if (toolbarState.characters > MAX_CONTENT_LENGTH) {
+    if (latestCharacterCount > MAX_CONTENT_LENGTH) {
       setError(`正文最多 ${MAX_CONTENT_LENGTH} 字`)
       return
     }
@@ -1078,7 +1087,7 @@ export function ArticleEditorPage() {
 
                 <div className="article-editor-top-stats">
                   <span>正文内容</span>
-                  <strong>{toolbarState.characters}/{MAX_CONTENT_LENGTH}</strong>
+                  <strong>{currentCharacterCount}/{MAX_CONTENT_LENGTH}</strong>
                 </div>
               </div>
 
@@ -1090,45 +1099,54 @@ export function ArticleEditorPage() {
                 </div>
               </div>
 
-              <div className="article-editor-toolbar" aria-label="文章编辑工具栏">
-                <ToolbarButton active={toolbarState.heading2} disabled={!editor} label="H2" onAction={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} title="二级标题" />
-                <ToolbarButton active={toolbarState.heading3} disabled={!editor} label="H3" onAction={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} title="三级标题" />
-                <ToolbarButton active={toolbarState.bold} disabled={!editor} label="B" onAction={() => editor?.chain().focus().toggleBold().run()} title="加粗" />
-                <ToolbarButton active={toolbarState.italic} disabled={!editor} label="I" onAction={() => editor?.chain().focus().toggleItalic().run()} title="斜体" />
-                <ToolbarButton active={toolbarState.underline} disabled={!editor} label="U" onAction={() => editor?.chain().focus().toggleUnderline().run()} title="下划线" />
-                <ToolbarButton active={toolbarState.link} disabled={!editor} label="链接" onAction={handleSetLink} title="插入链接" />
-                <span className="article-editor-toolbar-divider" />
-                <ToolbarButton active={toolbarState.bulletList} disabled={!editor} label="列表" onAction={() => editor?.chain().focus().toggleBulletList().run()} title="无序列表" />
-                <ToolbarButton active={toolbarState.orderedList} disabled={!editor} label="1." onAction={() => editor?.chain().focus().toggleOrderedList().run()} title="有序列表" />
-                <ToolbarButton active={toolbarState.blockquote} disabled={!editor} label="引用" onAction={() => editor?.chain().focus().toggleBlockquote().run()} title="引用" />
-                <ToolbarButton disabled={!editor} label="线" onAction={() => editor?.chain().focus().setHorizontalRule().run()} title="插入分割线" />
-                <span className="article-editor-toolbar-divider" />
-                <ToolbarButton active={toolbarState.alignLeft} disabled={!editor} label="左" onAction={() => editor?.chain().focus().setTextAlign('left').run()} title="左对齐" />
-                <ToolbarButton active={toolbarState.alignCenter} disabled={!editor} label="中" onAction={() => editor?.chain().focus().setTextAlign('center').run()} title="居中" />
-                <ToolbarButton active={toolbarState.alignRight} disabled={!editor} label="右" onAction={() => editor?.chain().focus().setTextAlign('right').run()} title="右对齐" />
-                <span className="article-editor-toolbar-divider" />
-                <button
-                  className="article-editor-tool"
-                  disabled={!editor || uploading || inlineImageUrls.length >= MAX_IMAGE_COUNT}
-                  onMouseDown={handleImageButtonMouseDown}
-                  title="上传图片并插入到当前位置"
-                  type="button"
-                >
-                  {uploading ? '上传中' : '图片'}
-                </button>
-                <button
-                  className="article-editor-tool"
-                  disabled={!editor || uploading || inlineVideoAttachments.length >= MAX_VIDEO_COUNT}
-                  onMouseDown={handleVideoButtonMouseDown}
-                  title="上传视频并插入到当前位置"
-                  type="button"
-                >
-                  {uploading ? '上传中' : '视频'}
-                </button>
-                <ToolbarButton disabled={!editor} label="清样式" onAction={handleClearFormat} title="清除当前段落样式" />
-                <ToolbarButton disabled={!editor} label="撤销" onAction={() => editor?.chain().focus().undo().run()} title="撤销" />
-                <ToolbarButton disabled={!editor} label="重做" onAction={() => editor?.chain().focus().redo().run()} title="重做" />
-              </div>
+              {editorMode === 'preserve' ? (
+                <div className="article-editor-toolbar article-editor-toolbar-preserve" aria-label="文章编辑工具栏">
+                  <span className="article-editor-preserve-badge">保真模式</span>
+                  <span className="article-editor-preserve-copy">
+                    检测到复杂 HTML 结构，当前直接基于原始内容编辑，避免导入内容被编辑器清洗。
+                  </span>
+                </div>
+              ) : (
+                <div className="article-editor-toolbar" aria-label="文章编辑工具栏">
+                  <ToolbarButton active={toolbarState.heading2} disabled={!editor} label="H2" onAction={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()} title="二级标题" />
+                  <ToolbarButton active={toolbarState.heading3} disabled={!editor} label="H3" onAction={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()} title="三级标题" />
+                  <ToolbarButton active={toolbarState.bold} disabled={!editor} label="B" onAction={() => editor?.chain().focus().toggleBold().run()} title="加粗" />
+                  <ToolbarButton active={toolbarState.italic} disabled={!editor} label="I" onAction={() => editor?.chain().focus().toggleItalic().run()} title="斜体" />
+                  <ToolbarButton active={toolbarState.underline} disabled={!editor} label="U" onAction={() => editor?.chain().focus().toggleUnderline().run()} title="下划线" />
+                  <ToolbarButton active={toolbarState.link} disabled={!editor} label="链接" onAction={handleSetLink} title="插入链接" />
+                  <span className="article-editor-toolbar-divider" />
+                  <ToolbarButton active={toolbarState.bulletList} disabled={!editor} label="列表" onAction={() => editor?.chain().focus().toggleBulletList().run()} title="无序列表" />
+                  <ToolbarButton active={toolbarState.orderedList} disabled={!editor} label="1." onAction={() => editor?.chain().focus().toggleOrderedList().run()} title="有序列表" />
+                  <ToolbarButton active={toolbarState.blockquote} disabled={!editor} label="引用" onAction={() => editor?.chain().focus().toggleBlockquote().run()} title="引用" />
+                  <ToolbarButton disabled={!editor} label="线" onAction={() => editor?.chain().focus().setHorizontalRule().run()} title="插入分割线" />
+                  <span className="article-editor-toolbar-divider" />
+                  <ToolbarButton active={toolbarState.alignLeft} disabled={!editor} label="左" onAction={() => editor?.chain().focus().setTextAlign('left').run()} title="左对齐" />
+                  <ToolbarButton active={toolbarState.alignCenter} disabled={!editor} label="中" onAction={() => editor?.chain().focus().setTextAlign('center').run()} title="居中" />
+                  <ToolbarButton active={toolbarState.alignRight} disabled={!editor} label="右" onAction={() => editor?.chain().focus().setTextAlign('right').run()} title="右对齐" />
+                  <span className="article-editor-toolbar-divider" />
+                  <button
+                    className="article-editor-tool"
+                    disabled={!editor || uploading || inlineImageUrls.length >= MAX_IMAGE_COUNT}
+                    onMouseDown={handleImageButtonMouseDown}
+                    title="上传图片并插入到当前位置"
+                    type="button"
+                  >
+                    {uploading ? '上传中' : '图片'}
+                  </button>
+                  <button
+                    className="article-editor-tool"
+                    disabled={!editor || uploading || inlineVideoAttachments.length >= MAX_VIDEO_COUNT}
+                    onMouseDown={handleVideoButtonMouseDown}
+                    title="上传视频并插入到当前位置"
+                    type="button"
+                  >
+                    {uploading ? '上传中' : '视频'}
+                  </button>
+                  <ToolbarButton disabled={!editor} label="清样式" onAction={handleClearFormat} title="清除当前段落样式" />
+                  <ToolbarButton disabled={!editor} label="撤销" onAction={() => editor?.chain().focus().undo().run()} title="撤销" />
+                  <ToolbarButton disabled={!editor} label="重做" onAction={() => editor?.chain().focus().redo().run()} title="重做" />
+                </div>
+              )}
 
               <input accept="image/*" hidden onChange={handleImagePick} ref={imageInputRef} type="file" />
               <input
@@ -1139,83 +1157,101 @@ export function ArticleEditorPage() {
                 type="file"
               />
 
-              <div className="article-rich-editor">
-                <BubbleMenu
-                  editor={editor}
-                  options={{
-                    placement: 'top',
-                  }}
-                  shouldShow={({ editor: currentEditor, from, to }) =>
-                    currentEditor.isEditable &&
-                    from !== to &&
-                    !currentEditor.isActive('image') &&
-                    !currentEditor.isActive('videoBlock')
-                  }
-                >
-                  <div className="article-editor-bubble-menu">
-                    <ToolbarButton active={toolbarState.bold} label="B" onAction={() => editor?.chain().focus().toggleBold().run()} title="加粗" />
-                    <ToolbarButton active={toolbarState.italic} label="I" onAction={() => editor?.chain().focus().toggleItalic().run()} title="斜体" />
-                    <ToolbarButton active={toolbarState.underline} label="U" onAction={() => editor?.chain().focus().toggleUnderline().run()} title="下划线" />
-                    <ToolbarButton active={toolbarState.link} label="链接" onAction={handleSetLink} title="插入链接" />
-                    <ToolbarButton label="引用" onAction={() => editor?.chain().focus().toggleBlockquote().run()} title="引用" />
-                  </div>
-                </BubbleMenu>
-
-                <FloatingMenu
-                  editor={editor}
-                  options={{
-                    placement: 'left-start',
-                  }}
-                  shouldShow={({ editor: currentEditor, state }) => {
-                    const { $from, empty } = state.selection
-                    if (!currentEditor.isEditable || !empty) {
-                      return false
-                    }
-
-                    return $from.parent.isTextblock && !$from.parent.textContent.trim()
-                  }}
-                >
-                  <div className="article-editor-floating-menu">
-                    <button className="article-editor-floating-action" onMouseDown={handleImageButtonMouseDown} type="button">
-                      图片
-                    </button>
-                    <button className="article-editor-floating-action" onMouseDown={handleVideoButtonMouseDown} type="button">
-                      视频
-                    </button>
-                    <button
-                      className="article-editor-floating-action"
-                      onMouseDown={(event) => {
-                        event.preventDefault()
-                        editor?.chain().focus().toggleHeading({ level: 2 }).run()
+              <div className={editorMode === 'preserve' ? 'article-rich-editor is-preserve-mode' : 'article-rich-editor'}>
+                {editorMode === 'preserve' ? (
+                  <div
+                    ref={rawEditorRef}
+                    className="article-raw-editor"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={(event) => {
+                      const nextHtml = normalizeEditorHtml(event.currentTarget.innerHTML || '')
+                      setEditorSnapshot({
+                        html: nextHtml,
+                        text: extractTextFromHtml(nextHtml),
+                      })
+                    }}
+                  />
+                ) : (
+                  <>
+                    <BubbleMenu
+                      editor={editor}
+                      options={{
+                        placement: 'top',
                       }}
-                      type="button"
+                      shouldShow={({ editor: currentEditor, from, to }) =>
+                        currentEditor.isEditable &&
+                        from !== to &&
+                        !currentEditor.isActive('image') &&
+                        !currentEditor.isActive('videoBlock')
+                      }
                     >
-                      H2
-                    </button>
-                    <button
-                      className="article-editor-floating-action"
-                      onMouseDown={(event) => {
-                        event.preventDefault()
-                        editor?.chain().focus().toggleBulletList().run()
-                      }}
-                      type="button"
-                    >
-                      列表
-                    </button>
-                    <button
-                      className="article-editor-floating-action"
-                      onMouseDown={(event) => {
-                        event.preventDefault()
-                        editor?.chain().focus().toggleBlockquote().run()
-                      }}
-                      type="button"
-                    >
-                      引用
-                    </button>
-                  </div>
-                </FloatingMenu>
+                      <div className="article-editor-bubble-menu">
+                        <ToolbarButton active={toolbarState.bold} label="B" onAction={() => editor?.chain().focus().toggleBold().run()} title="加粗" />
+                        <ToolbarButton active={toolbarState.italic} label="I" onAction={() => editor?.chain().focus().toggleItalic().run()} title="斜体" />
+                        <ToolbarButton active={toolbarState.underline} label="U" onAction={() => editor?.chain().focus().toggleUnderline().run()} title="下划线" />
+                        <ToolbarButton active={toolbarState.link} label="链接" onAction={handleSetLink} title="插入链接" />
+                        <ToolbarButton label="引用" onAction={() => editor?.chain().focus().toggleBlockquote().run()} title="引用" />
+                      </div>
+                    </BubbleMenu>
 
-                <EditorContent editor={editor} />
+                    <FloatingMenu
+                      editor={editor}
+                      options={{
+                        placement: 'left-start',
+                      }}
+                      shouldShow={({ editor: currentEditor, state }) => {
+                        const { $from, empty } = state.selection
+                        if (!currentEditor.isEditable || !empty) {
+                          return false
+                        }
+
+                        return $from.parent.isTextblock && !$from.parent.textContent.trim()
+                      }}
+                    >
+                      <div className="article-editor-floating-menu">
+                        <button className="article-editor-floating-action" onMouseDown={handleImageButtonMouseDown} type="button">
+                          图片
+                        </button>
+                        <button className="article-editor-floating-action" onMouseDown={handleVideoButtonMouseDown} type="button">
+                          视频
+                        </button>
+                        <button
+                          className="article-editor-floating-action"
+                          onMouseDown={(event) => {
+                            event.preventDefault()
+                            editor?.chain().focus().toggleHeading({ level: 2 }).run()
+                          }}
+                          type="button"
+                        >
+                          H2
+                        </button>
+                        <button
+                          className="article-editor-floating-action"
+                          onMouseDown={(event) => {
+                            event.preventDefault()
+                            editor?.chain().focus().toggleBulletList().run()
+                          }}
+                          type="button"
+                        >
+                          列表
+                        </button>
+                        <button
+                          className="article-editor-floating-action"
+                          onMouseDown={(event) => {
+                            event.preventDefault()
+                            editor?.chain().focus().toggleBlockquote().run()
+                          }}
+                          type="button"
+                        >
+                          引用
+                        </button>
+                      </div>
+                    </FloatingMenu>
+
+                    <EditorContent editor={editor} />
+                  </>
+                )}
               </div>
 
               {error ? <div className="article-editor-error">{error}</div> : null}
@@ -1224,7 +1260,7 @@ export function ArticleEditorPage() {
                 <div className="article-editor-footer-tools">
                   <button
                     className="article-editor-inline-action"
-                    disabled={!editor || uploading || inlineImageUrls.length >= MAX_IMAGE_COUNT}
+                    disabled={editorMode === 'preserve' || !editor || uploading || inlineImageUrls.length >= MAX_IMAGE_COUNT}
                     onMouseDown={handleImageButtonMouseDown}
                     type="button"
                   >
@@ -1232,13 +1268,15 @@ export function ArticleEditorPage() {
                   </button>
                   <button
                     className="article-editor-inline-action"
-                    disabled={!editor || uploading || inlineVideoAttachments.length >= MAX_VIDEO_COUNT}
+                    disabled={editorMode === 'preserve' || !editor || uploading || inlineVideoAttachments.length >= MAX_VIDEO_COUNT}
                     onMouseDown={handleVideoButtonMouseDown}
                     type="button"
                   >
                     添加视频
                   </button>
-                  <span className="article-editor-footer-tip">{notice || '支持粘贴、拖拽上传图片和视频'}</span>
+                  <span className="article-editor-footer-tip">
+                    {notice || (editorMode === 'preserve' ? '保真模式下直接编辑原始内容，工具栏上传入口已关闭' : '支持粘贴、拖拽上传图片和视频')}
+                  </span>
                 </div>
 
                 <div className="article-editor-footer-actions">
@@ -1394,7 +1432,7 @@ export function ArticleEditorPage() {
                 <div className="article-editor-side-label">文章概览</div>
                 <div className="article-editor-publish-meta">
                   <span>标题 {normalizedTitle ? `${normalizedTitle.length}/80` : '未填写'}</span>
-                  <span>正文 {toolbarState.characters}/{MAX_CONTENT_LENGTH}</span>
+                  <span>正文 {currentCharacterCount}/{MAX_CONTENT_LENGTH}</span>
                   <span>图片 {inlineImageUrls.length}/{MAX_IMAGE_COUNT}</span>
                   <span>视频 {inlineVideoAttachments.length}/{MAX_VIDEO_COUNT}</span>
                   <span>来源 {contentSource === 'wechat' ? '微信文章' : '知识星球'}</span>

@@ -3,10 +3,37 @@ import {
   type ArticleAccessProfile,
   type ArticleContentSource,
   type ArticlePlanetCard,
-  type ArticleRecord,
 } from './article-data'
 import type { PlanetArticleItem } from './planet-api'
 import { normalizeAssetUrl, normalizeRichTextAssetUrls } from './request'
+import {
+  annotateArticleRichContentWithShareAnchors,
+  buildArticleContentBlocks,
+  buildArticleShareImageEntries,
+  collectArticleShareImageCandidates,
+} from '../pages/articles/shared'
+
+export interface ArticleRichContentBlock {
+  key: string
+  type: 'rich'
+  html: string
+  anchorId: string
+}
+
+export interface ArticleWechatCardContentBlock {
+  key: string
+  type: 'wechat-card'
+  index: number
+  title: string
+  summary: string
+  sourceUrl: string
+  coverImage: string
+  anchorId: string
+  linkedArticleId: string
+  buttonText: string
+}
+
+export type ArticleContentBlock = ArticleRichContentBlock | ArticleWechatCardContentBlock
 
 export interface ArticleCardItem {
   id: string
@@ -66,10 +93,23 @@ export interface ArticleDetailViewModel {
   navTitle: string
   isRichContent: boolean
   visibleRichContent: string
+  bodyBlocks: ArticleContentBlock[]
+  shareImageCandidates: string[]
+  shareImageKeys: string[]
+  shareImageTargetAnchorIds: string[]
+  standaloneCoverAnchorId: string
   canReadFull: boolean
   showStandaloneSummary: boolean
   showStandaloneCover: boolean
   planetCard: ArticlePlanetCard
+}
+
+function normalizeArticleContentSource(article: Pick<PlanetArticleItem, 'contentSource'>): ArticleContentSource {
+  return article.contentSource === 'wechat' ? 'wechat' : 'planet'
+}
+
+function getDefaultArticleAuthor(contentSource: ArticleContentSource) {
+  return contentSource === 'wechat' ? '匿名作者' : '知识星球'
 }
 
 function formatArticlePriceLabel(priceAmount: number) {
@@ -157,8 +197,24 @@ function appendInlineStyle(attributes: string, styleText: string) {
   return `${normalizedAttributes} style="${styleText}"`
 }
 
+function trimLeadingEmptyRichNodes(html: string) {
+  let nextHtml = String(html || '').trim()
+  if (!nextHtml) {
+    return ''
+  }
+
+  const LEADING_EMPTY_BLOCK_PATTERN =
+    /^(?:<(p|div|section)\b[^>]*>(?:\s|&nbsp;|&#160;|<br\s*\/?>|<\/?span\b[^>]*>)*<\/\1>\s*)+/i
+
+  while (LEADING_EMPTY_BLOCK_PATTERN.test(nextHtml)) {
+    nextHtml = nextHtml.replace(LEADING_EMPTY_BLOCK_PATTERN, '').trimStart()
+  }
+
+  return nextHtml
+}
+
 function normalizeMiniProgramRichContent(html: string) {
-  const normalizedHtml = normalizeRichTextAssetUrls(String(html || '').trim())
+  const normalizedHtml = trimLeadingEmptyRichNodes(normalizeRichTextAssetUrls(String(html || '').trim()))
   if (!normalizedHtml) {
     return ''
   }
@@ -178,6 +234,50 @@ function normalizeMiniProgramRichContent(html: string) {
       )
       return `<video ${nextAttributes}>`
     })
+}
+
+function buildBodyBlocks(richContent: string, metadata: Record<string, unknown>): ArticleContentBlock[] {
+  const blocks = buildArticleContentBlocks(richContent, metadata) as Array<
+    | { type: 'rich'; html: string; anchorId?: string }
+    | {
+        type: 'wechat-card'
+        card: {
+          index: number
+          title: string
+          summary: string
+          sourceUrl: string
+          coverUrl: string
+        }
+      }
+  >
+
+  return blocks
+    .map((block, index) => {
+      if (block.type === 'wechat-card') {
+        const title = String(block.card && block.card.title ? block.card.title : '').trim() || '相关文章'
+        const sourceUrl = String(block.card && block.card.sourceUrl ? block.card.sourceUrl : '').trim()
+        return {
+          key: `wechat-card-${index}`,
+          type: 'wechat-card',
+          index: Number(block.card && Number.isFinite(block.card.index) ? block.card.index : index),
+          title,
+          summary: String(block.card && block.card.summary ? block.card.summary : '').trim(),
+          sourceUrl,
+          coverImage: normalizeAssetUrl(String((block.card && block.card.coverUrl) || '')),
+          anchorId: '',
+          linkedArticleId: '',
+          buttonText: sourceUrl ? '打开卡片文章' : '查看卡片内容',
+        } satisfies ArticleWechatCardContentBlock
+      }
+
+      return {
+        key: `rich-${index}`,
+        type: 'rich',
+        html: String(block.html || '').trim(),
+        anchorId: String(block.anchorId || '').trim(),
+      } satisfies ArticleRichContentBlock
+    })
+    .filter((item) => (item.type === 'rich' ? Boolean(item.html) : Boolean(item.title || item.coverImage)))
 }
 
 function estimateReadDuration(text: string, paragraphCount = 0) {
@@ -200,10 +300,11 @@ function formatWordCount(text: string, paragraphCount = 0) {
 
 function buildPlanetCard(article: PlanetArticleItem): ArticlePlanetCard {
   const authorDisplay = article.authorDisplay || null
+  const contentSource = normalizeArticleContentSource(article)
 
   return {
     id: String(article.groupId || ''),
-    name: String((authorDisplay && authorDisplay.name) || '知识星球'),
+    name: String((authorDisplay && authorDisplay.name) || (contentSource === 'wechat' ? '微信文章' : '知识星球')),
     creator: '',
     avatar: normalizeAssetUrl(String((authorDisplay && authorDisplay.avatarUrl) || '')),
     intro: '',
@@ -261,32 +362,9 @@ function decorateCardByAccess(base: Omit<ArticleCardItem, 'primaryMarkText' | 'p
   } satisfies ArticleCardItem
 }
 
-export function decorateStaticArticleCard(article: ArticleRecord) {
-  return decorateCardByAccess({
-    id: article.id,
-    contentSource: article.contentSource,
-    title: article.title,
-    summary: article.summary,
-    author: article.author,
-    authorTag: article.authorTag,
-    authorAvatar: article.authorAvatar,
-    time: article.time,
-    coverImage: article.coverImage,
-    likeCount: article.likeCount,
-    commentCount: article.commentCount,
-    tags: [...article.tags],
-    readDuration: article.readDuration,
-    wordCount: article.wordCount,
-    salesCount: article.salesCount,
-    updated: article.updated,
-    sortWeight: article.sortWeight,
-    access: { ...article.access },
-    planetCard: { ...article.planetCard },
-  })
-}
-
 export function mapRemoteArticleToCard(article: PlanetArticleItem) {
   const authorDisplay = article.authorDisplay || null
+  const contentSource = normalizeArticleContentSource(article)
   const visibleParagraphs =
     Array.isArray(article.contentParagraphs) && article.contentParagraphs.length
       ? article.contentParagraphs
@@ -297,10 +375,10 @@ export function mapRemoteArticleToCard(article: PlanetArticleItem) {
 
   return decorateCardByAccess({
     id: article.id,
-    contentSource: article.contentSource === 'wechat' ? 'wechat' : 'planet',
+    contentSource,
     title: article.title || '未命名文章',
     summary: article.summary || '',
-    author: String((authorDisplay && authorDisplay.name) || '知识星球'),
+    author: String((authorDisplay && authorDisplay.name) || getDefaultArticleAuthor(contentSource)),
     authorAvatar: normalizeAssetUrl(String((authorDisplay && authorDisplay.avatarUrl) || '')),
     time: formatArticleTime(publishedAt),
     coverImage: normalizeAssetUrl(String(article.coverUrl || '')),
@@ -324,7 +402,7 @@ export function sortArticleCards(items: ArticleCardItem[]) {
 export function createEmptyArticleDetailViewModel(): ArticleDetailViewModel {
   return {
     id: '',
-    contentSource: 'planet',
+    contentSource: 'wechat',
     title: '',
     summary: '',
     author: '',
@@ -355,10 +433,15 @@ export function createEmptyArticleDetailViewModel(): ArticleDetailViewModel {
     paywallSubtitle: '',
     paywallButtonText: '',
     isWechatArticle: false,
-    isPlanetArticle: true,
+    isPlanetArticle: false,
     navTitle: '文章详情',
     isRichContent: false,
     visibleRichContent: '',
+    bodyBlocks: [],
+    shareImageCandidates: [],
+    shareImageKeys: [],
+    shareImageTargetAnchorIds: [],
+    standaloneCoverAnchorId: '',
     canReadFull: true,
     showStandaloneSummary: false,
     showStandaloneCover: false,
@@ -373,76 +456,13 @@ export function createEmptyArticleDetailViewModel(): ArticleDetailViewModel {
   }
 }
 
-export function buildStaticArticleDetail(article: ArticleRecord): ArticleDetailViewModel {
-  const presentation = getArticleReadPresentation(article)
-  const visibleContent = presentation.canReadFull ? article.fullContent : article.previewContent
-  const hiddenParagraphCount = Math.max(0, article.fullContent.length - visibleContent.length)
-  const isWechatArticle = article.contentSource === 'wechat'
-  const showStandaloneSummary = shouldShowStandaloneSummary(article.summary, '', visibleContent)
-  const showStandaloneCover = Boolean(String(article.coverImage || '').trim())
-  let hiddenHint = presentation.detailHint
-  let paywallTitle = `解锁剩余 ${hiddenParagraphCount} 段完整内容`
-  let paywallSubtitle = `当前可试看前 ${visibleContent.length} 段，支付 ${article.access.priceLabel} 后阅读全文`
-  let paywallButtonText = `解锁全文 ${article.access.priceLabel}`
-  let showPaywallCard = !presentation.canReadFull
-
-  if (isWechatArticle && !presentation.canReadFull) {
-    hiddenHint = `已开放前 ${visibleContent.length} 段预览，剩余 ${hiddenParagraphCount} 段为付费正文`
-    paywallTitle = '以下内容为付费阅读部分'
-    paywallSubtitle = `支付 ${article.access.priceLabel} 后可继续阅读完整公众号正文`
-    paywallButtonText = `${article.access.priceLabel} 继续阅读`
-  }
-
-  if (presentation.canReadFull) {
-    paywallTitle = ''
-    paywallSubtitle = ''
-    paywallButtonText = ''
-    showPaywallCard = false
-  }
-
-  return {
-    id: article.id,
-    contentSource: article.contentSource,
-    title: article.title,
-    summary: article.summary,
-    author: article.author,
-    authorTag: article.authorTag,
-    authorAvatar: article.authorAvatar,
-    time: article.time,
-    coverImage: article.coverImage,
-    likeCount: article.likeCount,
-    commentCount: article.commentCount,
-    tags: [...article.tags],
-    readDuration: article.readDuration,
-    wordCount: article.wordCount,
-    salesCount: article.salesCount,
-    access: { ...article.access },
-    readState: presentation.readState,
-    hiddenHint,
-    visibleContent,
-    hiddenParagraphCount,
-    showPaywallCard,
-    paywallTitle,
-    paywallSubtitle,
-    paywallButtonText,
-    isWechatArticle,
-    isPlanetArticle: !isWechatArticle,
-    navTitle: isWechatArticle ? '微信文章' : '文章详情',
-    isRichContent: false,
-    visibleRichContent: '',
-    canReadFull: presentation.canReadFull,
-    showStandaloneSummary,
-    showStandaloneCover,
-    planetCard: { ...article.planetCard },
-  }
-}
-
 export function buildRemoteArticleDetail(article: PlanetArticleItem): ArticleDetailViewModel {
   const authorDisplay = article.authorDisplay || null
+  const contentSource = normalizeArticleContentSource(article)
+  const isWechatArticle = contentSource === 'wechat'
   const access = buildAccessProfile(article)
   const updated = isUpdatedArticle(article)
   const presentation = getArticleReadPresentation({ access, updated })
-  const isWechatArticle = article.contentSource === 'wechat'
   const visibleContent =
     Array.isArray(article.contentParagraphs) && article.contentParagraphs.length
       ? article.contentParagraphs
@@ -455,9 +475,57 @@ export function buildRemoteArticleDetail(article: PlanetArticleItem): ArticleDet
     )
   )
   const visibleRichContent = normalizeMiniProgramRichContent(String(article.richContent || article.previewRichContent || ''))
+  const bodyMetadata = article.metadata && typeof article.metadata === 'object' ? article.metadata : {}
+  const initialBodyBlocks = buildBodyBlocks(
+    visibleRichContent,
+    bodyMetadata
+  )
+  const normalizedCoverImage = normalizeAssetUrl(String(article.coverUrl || ''))
+  const shareImageCandidates = collectArticleShareImageCandidates({
+    richContent: visibleRichContent,
+    bodyBlocks: initialBodyBlocks,
+    coverImage: normalizedCoverImage,
+  })
+  const shareImageEntries = buildArticleShareImageEntries(shareImageCandidates)
+  const shareImageKeys = shareImageEntries.map((item) => String(item.imageKey || '').trim())
+  const annotatedRichContentState = annotateArticleRichContentWithShareAnchors(visibleRichContent, shareImageCandidates)
+  const bodyBlocks = buildBodyBlocks(
+    annotatedRichContentState.richContent,
+    bodyMetadata
+  )
+  const shareImageTargetAnchorIds = annotatedRichContentState.targetAnchorIds.slice()
+  const shareImageCandidateIndexByUrl = new Map(shareImageCandidates.map((imageUrl, index) => [imageUrl, index]))
+  const usedAnchorIds = new Set<string>(shareImageTargetAnchorIds.filter(Boolean))
+  const assignAnchorId = (imageUrl: string) => {
+    const normalizedImageUrl = String(imageUrl || '').trim()
+    const imageIndex = shareImageCandidateIndexByUrl.get(normalizedImageUrl)
+    if (!normalizedImageUrl || typeof imageIndex !== 'number' || shareImageTargetAnchorIds[imageIndex]) {
+      return ''
+    }
+
+    const anchorId = `article-share-anchor-${imageIndex}`
+    if (usedAnchorIds.has(anchorId)) {
+      return ''
+    }
+
+    usedAnchorIds.add(anchorId)
+    shareImageTargetAnchorIds[imageIndex] = anchorId
+    return anchorId
+  }
+  const anchoredBodyBlocks = bodyBlocks.map((block) => {
+    if (block.type !== 'wechat-card') {
+      return block
+    }
+
+    return {
+      ...block,
+      anchorId: assignAnchorId(block.coverImage),
+    } satisfies ArticleWechatCardContentBlock
+  })
   const showStandaloneSummary = shouldShowStandaloneSummary(article.summary || '', visibleRichContent, visibleContent)
   const showStandaloneCover =
     Boolean(String(article.coverUrl || '').trim()) && (!visibleRichContent.trim() || !hasRichMediaBlocks(visibleRichContent))
+  const standaloneCoverAnchorId = showStandaloneCover ? assignAnchorId(normalizedCoverImage) : ''
   const paywallTitle = hiddenParagraphCount > 0 ? `解锁剩余 ${hiddenParagraphCount} 段完整内容` : `解锁完整文章 ${access.priceLabel}`
   const paywallSubtitle = isWechatArticle
     ? `支付 ${access.priceLabel} 后可继续阅读完整公众号正文`
@@ -470,14 +538,14 @@ export function buildRemoteArticleDetail(article: PlanetArticleItem): ArticleDet
 
   return {
     id: article.id,
-    contentSource: article.contentSource === 'wechat' ? 'wechat' : 'planet',
+    contentSource,
     title: article.title || '未命名文章',
     summary: article.summary || '',
-    author: String((authorDisplay && authorDisplay.name) || (isWechatArticle ? '微信公众号' : '知识星球')),
+    author: String((authorDisplay && authorDisplay.name) || getDefaultArticleAuthor(contentSource)),
     authorTag: '',
     authorAvatar: normalizeAssetUrl(String((authorDisplay && authorDisplay.avatarUrl) || '')),
     time: formatArticleTime(article.publishedAt || article.createdAt),
-    coverImage: normalizeAssetUrl(String(article.coverUrl || '')),
+    coverImage: normalizedCoverImage,
     likeCount: Number(article.likeCount || 0),
     commentCount: Number(article.commentCount || 0),
     tags: Array.isArray(article.tags) ? article.tags.slice(0, 8) : [],
@@ -495,9 +563,14 @@ export function buildRemoteArticleDetail(article: PlanetArticleItem): ArticleDet
     paywallButtonText: presentation.canReadFull ? '' : `${access.priceLabel} 解锁全文`,
     isWechatArticle,
     isPlanetArticle: !isWechatArticle,
-    navTitle: isWechatArticle ? '微信文章' : '文章详情',
+    navTitle: isWechatArticle ? '微信文章' : '知识星球',
     isRichContent: Boolean(visibleRichContent.trim()),
     visibleRichContent,
+    bodyBlocks: anchoredBodyBlocks,
+    shareImageCandidates,
+    shareImageKeys,
+    shareImageTargetAnchorIds,
+    standaloneCoverAnchorId,
     canReadFull: presentation.canReadFull,
     showStandaloneSummary,
     showStandaloneCover,

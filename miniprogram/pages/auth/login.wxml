@@ -49,6 +49,10 @@
         <button class="auth-submit auth-submit-ghost" loading="{{loading}}" bindtap="onSubmit">
           仅刷新微信登录态
         </button>
+
+        <button class="auth-submit auth-submit-plain" disabled="{{loading}}" bindtap="onSkipLogin">
+          暂不登录，先体验
+        </button>
       </view>
     </view>
 

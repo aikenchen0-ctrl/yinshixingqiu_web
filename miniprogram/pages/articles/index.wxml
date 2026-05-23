@@ -9,30 +9,31 @@
   <view class="article-channel-shell">
     <view class="article-source-switch">
       <view
-        class="article-source-item {{activeContentSource === 'wechat' ? 'is-active' : ''}}"
-        data-source="wechat"
+        wx:for="{{articleSourceTabs}}"
+        wx:key="key"
+        class="article-source-item {{item.active ? 'is-active' : ''}} {{item.disabled ? 'is-disabled' : ''}}"
+        data-source="{{item.key}}"
         bindtap="onContentSourceChange"
       >
-        <text class="article-source-name">微信文章</text>
-        <text class="article-source-meta">{{wechatArticles.length}}篇</text>
+        <text class="article-source-name">{{item.label}}</text>
+        <text class="article-source-meta">{{item.meta}}</text>
       </view>
       <view class="article-source-divider"></view>
-      <view
-        class="article-source-item {{activeContentSource === 'planet' ? 'is-active' : ''}}"
-        data-source="planet"
-        bindtap="onContentSourceChange"
-      >
-        <text class="article-source-name">知识星球</text>
-        <text class="article-source-meta">{{planetArticles.length}}篇</text>
-      </view>
     </view>
 
     <view wx:if="{{displayArticles.length}}" class="article-list">
-      <view class="article-card" wx:for="{{displayArticles}}" wx:key="id" data-id="{{item.id}}" data-source="{{item.contentSource}}" bindtap="goDetail">
+      <view
+        class="article-card"
+        wx:for="{{displayArticles}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        data-source="{{item.contentSource}}"
+        bindtap="goDetail"
+      >
         <view class="article-card-top">
           <view class="article-card-copy">
             <view class="article-tag-row">
-              <text wx:if="{{activeContentSource === 'planet'}}" class="article-tag article-tag-source">{{item.planetCard.name}}</text>
+              <text wx:if="{{item.contentSource === 'planet'}}" class="article-tag article-tag-source">{{item.planetCard.name}}</text>
               <text class="article-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
             </view>
             <text class="article-card-title">{{item.title}}</text>
@@ -63,17 +64,17 @@
       </view>
     </view>
 
-    <view wx:elif="{{activeContentSource === 'planet' && loadingPlanetArticles}}" class="article-empty-card">
-      <text class="article-empty-title">正在加载星球文章</text>
-      <text class="article-empty-subtitle">正在从真实后台读取知识星球文章，请稍候。</text>
+    <view wx:elif="{{loadingArticles}}" class="article-empty-card">
+      <text class="article-empty-title">{{activeContentSource === 'wechat' ? '正在加载微信文章' : '正在加载知识星球文章'}}</text>
+      <text class="article-empty-subtitle">正在从真实后台读取文章内容，请稍候。</text>
     </view>
 
     <view wx:else class="article-empty-card">
       <text class="article-empty-title">
-        {{activeContentSource === 'wechat' ? '暂无微信文章' : (planetError ? '星球文章加载失败' : '暂无星球内容')}}
+        {{articlesError ? '文章加载失败' : (activeContentSource === 'wechat' ? '暂无微信文章' : '暂无知识星球内容')}}
       </text>
       <text class="article-empty-subtitle">
-        {{activeContentSource === 'wechat' ? '当前暂无可展示文章，稍后再来看。' : (planetError || '当前暂无可展示星球文章，稍后再来看。')}}
+        {{articlesError || (activeContentSource === 'wechat' ? '当前暂无可展示微信文章，稍后再来看。' : '当前暂无可展示知识星球文章，稍后再来看。')}}
       </text>
     </view>
   </view>

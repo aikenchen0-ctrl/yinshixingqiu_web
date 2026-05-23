@@ -69,6 +69,15 @@
   color: #d04f3f;
 }
 
+.article-source-item.is-disabled {
+  opacity: 0.58;
+}
+
+.article-source-item.is-disabled .article-source-name,
+.article-source-item.is-disabled .article-source-meta {
+  color: #9f8d86;
+}
+
 .article-list {
   display: flex;
   flex-direction: column;

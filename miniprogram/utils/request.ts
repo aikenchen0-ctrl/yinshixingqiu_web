@@ -1,51 +1,21 @@
 const LOCAL_API_BASE_URLS = [
-  'http://192.168.31.123:3000',
-  'http://192.168.133.150:3000',
-  'http://192.168.188.128:3000',
-  'http://127.0.0.1:3000',
-  'http://192.168.31.126:3000',
-  'http://192.168.31.124:3000',
+  // 'http://192.168.31.127:3000',
+  // 'http://192.168.133.150:3000',
+  // 'http://192.168.188.128:3000',
+  // 'http://127.0.0.1:3000',
+  // 'http://192.168.31.126:3000',
+  // 'http://192.168.31.124:3000',
 ]
 const REMOTE_API_BASE_URLS = ['https://xueyinx.cn']
-
-const REMOTE_API_FALLBACK_STORAGE_KEY = 'xueyin_enable_remote_api_fallback'
-
-function isRemoteApiFallbackEnabled() {
-  try {
-    return wx.getStorageSync(REMOTE_API_FALLBACK_STORAGE_KEY) === true
-  } catch {
-    return false
-  }
-}
-
-function getAvailableApiBaseUrls() {
-  const envVersion = getMiniProgramEnvVersion()
-
-  if (envVersion === 'release' || envVersion === 'trial') {
-    return REMOTE_API_BASE_URLS.slice()
-  }
-
-  if (isRemoteApiFallbackEnabled()) {
-    return LOCAL_API_BASE_URLS.concat(REMOTE_API_BASE_URLS)
-  }
-
-  return LOCAL_API_BASE_URLS.slice()
-}
-
-export const API_BASE_URLS = getAvailableApiBaseUrls()
+export const PRIMARY_REMOTE_API_BASE_URL = REMOTE_API_BASE_URLS[0] || ''
+export const API_BASE_URLS = REMOTE_API_BASE_URLS.slice()
 
 function pickDefaultLocalApiBaseUrl() {
-  const preferredLanBaseUrl = LOCAL_API_BASE_URLS.find((baseUrl) => isPrivateIpv4Host(getBaseHost(baseUrl)))
-  return preferredLanBaseUrl || LOCAL_API_BASE_URLS[0]
+  return PRIMARY_REMOTE_API_BASE_URL
 }
 
 function pickDefaultApiBaseUrl() {
-  const envVersion = getMiniProgramEnvVersion()
-  if (envVersion === 'release' || envVersion === 'trial') {
-    return REMOTE_API_BASE_URLS[0]
-  }
-
-  return pickDefaultLocalApiBaseUrl()
+  return PRIMARY_REMOTE_API_BASE_URL
 }
 
 let activeApiBaseUrl = pickDefaultApiBaseUrl()
@@ -113,6 +83,10 @@ function parseHttpUrl(url: string): ParsedHttpUrl | null {
     search,
     hash,
   }
+}
+
+function getAvailableApiBaseUrls() {
+  return REMOTE_API_BASE_URLS.slice()
 }
 
 function getPreferredBaseUrls() {

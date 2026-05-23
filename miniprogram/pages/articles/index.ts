@@ -1,100 +1,132 @@
-import { loadArticleCatalog } from '../../utils/article-data'
-import { decorateStaticArticleCard, mapRemoteArticleToCard, sortArticleCards, type ArticleCardItem } from '../../utils/article-view'
 import { clearSession, getStoredSession, shouldClearSessionByError } from '../../utils/auth'
 import { fetchArticles } from '../../utils/planet-api'
+import { mapRemoteArticleToCard, sortArticleCards, type ArticleCardItem } from '../../utils/article-view'
+import { buildArticleListRequest, buildArticleSourceTabs, mapWechatArticleCardsFromResponse } from './shared'
 
 type ContentSource = 'wechat' | 'planet'
+type FetchArticlesPayload = Parameters<typeof fetchArticles>[0]
+type SourceArticlesResult = {
+  articles: ArticleCardItem[]
+  error: string
+}
 
-const buildWechatArticles = () =>
-  sortArticleCards(loadArticleCatalog().filter((item) => item.contentSource === 'wechat').map((item) => decorateStaticArticleCard(item)))
+const getDisplayArticles = (
+  activeContentSource: ContentSource,
+  wechatArticles: ArticleCardItem[],
+  planetArticles: ArticleCardItem[],
+) => (activeContentSource === 'planet' ? planetArticles : wechatArticles)
+
+const getSourceError = (activeContentSource: ContentSource, wechatError: string, planetError: string) =>
+  activeContentSource === 'planet' ? planetError : wechatError
 
 Page({
   data: {
     activeContentSource: 'wechat' as ContentSource,
+    articleSourceTabs: buildArticleSourceTabs('wechat', 0, 0),
     wechatArticles: [] as ArticleCardItem[],
     planetArticles: [] as ArticleCardItem[],
     displayArticles: [] as ArticleCardItem[],
-    loadingPlanetArticles: false,
+    loadingArticles: false,
+    wechatError: '',
     planetError: '',
+    articlesError: '',
   },
 
   onLoad() {
-    this.refreshContent()
+    void this.loadArticles()
   },
 
   onShow() {
-    this.refreshContent()
+    void this.loadArticles()
   },
 
-  refreshContent() {
-    const wechatArticles = buildWechatArticles()
+  async loadArticlesBySource(contentSource: ContentSource, sessionToken?: string): Promise<SourceArticlesResult> {
+    const buildPayload = (token?: string) => buildArticleListRequest(contentSource, token) as FetchArticlesPayload
+    const fallbackErrorMessage = contentSource === 'wechat' ? '加载微信文章失败' : '加载知识星球文章失败'
 
-    this.setData({
-      wechatArticles,
-      displayArticles: this.data.activeContentSource === 'wechat' ? wechatArticles : this.data.planetArticles,
-    })
+    try {
+      const response = await fetchArticles(buildPayload(sessionToken))
+      return {
+        articles: mapWechatArticleCardsFromResponse(response && response.data ? response.data : null, {
+          mapRemoteArticleToCard,
+          sortArticleCards,
+        }),
+        error: '',
+      }
+    } catch (error) {
+      if (!sessionToken) {
+        return {
+          articles: [],
+          error: error instanceof Error ? error.message : fallbackErrorMessage,
+        }
+      }
 
-    void this.loadPlanetArticles()
+      if (shouldClearSessionByError(error)) {
+        clearSession()
+      }
+
+      try {
+        const fallbackResponse = await fetchArticles(buildPayload())
+        return {
+          articles: mapWechatArticleCardsFromResponse(fallbackResponse && fallbackResponse.data ? fallbackResponse.data : null, {
+            mapRemoteArticleToCard,
+            sortArticleCards,
+          }),
+          error: '',
+        }
+      } catch (fallbackError) {
+        return {
+          articles: [],
+          error: fallbackError instanceof Error ? fallbackError.message : fallbackErrorMessage,
+        }
+      }
+    }
   },
 
-  async loadPlanetArticles() {
+  async loadArticles() {
     this.setData({
-      loadingPlanetArticles: true,
+      loadingArticles: true,
+      wechatError: '',
       planetError: '',
+      articlesError: '',
     })
 
     const storedSession = getStoredSession()
     const sessionToken = storedSession && storedSession.sessionToken ? storedSession.sessionToken : ''
 
-    const requestWithFallback = async () => {
-      try {
-        return await fetchArticles({
-          contentSource: 'planet',
-          status: 'PUBLISHED',
-          page: 1,
-          pageSize: 50,
-          sessionToken: sessionToken || undefined,
-        })
-      } catch (error) {
-        if (sessionToken) {
-          if (shouldClearSessionByError(error)) {
-            clearSession()
-          }
-
-          return fetchArticles({
-            contentSource: 'planet',
-            status: 'PUBLISHED',
-            page: 1,
-            pageSize: 50,
-          })
-        }
-
-        throw error
-      }
-    }
-
     try {
-      const response = await requestWithFallback()
-      const responseData = response && response.data ? response.data : null
-      const responseItems = responseData && Array.isArray(responseData.items) ? responseData.items : []
-      const planetArticles = responseItems.length
-        ? responseItems.map((item) => mapRemoteArticleToCard(item))
-        : []
+      const [wechatResult, planetResult] = await Promise.all([
+        this.loadArticlesBySource('wechat', sessionToken || undefined),
+        this.loadArticlesBySource('planet', sessionToken || undefined),
+      ])
+      const activeContentSource = this.data.activeContentSource
+      const displayArticles = getDisplayArticles(activeContentSource, wechatResult.articles, planetResult.articles)
+      const articlesError = getSourceError(activeContentSource, wechatResult.error, planetResult.error)
 
       this.setData({
-        planetArticles,
-        displayArticles: this.data.activeContentSource === 'planet' ? planetArticles : this.data.wechatArticles,
-        loadingPlanetArticles: false,
-        planetError: '',
+        articleSourceTabs: buildArticleSourceTabs(
+          activeContentSource,
+          wechatResult.articles.length,
+          planetResult.articles.length,
+        ),
+        wechatArticles: wechatResult.articles,
+        planetArticles: planetResult.articles,
+        displayArticles,
+        wechatError: wechatResult.error,
+        planetError: planetResult.error,
+        loadingArticles: false,
+        articlesError,
       })
     } catch (error) {
-      const planetError = error instanceof Error ? error.message : '加载星球文章失败'
-
       this.setData({
+        articleSourceTabs: buildArticleSourceTabs(this.data.activeContentSource, 0, 0),
+        wechatArticles: [],
         planetArticles: [],
-        displayArticles: this.data.activeContentSource === 'planet' ? [] : this.data.wechatArticles,
-        loadingPlanetArticles: false,
-        planetError,
+        displayArticles: [],
+        loadingArticles: false,
+        wechatError: '',
+        planetError: '',
+        articlesError: error instanceof Error ? error.message : '加载文章失败',
       })
     }
   },
@@ -111,12 +143,10 @@ Page({
 
     this.setData({
       activeContentSource: source,
-      displayArticles: source === 'planet' ? this.data.planetArticles : this.data.wechatArticles,
+      articleSourceTabs: buildArticleSourceTabs(source, this.data.wechatArticles.length, this.data.planetArticles.length),
+      displayArticles: getDisplayArticles(source, this.data.wechatArticles, this.data.planetArticles),
+      articlesError: getSourceError(source, this.data.wechatError, this.data.planetError),
     })
-
-    if (source === 'planet' && !this.data.planetArticles.length && !this.data.loadingPlanetArticles) {
-      void this.loadPlanetArticles()
-    }
   },
 
   goDetail(e: WechatMiniprogram.TouchEvent) {
@@ -127,7 +157,9 @@ Page({
     }
 
     wx.navigateTo({
-      url: `/pages/articles/detail?id=${encodeURIComponent(id)}&source=${encodeURIComponent(source || this.data.activeContentSource)}`,
+      url: `/pages/articles/detail?id=${encodeURIComponent(id)}&source=${encodeURIComponent(
+        source || this.data.activeContentSource,
+      )}`,
     })
   },
 })

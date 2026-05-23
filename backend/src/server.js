@@ -14,7 +14,7 @@ const {
   getOrder,
   getDebugState,
 } = require("./services/joinFlowService");
-const { startAccessTokenRefreshScheduler } = require("./services/wechatService");
+const { generateMiniProgramScheme, startAccessTokenRefreshScheduler } = require("./services/wechatService");
 const {
   assertWechatPayResourceMatchesConfig,
   buildNotifyFailPayload,
@@ -67,6 +67,7 @@ const {
 const {
   listArticles,
   getArticleDetail,
+  importWechatArticleAnonymously,
   saveArticle,
   updateArticleStatus,
 } = require("./services/articleService");
@@ -122,6 +123,7 @@ const {
   listMallOrders,
   listMallCommissionOrders,
   getMallOrderDetail,
+  getMallOrderLogistics,
   confirmMallOrderReceipt,
   requestMallOrderRefund,
   startMallOrderAutoCloseScheduler,
@@ -962,6 +964,13 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
+    if (req.method === "POST" && requestUrl.pathname === "/api/articles/import/wechat") {
+      const body = await readJsonBody(req);
+      const result = await importWechatArticleAnonymously(body);
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
     if (req.method === "PUT" && requestUrl.pathname === "/api/articles") {
       const body = await readJsonBody(req);
       const result = await saveArticle({
@@ -979,6 +988,19 @@ const server = http.createServer(async (req, res) => {
         sessionToken: req.headers["x-session-token"] || body.sessionToken,
       });
       sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "POST" && requestUrl.pathname === "/api/articles/share-link") {
+      const body = await readJsonBody(req);
+      const scheme = await generateMiniProgramScheme({
+        path: body && typeof body.path === "string" ? body.path : "",
+        envVersion: body && typeof body.envVersion === "string" ? body.envVersion : "",
+      });
+      sendJson(res, 200, {
+        ok: true,
+        data: scheme,
+      });
       return;
     }
 
@@ -1660,6 +1682,15 @@ const server = http.createServer(async (req, res) => {
 
     if (req.method === "GET" && requestUrl.pathname === "/api/mall/orders/detail") {
       const result = await getMallOrderDetail({
+        sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
+        orderId: requestUrl.searchParams.get("orderId"),
+      });
+      sendJson(res, result.statusCode, result.payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/mall/orders/logistics") {
+      const result = await getMallOrderLogistics({
         sessionToken: req.headers["x-session-token"] || requestUrl.searchParams.get("sessionToken"),
         orderId: requestUrl.searchParams.get("orderId"),
       });

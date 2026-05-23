@@ -4,6 +4,8 @@ const WECHAT_CODE_TO_SESSION_URL = "https://api.weixin.qq.com/sns/jscode2session
 const WECHAT_ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token";
 const WECHAT_PHONE_NUMBER_URL = "https://api.weixin.qq.com/wxa/business/getuserphonenumber";
 const WECHAT_UNLIMITED_MINI_CODE_URL = "https://api.weixin.qq.com/wxa/getwxacodeunlimit";
+const WECHAT_MINI_PROGRAM_SCHEME_URL = "https://api.weixin.qq.com/wxa/generatescheme";
+const WECHAT_API_TIMEOUT_MS = 6000;
 const ACCESS_TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000;
 const ACCESS_TOKEN_REFRESH_INTERVAL_MS = 105 * 60 * 1000;
 
@@ -36,8 +38,7 @@ function ensureWechatConfig() {
 
 function requestJson(url) {
   return new Promise((resolve, reject) => {
-    https
-      .get(url, (response) => {
+    const req = https.get(url, (response) => {
         let body = "";
 
         response.on("data", (chunk) => {
@@ -56,10 +57,15 @@ function requestJson(url) {
             reject(new Error("微信接口返回了无法解析的内容"));
           }
         });
-      })
-      .on("error", (error) => {
-        reject(error);
       });
+
+    req.setTimeout(WECHAT_API_TIMEOUT_MS, () => {
+      req.destroy(new Error(`微信接口请求超时（>${WECHAT_API_TIMEOUT_MS}ms）`));
+    });
+
+    req.on("error", (error) => {
+      reject(error);
+    });
   });
 }
 
@@ -101,6 +107,9 @@ function postJson(url, payload) {
     );
 
     req.on("error", reject);
+    req.setTimeout(WECHAT_API_TIMEOUT_MS, () => {
+      req.destroy(new Error(`微信接口请求超时（>${WECHAT_API_TIMEOUT_MS}ms）`));
+    });
     req.write(body);
     req.end();
   });
@@ -143,6 +152,9 @@ function postBuffer(url, payload) {
     );
 
     req.on("error", reject);
+    req.setTimeout(WECHAT_API_TIMEOUT_MS, () => {
+      req.destroy(new Error(`微信接口请求超时（>${WECHAT_API_TIMEOUT_MS}ms）`));
+    });
     req.write(body);
     req.end();
   });
@@ -182,6 +194,62 @@ function parseWechatJsonBuffer(buffer) {
   }
 }
 
+function splitMiniProgramPathAndQuery(value) {
+  const normalizedValue = String(value || "").trim();
+  if (!normalizedValue) {
+    return {
+      path: "",
+      query: "",
+    };
+  }
+
+  const queryIndex = normalizedValue.indexOf("?");
+  if (queryIndex < 0) {
+    return {
+      path: normalizedValue,
+      query: "",
+    };
+  }
+
+  return {
+    path: normalizedValue.slice(0, queryIndex),
+    query: normalizedValue.slice(queryIndex + 1),
+  };
+}
+
+function buildMiniProgramSchemePayload(options = {}) {
+  const pathWithQuery = String(options.path || "").trim();
+  if (!pathWithQuery) {
+    throw new Error("缺少小程序页面路径");
+  }
+
+  const { path, query } = splitMiniProgramPathAndQuery(pathWithQuery);
+  if (!path) {
+    throw new Error("缺少小程序页面路径");
+  }
+
+  const envVersion = normalizeMiniProgramEnvVersion(options.envVersion) || getMiniProgramCodeEnvVersion();
+  return {
+    is_expire: false,
+    jump_wxa: {
+      path,
+      query: query || undefined,
+      env_version: envVersion,
+    },
+  };
+}
+
+function formatWechatApiErrorMessage(defaultMessage, error) {
+  const errcode = Number(error && error.errcode);
+  if (errcode === 85079) {
+    return "当前小程序还没有线上发布版本，微信暂时不允许生成可复制的小程序链接。请先在微信公众平台发布一次线上版本。";
+  }
+
+  const errorMessage = error && error.errmsg ? error.errmsg : defaultMessage;
+  const errorCode = error && error.errcode ? `，错误码 ${error.errcode}` : "";
+  return `${errorMessage}${errorCode}`;
+}
+
 async function requestUnlimitedMiniProgramCode(accessToken, payload) {
   const response = await postBuffer(`${WECHAT_UNLIMITED_MINI_CODE_URL}?access_token=${accessToken}`, payload);
   const parsedError = parseWechatJsonBuffer(response.buffer);
@@ -208,6 +276,34 @@ async function requestUnlimitedMiniProgramCode(accessToken, payload) {
     ok: true,
     buffer: response.buffer,
     contentType: response.contentType,
+  };
+}
+
+async function requestMiniProgramScheme(accessToken, payload) {
+  const result = await postJson(`${WECHAT_MINI_PROGRAM_SCHEME_URL}?access_token=${accessToken}`, payload);
+
+  if (result.errcode) {
+    return {
+      ok: false,
+      retryableTokenError: result.errcode === 40001 || result.errcode === 42001,
+      error: result,
+    };
+  }
+
+  const openlink = String(result.openlink || "").trim();
+  if (!openlink) {
+    return {
+      ok: false,
+      retryableTokenError: false,
+      error: {
+        errmsg: "微信小程序链接返回为空",
+      },
+    };
+  }
+
+  return {
+    ok: true,
+    openlink,
   };
 }
 
@@ -352,15 +448,36 @@ async function generateUnlimitedMiniProgramCode(options = {}) {
   }
 
   if (!result.ok) {
-    const errorMessage = result.error && result.error.errmsg ? result.error.errmsg : "生成微信小程序码失败";
-    const errorCode = result.error && result.error.errcode ? `，错误码 ${result.error.errcode}` : "";
-    throw new Error(`${errorMessage}${errorCode}`);
+    throw new Error(formatWechatApiErrorMessage("生成微信小程序码失败", result.error));
   }
 
   return {
     buffer: result.buffer,
     contentType: result.contentType,
     envVersion,
+  };
+}
+
+async function generateMiniProgramScheme(options = {}) {
+  const payload = buildMiniProgramSchemePayload(options);
+
+  let accessToken = await getAccessToken();
+  let result = await requestMiniProgramScheme(accessToken, payload);
+
+  if (!result.ok && result.retryableTokenError) {
+    accessToken = await getAccessToken(true);
+    result = await requestMiniProgramScheme(accessToken, payload);
+  }
+
+  if (!result.ok) {
+    throw new Error(formatWechatApiErrorMessage("生成微信小程序链接失败", result.error));
+  }
+
+  return {
+    openlink: result.openlink,
+    path: payload.jump_wxa.path,
+    query: payload.jump_wxa.query || "",
+    envVersion: payload.jump_wxa.env_version,
   };
 }
 
@@ -385,8 +502,11 @@ function startAccessTokenRefreshScheduler() {
 }
 
 module.exports = {
+  buildMiniProgramSchemePayload,
   exchangeLoginCode,
   fetchPhoneNumber,
+  formatWechatApiErrorMessage,
+  generateMiniProgramScheme,
   generateUnlimitedMiniProgramCode,
   getAccessToken,
   getMiniProgramCodeEnvVersion,

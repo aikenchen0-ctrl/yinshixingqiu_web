@@ -1,7 +1,7 @@
 const { prisma } = require("../db/prisma");
 
 const ARTICLE_RICH_BLOCK_PATTERN =
-  /<(p|section|article|blockquote|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|figure|div)(\s[^>]*)?>[\s\S]*?<\/\1>/gi;
+  /<(p|section|article|blockquote|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|figure|div|table|video)(\s[^>]*)?>[\s\S]*?<\/\1>|<(img|hr)(\s[^>]*)?\/?>/gi;
 
 function normalizeString(value) {
   return String(value || "").trim();

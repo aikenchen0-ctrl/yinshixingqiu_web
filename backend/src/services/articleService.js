@@ -5,7 +5,7 @@ const { updateAdminContent } = require("./adminService");
 const { loadViewerArticleUnlockIdSet } = require("./articleReadService");
 
 const ARTICLE_RICH_BLOCK_PATTERN =
-  /<(p|section|article|blockquote|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|figure|div)(\s[^>]*)?>[\s\S]*?<\/\1>/gi;
+  /<(p|section|article|blockquote|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|figure|div|table|video)(\s[^>]*)?>[\s\S]*?<\/\1>|<(img|hr)(\s[^>]*)?\/?>/gi;
 
 function normalizeString(value) {
   return String(value || "").trim();
@@ -547,6 +547,148 @@ function toArticleDtoFromPost(post) {
   };
 }
 
+function normalizeStringList(value) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((item) => normalizeString(item)).filter(Boolean);
+}
+
+async function resolveAnonymousWechatImportTarget(options = {}) {
+  if (typeof options.resolveTarget === "function") {
+    return options.resolveTarget();
+  }
+
+  const database = options.prisma || prisma;
+  const query = {
+    include: {
+      owner: {
+        include: {
+          profile: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  };
+
+  const activeGroup = await database.group.findFirst({
+    ...query,
+    where: {
+      status: "ACTIVE",
+    },
+  });
+
+  if (activeGroup && activeGroup.owner) {
+    return {
+      group: activeGroup,
+      author: activeGroup.owner,
+    };
+  }
+
+  const draftGroup = await database.group.findFirst({
+    ...query,
+    where: {
+      status: "DRAFT",
+    },
+  });
+
+  if (draftGroup && draftGroup.owner) {
+    return {
+      group: draftGroup,
+      author: draftGroup.owner,
+    };
+  }
+
+  return null;
+}
+
+async function importWechatArticleAnonymously(input = {}, options = {}) {
+  const database = options.prisma || prisma;
+  const now = typeof options.now === "function" ? options.now() : new Date();
+  const title = normalizeString(input.title) || normalizeString(input.summary) || "无标题文章";
+  const summary = normalizeString(input.summary) || title;
+  const contentText = normalizeString(input.contentText) || summary || title;
+  const attachments = normalizeStringList(input.attachments);
+  const richContent = normalizeString(input.richContent);
+  const displayAuthorName =
+    normalizeString(input.author) ||
+    normalizeString(input.metadata && input.metadata.author) ||
+    "微信公众号";
+
+  if (!contentText && !attachments.length && !richContent) {
+    return { statusCode: 400, payload: { ok: false, message: "缺少文章内容" } };
+  }
+
+  const target = await resolveAnonymousWechatImportTarget({
+    prisma: database,
+    resolveTarget: options.resolveTarget,
+  });
+
+  if (!target || !target.group || !target.author) {
+    return { statusCode: 503, payload: { ok: false, message: "未找到可用的微信文章导入落点" } };
+  }
+
+  const metadata = buildArticleWriteMetadata({
+    metadata: isPlainObject(input.metadata) ? input.metadata : {},
+    contentSource: "wechat",
+    coverUrl: input.coverUrl,
+    richContent,
+    authorDisplay: {
+      type: "wechat_account",
+      name: displayAuthorName,
+      avatarUrl: "",
+      sourceGroupId: normalizeString(target.group.id),
+      sourceUserId: normalizeString(target.author.id),
+    },
+  });
+
+  const created = await database.post.create({
+    data: {
+      groupId: normalizeString(target.group.id),
+      authorUserId: normalizeString(target.author.id),
+      type: "ARTICLE",
+      status: "PUBLISHED",
+      title,
+      summary,
+      contentText,
+      attachments,
+      metadata,
+      publishedAt: now,
+    },
+    include: {
+      author: {
+        include: {
+          profile: true,
+        },
+      },
+      group: {
+        select: {
+          id: true,
+          name: true,
+          avatarUrl: true,
+          coverUrl: true,
+        },
+      },
+    },
+  });
+
+  const article = toArticleDtoFromPost(created);
+  if (!article) {
+    return { statusCode: 500, payload: { ok: false, message: "微信文章导入成功，但返回结构异常" } };
+  }
+
+  return {
+    statusCode: 201,
+    payload: {
+      ok: true,
+      data: article,
+    },
+  };
+}
+
 async function listArticles(input = {}) {
   const page = parsePositiveInt(input.page, 1, 9999);
   const pageSize = parsePositiveInt(input.pageSize, 20, 50);
@@ -878,6 +1020,7 @@ async function updateArticleStatus(input = {}) {
 module.exports = {
   listArticles,
   getArticleDetail,
+  importWechatArticleAnonymously,
   saveArticle,
   updateArticleStatus,
 };

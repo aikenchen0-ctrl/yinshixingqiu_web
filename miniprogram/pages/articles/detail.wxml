@@ -3,9 +3,28 @@
   back="{{true}}"
   color="#22160d"
   background="#ffffff"
-></navigation-bar>
+>
+  <button
+    wx:if="{{source === 'wechat' && articleId}}"
+    slot="right"
+    class="article-detail-nav-share"
+    bindtap="onTapShare"
+    aria-role="button"
+    aria-label="转发文章"
+  >
+    <view class="article-detail-nav-share-icon">
+      <view class="article-detail-nav-share-arrow"></view>
+      <view class="article-detail-nav-share-box"></view>
+    </view>
+  </button>
+</navigation-bar>
 
-<scroll-view class="article-detail-page {{article.isWechatArticle ? 'article-detail-page-wechat' : 'article-detail-page-planet'}}" scroll-y="{{true}}">
+<scroll-view
+  class="article-detail-page {{article.isWechatArticle ? 'article-detail-page-wechat' : 'article-detail-page-planet'}}"
+  scroll-y="{{true}}"
+  scroll-with-animation="{{true}}"
+  scroll-into-view="{{scrollIntoViewId}}"
+>
   <view wx:if="{{loading}}" class="article-detail-state-card">
     <text class="article-detail-state-title">正在加载文章</text>
     <text class="article-detail-state-subtitle">正在从真实后台读取文章内容。</text>
@@ -30,13 +49,51 @@
 
       <text wx:if="{{article.showStandaloneSummary}}" class="wechat-article-summary">{{article.summary}}</text>
 
-      <image wx:if="{{article.showStandaloneCover}}" class="wechat-article-cover" src="{{article.coverImage}}" mode="widthFix"></image>
+      <image
+        wx:if="{{article.showStandaloneCover}}"
+        id="{{article.standaloneCoverAnchorId}}"
+        class="wechat-article-cover"
+        src="{{article.coverImage}}"
+        mode="widthFix"
+        bindload="onArticleVisualAssetLoad"
+      ></image>
 
-      <rich-text
-        wx:if="{{article.isRichContent}}"
-        class="wechat-article-rich-text"
-        nodes="{{article.visibleRichContent}}"
-      ></rich-text>
+      <view wx:if="{{article.isRichContent}}" class="wechat-article-body">
+        <block wx:for="{{article.bodyBlocks}}" wx:key="key">
+          <view
+            wx:if="{{item.type === 'rich'}}"
+            id="{{item.anchorId}}"
+            class="wechat-article-rich-block"
+          >
+            <rich-text
+              class="wechat-article-rich-text"
+              nodes="{{item.html}}"
+            ></rich-text>
+          </view>
+
+          <button
+            wx:elif="{{item.type === 'wechat-card'}}"
+            id="{{item.anchorId}}"
+            class="wechat-article-inline-card"
+            data-index="{{index}}"
+            bindtap="onTapWechatArticleCard"
+          >
+            <image
+              wx:if="{{item.coverImage}}"
+              class="wechat-article-inline-card-cover"
+              src="{{item.coverImage}}"
+              mode="aspectFill"
+              bindload="onArticleVisualAssetLoad"
+            ></image>
+            <view class="wechat-article-inline-card-copy">
+              <text class="wechat-article-inline-card-badge">文章卡片</text>
+              <text class="wechat-article-inline-card-title">{{item.title}}</text>
+              <text wx:if="{{item.summary}}" class="wechat-article-inline-card-summary">{{item.summary}}</text>
+              <text class="wechat-article-inline-card-action">{{item.buttonText}}</text>
+            </view>
+          </button>
+        </block>
+      </view>
 
       <view wx:else class="wechat-article-content">
         <text
@@ -103,3 +160,52 @@
   </block>
   </block>
 </scroll-view>
+
+<view
+  wx:if="{{sharePickerVisible}}"
+  class="article-share-picker-mask"
+  bindtap="onCloseSharePicker"
+>
+  <view class="article-share-picker-sheet" catchtap="noop">
+    <view class="article-share-picker-header">
+      <view class="article-share-picker-header-copy">
+        <text class="article-share-picker-title">选择分享封面</text>
+        <text class="article-share-picker-subtitle">点中一张图片后，再点击底部按钮分享小程序卡片</text>
+      </view>
+      <button class="article-share-picker-close" bindtap="onCloseSharePicker" aria-label="关闭分享封面选择">
+        <text class="article-share-picker-close-text">×</text>
+      </button>
+    </view>
+
+    <scroll-view class="article-share-picker-grid-scroll" scroll-y="{{true}}">
+      <view class="article-share-picker-grid">
+        <button
+          wx:for="{{sharePickerItems}}"
+          wx:key="id"
+          class="article-share-picker-item {{selectedShareImageKey === item.imageKey ? 'is-selected' : ''}}"
+          data-image-url="{{item.imageUrl}}"
+          data-image-key="{{item.imageKey}}"
+          data-image-index="{{item.imageIndex}}"
+          bindtap="onSelectShareImage"
+        >
+          <image class="article-share-picker-image" src="{{item.imageUrl}}" mode="aspectFill"></image>
+          <view wx:if="{{selectedShareImageKey === item.imageKey}}" class="article-share-picker-selected-badge">已选中</view>
+        </button>
+      </view>
+    </scroll-view>
+
+    <view class="article-share-picker-footer">
+      <button
+        class="article-share-picker-copy {{selectedShareImage ? 'is-enabled' : 'is-disabled'}}"
+        disabled="{{selectedShareImageIndex < 0}}"
+        bindtap="onCopyShareLink"
+      >复制分享链接</button>
+      <button
+        class="article-share-picker-confirm {{selectedShareImage ? 'is-enabled' : 'is-disabled'}}"
+        disabled="{{selectedShareImageIndex < 0}}"
+        open-type="share"
+        bindtap="onPrepareShareCard"
+      >分享这张卡片</button>
+    </view>
+  </view>
+</view>

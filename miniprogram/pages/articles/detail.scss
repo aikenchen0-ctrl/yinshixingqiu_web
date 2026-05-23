@@ -48,6 +48,240 @@
   font-weight: 600;
 }
 
+.article-detail-nav-share {
+  margin: 0;
+  padding: 0;
+  width: 68rpx;
+  min-width: 68rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  background: #f3f5f7;
+  box-shadow: inset 0 0 0 1rpx rgba(34, 22, 13, 0.08);
+}
+
+.article-detail-nav-share::after {
+  border: none;
+}
+
+.article-detail-nav-share-icon {
+  position: relative;
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.article-detail-nav-share-arrow {
+  position: absolute;
+  left: 50%;
+  top: 1rpx;
+  width: 12rpx;
+  height: 12rpx;
+  margin-left: -6rpx;
+  border-top: 3rpx solid #22160d;
+  border-right: 3rpx solid #22160d;
+  transform: rotate(-45deg);
+  box-sizing: border-box;
+}
+
+.article-detail-nav-share-arrow::after {
+  content: '';
+  position: absolute;
+  right: 4rpx;
+  top: 7rpx;
+  width: 3rpx;
+  height: 12rpx;
+  background: #22160d;
+  border-radius: 999rpx;
+}
+
+.article-detail-nav-share-box {
+  position: absolute;
+  left: 50%;
+  bottom: 2rpx;
+  width: 22rpx;
+  height: 14rpx;
+  margin-left: -11rpx;
+  border: 3rpx solid #22160d;
+  border-top: none;
+  border-radius: 0 0 8rpx 8rpx;
+  box-sizing: border-box;
+}
+
+.article-share-picker-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(17, 17, 17, 0.42);
+  display: flex;
+  align-items: flex-end;
+}
+
+.article-share-picker-sheet {
+  width: 100%;
+  max-height: 78vh;
+  border-radius: 32rpx 32rpx 0 0;
+  background: linear-gradient(180deg, #fffdfa 0%, #ffffff 100%);
+  box-shadow: 0 -16rpx 48rpx rgba(17, 17, 17, 0.16);
+  padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.article-share-picker-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.article-share-picker-header-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.article-share-picker-title {
+  color: #1f140d;
+  font-size: 34rpx;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+.article-share-picker-subtitle {
+  color: #7f675d;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.article-share-picker-close {
+  margin: 0;
+  padding: 0;
+  width: 56rpx;
+  min-width: 56rpx;
+  height: 56rpx;
+  border-radius: 999rpx;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.article-share-picker-close::after {
+  border: none;
+}
+
+.article-share-picker-close-text {
+  color: #3f322d;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.article-share-picker-grid-scroll {
+  max-height: 760rpx;
+}
+
+.article-share-picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  row-gap: 16rpx;
+}
+
+.article-share-picker-item {
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: 31.8%;
+  aspect-ratio: 1 / 1;
+  border-radius: 22rpx;
+  overflow: hidden;
+  background: #eef1f4;
+  box-shadow: inset 0 0 0 2rpx transparent;
+}
+
+.article-share-picker-item::after {
+  border: none;
+}
+
+.article-share-picker-item.is-selected {
+  box-shadow: inset 0 0 0 4rpx #22160d;
+}
+
+.article-share-picker-item.is-selected::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(34, 22, 13, 0.08);
+  z-index: 1;
+}
+
+.article-share-picker-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.article-share-picker-selected-badge {
+  position: absolute;
+  left: 12rpx;
+  right: 12rpx;
+  bottom: 12rpx;
+  z-index: 2;
+  min-height: 42rpx;
+  border-radius: 999rpx;
+  background: rgba(34, 22, 13, 0.86);
+  color: #ffffff;
+  font-size: 20rpx;
+  line-height: 42rpx;
+  text-align: center;
+  font-weight: 600;
+}
+
+.article-share-picker-footer {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding-top: 4rpx;
+}
+
+.article-share-picker-copy,
+.article-share-picker-confirm {
+  margin: 0;
+  flex: 1;
+  min-height: 92rpx;
+  border-radius: 999rpx;
+  font-size: 30rpx;
+  line-height: 92rpx;
+  font-weight: 700;
+}
+
+.article-share-picker-copy::after,
+.article-share-picker-confirm::after {
+  border: none;
+}
+
+.article-share-picker-copy.is-enabled {
+  background: #f3f5f7;
+  color: #22160d;
+  box-shadow: inset 0 0 0 1rpx rgba(34, 22, 13, 0.1);
+}
+
+.article-share-picker-confirm.is-enabled {
+  background: #22160d;
+  color: #ffffff;
+}
+
+.article-share-picker-copy.is-disabled,
+.article-share-picker-confirm.is-disabled {
+  background: #ebedf0;
+  color: #9aa1a9;
+}
+
 .wechat-article-shell {
   padding: 36rpx 32rpx 110rpx;
   box-sizing: border-box;
@@ -116,12 +350,93 @@
   gap: 28rpx;
 }
 
+.wechat-article-body {
+  margin-top: 34rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.wechat-article-rich-block {
+  display: block;
+}
+
 .wechat-article-rich-text {
   display: block;
-  margin-top: 34rpx;
   color: #222222;
   font-size: 32rpx;
   line-height: 1.95;
+}
+
+.wechat-article-inline-card {
+  margin: 0;
+  padding: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(180deg, #f7f9fb 0%, #ffffff 100%);
+  border: 1rpx solid #e6ebf0;
+  box-shadow: 0 12rpx 30rpx rgba(34, 22, 13, 0.06);
+  text-align: left;
+}
+
+.wechat-article-inline-card::after {
+  border: none;
+}
+
+.wechat-article-inline-card-cover {
+  width: 184rpx;
+  height: 138rpx;
+  flex-shrink: 0;
+  border-radius: 18rpx;
+  background: #edf1f5;
+}
+
+.wechat-article-inline-card-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.wechat-article-inline-card-badge {
+  align-self: flex-start;
+  min-height: 38rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #eef5ff;
+  color: #456b9c;
+  font-size: 20rpx;
+  line-height: 38rpx;
+  font-weight: 600;
+}
+
+.wechat-article-inline-card-title {
+  color: #1f1f1f;
+  font-size: 28rpx;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.wechat-article-inline-card-summary {
+  color: #6b7280;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.wechat-article-inline-card-action {
+  align-self: flex-start;
+  margin-top: 2rpx;
+  min-height: 46rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  background: #111111;
+  color: #ffffff;
+  font-size: 22rpx;
+  line-height: 46rpx;
+  font-weight: 600;
 }
 
 .wechat-article-paragraph {
