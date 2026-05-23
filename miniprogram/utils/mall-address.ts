@@ -21,7 +21,7 @@ export interface MallAddressFormState extends MallAddressFormValue {
   hasRegion: boolean
 }
 
-const DEFAULT_MALL_ADDRESS_REDIRECT_URL = '/pages/store/index'
+const DEFAULT_MALL_ADDRESS_REDIRECT_URL = '/pages/profile/index'
 const MALL_CHECKOUT_SELECTED_ADDRESS_ID_KEY = 'xueyin_mall_checkout_selected_address_id'
 
 export function saveMallCheckoutSelectedAddressId(addressId?: string) {

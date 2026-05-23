@@ -6,6 +6,7 @@ const {
   requestDomesticRefund,
   queryDomesticRefundByOutRefundNo,
 } = require("./wechatPayService");
+const { queryMallLogisticsTimeline } = require("./mallLogisticsService");
 
 const DEFAULT_GROUP_STATUSES = ["ACTIVE", "HIDDEN", "DRAFT"];
 const DEFAULT_ADMIN_ORDER_LIMIT = 20;
@@ -6324,6 +6325,86 @@ async function getMallOrderDetail(input = {}) {
   };
 }
 
+async function getMallOrderLogistics(input = {}) {
+  const sessionResult = await requireMallSession(input.sessionToken);
+  if (sessionResult.error) {
+    return sessionResult.error;
+  }
+
+  const orderId = normalizeString(input.orderId);
+  if (!orderId) {
+    return {
+      statusCode: 400,
+      payload: {
+        ok: false,
+        message: "缺少订单ID",
+      },
+    };
+  }
+
+  const order = await prisma.mallOrder.findFirst({
+    where: {
+      id: orderId,
+      userId: sessionResult.session.userId,
+    },
+  });
+
+  if (!order) {
+    return {
+      statusCode: 404,
+      payload: {
+        ok: false,
+        message: "订单不存在",
+      },
+    };
+  }
+
+  const trackingNo = normalizeString(order.shippingTrackingNo);
+  const company = normalizeString(order.shippingCompany);
+
+  if (!trackingNo) {
+    return {
+      statusCode: 200,
+      payload: {
+        ok: true,
+        data: {
+          item: {
+            queryMode: "fallback_only",
+            company,
+            companyCode: "",
+            trackingNo: "",
+            shippedAt: toIso(order.shippedAt),
+            latestStatus: "",
+            latestTime: "",
+            timeline: [],
+            fallbackReason: "missing_tracking_no",
+            officialQueryHint: "请等待商家录入物流单号",
+          },
+        },
+      },
+    };
+  }
+
+  const logistics = await queryMallLogisticsTimeline({
+    company,
+    trackingNo,
+  });
+
+  return {
+    statusCode: 200,
+    payload: {
+      ok: true,
+      data: {
+        item: {
+          ...logistics,
+          shippedAt: toIso(order.shippedAt),
+          officialQueryHint: "如轨迹未展示，请复制单号到物流官网查询",
+        },
+      },
+    },
+  };
+}
+
 async function listMallCommissionOrders(input = {}) {
   const sessionResult = await requireMallSession(input.sessionToken);
   if (sessionResult.error) {
@@ -7917,6 +7998,7 @@ module.exports = {
   listMallOrders,
   listMallCommissionOrders,
   getMallOrderDetail,
+  getMallOrderLogistics,
   confirmMallOrderReceipt,
   requestMallOrderRefund,
   startMallOrderAutoCloseScheduler,

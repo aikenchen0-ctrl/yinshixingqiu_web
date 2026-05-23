@@ -225,6 +225,121 @@ page {
   line-height: 1.7;
 }
 
+.mall-order-detail-logistics-card {
+  margin-top: 18rpx;
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: #fff7f8;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.mall-order-detail-logistics-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.mall-order-detail-logistics-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.mall-order-detail-logistics-title {
+  color: #121826;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.mall-order-detail-logistics-summary {
+  color: #ff5c68;
+  font-size: 24rpx;
+  line-height: 1.6;
+}
+
+.mall-order-detail-logistics-copy-btn {
+  margin: 0;
+  padding: 0 20rpx;
+  min-width: 0;
+  height: 56rpx;
+  line-height: 56rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 92, 104, 0.12);
+  color: #ff5c68;
+  font-size: 22rpx;
+}
+
+.mall-order-detail-logistics-copy-btn::after {
+  border: none;
+}
+
+.mall-order-detail-logistics-meta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.mall-order-detail-logistics-meta-label {
+  color: #8b94a4;
+  font-size: 22rpx;
+}
+
+.mall-order-detail-logistics-meta-value {
+  flex: 1;
+  text-align: right;
+  color: #121826;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-logistics-note {
+  color: #7b8190;
+  font-size: 22rpx;
+  line-height: 1.7;
+}
+
+.mall-order-detail-logistics-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mall-order-detail-logistics-toggle {
+  color: #ff5c68;
+  font-size: 24rpx;
+}
+
+.mall-order-detail-logistics-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding-top: 8rpx;
+}
+
+.mall-order-detail-logistics-timeline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  padding-left: 20rpx;
+  border-left: 4rpx solid rgba(255, 92, 104, 0.18);
+}
+
+.mall-order-detail-logistics-timeline-time {
+  color: #8b94a4;
+  font-size: 22rpx;
+}
+
+.mall-order-detail-logistics-timeline-status {
+  color: #121826;
+  font-size: 24rpx;
+  line-height: 1.7;
+}
+
 .mall-order-detail-pricing-note {
   display: block;
   margin-top: 18rpx;

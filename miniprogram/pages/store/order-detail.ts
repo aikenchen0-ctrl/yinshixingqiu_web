@@ -10,9 +10,11 @@ import { normalizeAssetUrl, pickNextAssetUrl } from '../../utils/request'
 import {
   confirmMallOrderReceipt,
   fetchMallOrderDetail,
+  fetchMallOrderLogistics,
   payMallOrder,
   requestMallOrderRefund,
   type MallOrderApiItem,
+  type MallOrderLogisticsApiItem,
 } from '../../utils/store-api'
 
 const REFUND_REASON_OPTIONS = ['买错了', '暂时不想要了', '收货信息填错了', '其他原因']
@@ -233,15 +235,44 @@ function buildOrderView(order: MallOrderApiItem) {
   }
 }
 
+function buildLogisticsView(logistics?: MallOrderLogisticsApiItem | null) {
+  if (!logistics) {
+    return null
+  }
+
+  const timeline = Array.isArray(logistics.timeline)
+    ? logistics.timeline.map((item) => ({
+        time: String(item.time || ''),
+        status: String(item.status || ''),
+      }))
+    : []
+
+  return {
+    queryMode: logistics.queryMode || 'fallback_only',
+    company: String(logistics.company || ''),
+    trackingNo: String(logistics.trackingNo || ''),
+    shippedAtText: formatDateTime(String(logistics.shippedAt || '')),
+    latestStatus: String(logistics.latestStatus || ''),
+    latestTime: String(logistics.latestTime || ''),
+    fallbackReason: String(logistics.fallbackReason || ''),
+    officialQueryHint: String(logistics.officialQueryHint || ''),
+    timeline,
+    hasTimeline: logistics.queryMode === 'timeline_available' && timeline.length > 0,
+  }
+}
+
 Page({
   data: {
     loading: true,
     paying: false,
     refunding: false,
     confirmingReceipt: false,
+    logisticsLoading: false,
+    logisticsExpanded: false,
     loginRequired: false,
     orderId: '',
     order: null as ReturnType<typeof buildOrderView> | null,
+    logistics: null as ReturnType<typeof buildLogisticsView> | null,
     emptyText: '订单详情加载中...',
   },
 
@@ -285,6 +316,9 @@ Page({
         loading: false,
         loginRequired: true,
         order: null,
+        logisticsLoading: false,
+        logisticsExpanded: false,
+        logistics: null,
         emptyText: '登录已失效，请重新登录后查看订单。',
       })
       return
@@ -293,6 +327,9 @@ Page({
     this.setData({
       loading: false,
       order: null,
+      logisticsLoading: false,
+      logisticsExpanded: false,
+      logistics: null,
       emptyText: normalizeMallUserFacingErrorMessage(error, fallbackMessage),
     })
   },
@@ -307,6 +344,9 @@ Page({
         loading: false,
         loginRequired: true,
         order: null,
+        logisticsLoading: false,
+        logisticsExpanded: false,
+        logistics: null,
         emptyText: '登录已失效，请重新登录后查看订单。',
       })
       return
@@ -350,6 +390,9 @@ Page({
       this.setData({
         loading: false,
         emptyText: '缺少订单ID',
+        logisticsLoading: false,
+        logisticsExpanded: false,
+        logistics: null,
       })
       return
     }
@@ -360,6 +403,9 @@ Page({
         loading: false,
         loginRequired: true,
         order: null,
+        logisticsLoading: false,
+        logisticsExpanded: false,
+        logistics: null,
         emptyText: '请先登录后查看订单详情。',
       })
       return
@@ -368,6 +414,9 @@ Page({
     this.setData({
       loading: true,
       loginRequired: false,
+      logisticsLoading: false,
+      logisticsExpanded: false,
+      logistics: null,
       emptyText: '订单详情加载中...',
     })
 
@@ -376,17 +425,67 @@ Page({
         sessionToken: session.sessionToken,
         orderId,
       })
+      const order = response.data
+      const orderView = buildOrderView(order)
 
       this.setData({
         loading: false,
         paying: false,
         refunding: false,
         confirmingReceipt: false,
-        order: buildOrderView(response.data),
+        order: orderView,
         emptyText: '',
       })
+
+      void this.loadOrderLogistics(order.id, order.shippingTrackingNo, session.sessionToken)
     } catch (error) {
       this.handleActionError(error, '订单详情加载失败')
+    }
+  },
+
+  async loadOrderLogistics(orderId: string, trackingNo?: string, sessionToken?: string) {
+    if (!orderId || !String(trackingNo || '').trim()) {
+      this.setData({
+        logisticsLoading: false,
+        logisticsExpanded: false,
+        logistics: null,
+      })
+      return
+    }
+
+    this.setData({
+      logisticsLoading: true,
+      logisticsExpanded: false,
+      logistics: null,
+    })
+
+    try {
+      const response = await fetchMallOrderLogistics({
+        sessionToken: String(sessionToken || ''),
+        orderId,
+      })
+      const logistics = response.ok && response.data ? buildLogisticsView(response.data.item) : null
+
+      this.setData({
+        logisticsLoading: false,
+        logistics,
+      })
+    } catch {
+      this.setData({
+        logisticsLoading: false,
+        logistics: buildLogisticsView({
+          queryMode: 'fallback_only',
+          company: this.data.order ? this.data.order.shippingCompany || '' : '',
+          companyCode: '',
+          trackingNo: this.data.order ? this.data.order.shippingTrackingNo || '' : '',
+          shippedAt: '',
+          latestStatus: '',
+          latestTime: '',
+          timeline: [],
+          fallbackReason: 'request_failed',
+          officialQueryHint: '暂时无法拉取轨迹，请复制单号到物流官网查询',
+        }),
+      })
     }
   },
 
@@ -401,6 +500,27 @@ Page({
   onGoStore() {
     wx.switchTab({
       url: '/pages/store/index',
+    })
+  },
+
+  onToggleLogisticsTimeline() {
+    if (!this.data.logistics || !this.data.logistics.hasTimeline) {
+      return
+    }
+
+    this.setData({
+      logisticsExpanded: !this.data.logisticsExpanded,
+    })
+  },
+
+  onCopyTrackingNo() {
+    const trackingNo = String((this.data.logistics && this.data.logistics.trackingNo) || '')
+    if (!trackingNo) {
+      return
+    }
+
+    wx.setClipboardData({
+      data: trackingNo,
     })
   },
 

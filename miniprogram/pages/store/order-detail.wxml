@@ -153,13 +153,51 @@
           </view>
         </view>
         <text wx:if="{{order.couponStackingRuleText}}" class="mall-order-detail-pricing-note">{{order.couponStackingRuleText}}</text>
-        <view wx:if="{{order.shippingCompany || order.shippingTrackingNo}}" class="mall-order-detail-meta-row">
-          <text class="mall-order-detail-meta-label">物流信息</text>
-          <text class="mall-order-detail-meta-value">{{order.shippingCompany}} {{order.shippingTrackingNo}}</text>
-        </view>
-        <view wx:if="{{order.shippedAtText}}" class="mall-order-detail-meta-row">
-          <text class="mall-order-detail-meta-label">发货时间</text>
-          <text class="mall-order-detail-meta-value">{{order.shippedAtText}}</text>
+        <view wx:if="{{order.shippingCompany || order.shippingTrackingNo}}" class="mall-order-detail-logistics-card">
+          <view class="mall-order-detail-logistics-head">
+            <view class="mall-order-detail-logistics-copy">
+              <text class="mall-order-detail-logistics-title">物流信息</text>
+              <text class="mall-order-detail-logistics-summary">
+                {{logistics && logistics.latestStatus ? logistics.latestStatus : '商家已录入物流信息'}}
+              </text>
+            </view>
+            <button class="mall-order-detail-logistics-copy-btn" bindtap="onCopyTrackingNo">复制单号</button>
+          </view>
+
+          <view class="mall-order-detail-logistics-meta">
+            <text class="mall-order-detail-logistics-meta-label">物流公司</text>
+            <text class="mall-order-detail-logistics-meta-value">{{(logistics && logistics.company) || order.shippingCompany || '待识别'}}</text>
+          </view>
+          <view class="mall-order-detail-logistics-meta">
+            <text class="mall-order-detail-logistics-meta-label">物流单号</text>
+            <text class="mall-order-detail-logistics-meta-value">{{(logistics && logistics.trackingNo) || order.shippingTrackingNo}}</text>
+          </view>
+          <view wx:if="{{(logistics && logistics.shippedAtText) || order.shippedAtText}}" class="mall-order-detail-logistics-meta">
+            <text class="mall-order-detail-logistics-meta-label">发货时间</text>
+            <text class="mall-order-detail-logistics-meta-value">{{(logistics && logistics.shippedAtText) || order.shippedAtText}}</text>
+          </view>
+          <view wx:if="{{logistics && logistics.latestTime}}" class="mall-order-detail-logistics-meta">
+            <text class="mall-order-detail-logistics-meta-label">最近更新</text>
+            <text class="mall-order-detail-logistics-meta-value">{{logistics.latestTime}}</text>
+          </view>
+
+          <text wx:if="{{logisticsLoading}}" class="mall-order-detail-logistics-note">物流轨迹加载中...</text>
+          <text wx:elif="{{logistics && !logistics.hasTimeline}}" class="mall-order-detail-logistics-note">
+            {{logistics.officialQueryHint || '暂时无法拉取轨迹，请复制单号到物流官网查询'}}
+          </text>
+
+          <view wx:if="{{logistics && logistics.hasTimeline}}" class="mall-order-detail-logistics-actions">
+            <text class="mall-order-detail-logistics-toggle" bindtap="onToggleLogisticsTimeline">
+              {{logisticsExpanded ? '收起物流轨迹' : '查看物流轨迹'}}
+            </text>
+          </view>
+
+          <view wx:if="{{logistics && logistics.hasTimeline && logisticsExpanded}}" class="mall-order-detail-logistics-timeline">
+            <view wx:for="{{logistics.timeline}}" wx:key="time" class="mall-order-detail-logistics-timeline-item">
+              <text class="mall-order-detail-logistics-timeline-time">{{item.time}}</text>
+              <text class="mall-order-detail-logistics-timeline-status">{{item.status}}</text>
+            </view>
+          </view>
         </view>
         <view wx:if="{{order.shippingRemark}}" class="mall-order-detail-meta-row">
           <text class="mall-order-detail-meta-label">物流备注</text>

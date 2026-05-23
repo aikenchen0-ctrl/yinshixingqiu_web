@@ -1,4 +1,4 @@
-const DEFAULT_MALL_MEMBERSHIP_REDIRECT_URL = '/pages/store/index'
+const DEFAULT_MALL_MEMBERSHIP_REDIRECT_URL = '/pages/profile/index'
 const MALL_MEMBERSHIP_REVIEW_NOTICE_STORAGE_KEY = 'xueyin_mall_membership_review_notice_v1'
 const MALL_MEMBERSHIP_REVIEW_NOTICE_MAX_AGE_MS = 10 * 60 * 1000
 
@@ -107,19 +107,6 @@ export function buildMallMembershipPageUrl(input: {
 
 export function navigateAfterMallMembershipOpen(redirectUrl?: string) {
   const normalizedRedirectUrl = normalizeMallMembershipRedirectUrl(redirectUrl)
-
-  if (isMallStoreTabUrl(normalizedRedirectUrl)) {
-    wx.switchTab({
-      url: normalizedRedirectUrl,
-      fail: () => {
-        wx.reLaunch({
-          url: normalizedRedirectUrl,
-          fail: () => {},
-        })
-      },
-    })
-    return
-  }
 
   wx.redirectTo({
     url: normalizedRedirectUrl,

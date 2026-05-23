@@ -306,6 +306,24 @@ export interface MallCommissionOrderApiItem {
   }>
 }
 
+export interface MallOrderLogisticsTimelineItem {
+  time: string
+  status: string
+}
+
+export interface MallOrderLogisticsApiItem {
+  queryMode: 'timeline_available' | 'fallback_only'
+  company: string
+  companyCode: string
+  trackingNo: string
+  shippedAt: string
+  latestStatus: string
+  latestTime: string
+  timeline: MallOrderLogisticsTimelineItem[]
+  fallbackReason: string
+  officialQueryHint: string
+}
+
 export interface MallOrderPaymentRequest {
   appId?: string
   timeStamp: string
@@ -479,6 +497,13 @@ interface MallCommissionOrdersResponse {
 interface MallOrderDetailResponse {
   ok: boolean
   data: MallOrderApiItem
+}
+
+interface MallOrderLogisticsResponse {
+  ok: boolean
+  data: {
+    item: MallOrderLogisticsApiItem
+  }
 }
 
 interface MallOrderItemMutationResponse {
@@ -781,6 +806,16 @@ export function fetchMallOrderDetail(input: {
 }) {
   return request<MallOrderDetailResponse>({
     url: `/api/mall/orders/detail?orderId=${encodeURIComponent(input.orderId)}`,
+    sessionToken: input.sessionToken,
+  })
+}
+
+export function fetchMallOrderLogistics(input: {
+  sessionToken: string
+  orderId: string
+}) {
+  return request<MallOrderLogisticsResponse>({
+    url: `/api/mall/orders/logistics?orderId=${encodeURIComponent(input.orderId)}`,
     sessionToken: input.sessionToken,
   })
 }
