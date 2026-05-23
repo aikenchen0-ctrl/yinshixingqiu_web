@@ -7,8 +7,12 @@
 
 <view class="page grid-bg">
   <view class="section card ai-hero">
-    <text class="ai-hero-title">血饮本人训练 AI智能体</text>
-    <text class="ai-hero-sub">基于600+篇历史文章的知识库检索</text>
+    <view class="ai-disclosure">
+      <text class="ai-disclosure-badge">AI生成</text>
+      <text class="ai-disclosure-text">本页问答内容由人工智能生成，仅供参考</text>
+    </view>
+    <text class="ai-hero-title">AI问血饮</text>
+    <text class="ai-hero-sub">AI生成问答，基于知识库检索与历史文章内容整理</text>
     <view class="ai-prompt-row">
       <button
         class="ai-prompt-chip"
@@ -27,7 +31,9 @@
     <view class="message-list">
       <view class="message-item {{item.role}}" wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}">
         <view class="message-bubble">
-          <!-- AI消息使用rich-text渲染Markdown -->
+          <view class="message-ai-label" wx:if="{{item.role === 'ai'}}">
+            <text>AI生成内容</text>
+          </view>
           <rich-text class="message-text rich-md" nodes="{{item.htmlNodes}}" wx:if="{{item.role === 'ai' && item.htmlNodes}}"></rich-text>
           <text class="message-text" wx:if="{{item.role === 'user'}}">{{item.content}}</text>
           <view class="message-mode-tip" wx:if="{{item.modeLabel}}">

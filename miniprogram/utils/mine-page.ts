@@ -42,26 +42,23 @@ interface MinePageCopyConfig {
   guestSubtitle: string
   guestPanelTitle: string
   guestPanelDesc: string
-  autologinFallbackSubtitle: string
   loggedInPanelDesc: string
 }
 
 function buildMinePageCopy(menuMode: MineMenuMode): MinePageCopyConfig {
   if (menuMode === 'planet') {
     return {
-      guestSubtitle: '进入饮视星球后会自动登录，无需填写手机号',
-      guestPanelTitle: '先连接微信身份',
-      guestPanelDesc: '进入饮视星球会先自动登录，失败时可点击按钮手动重试。',
-      autologinFallbackSubtitle: '自动登录未完成，可点击下方按钮重试',
+      guestSubtitle: '登录后可继续使用饮视星球能力，也可先浏览当前页面内容',
+      guestPanelTitle: '按需登录即可',
+      guestPanelDesc: '只有在你主动使用需要账号的功能时，才会触发登录。',
       loggedInPanelDesc: '现在可以继续创建星球、查看余额和使用你的饮视星球功能。',
     }
   }
 
   return {
-    guestSubtitle: '登录后可管理账号资料和星球相关权益',
-    guestPanelTitle: '先连接微信身份',
-    guestPanelDesc: '登录后可继续使用你的饮视星球功能。',
-    autologinFallbackSubtitle: '自动登录未完成，可点击下方按钮重试',
+    guestSubtitle: '登录后可管理账号资料和星球相关权益，也可先浏览当前页面',
+    guestPanelTitle: '按需登录即可',
+    guestPanelDesc: '只有在你主动使用需要账号的功能时，才会触发登录。',
     loggedInPanelDesc: '现在可以继续创建星球和使用你的饮视星球功能。',
   }
 }
@@ -158,10 +155,7 @@ export function registerMinePage(options: RegisterMinePageOptions = {}) {
 
       if (session && session.sessionToken) {
         void this.refreshSession(session.sessionToken)
-        return
       }
-
-      void this.ensureSessionSilently()
     },
 
     async refreshSession(sessionToken: string) {
@@ -328,27 +322,6 @@ export function registerMinePage(options: RegisterMinePageOptions = {}) {
           }
         },
       })
-    },
-
-    async ensureSessionSilently() {
-      if (this.data.loginLoading || this.data.isLoggedIn) {
-        return
-      }
-
-      this.setData({
-        loginLoading: true,
-        subtitle: '正在连接微信身份...',
-      })
-
-      try {
-        const session = await ensureWechatSession()
-        this.applySession(session)
-      } catch {
-        this.setData({
-          loginLoading: false,
-          subtitle: copy.autologinFallbackSubtitle,
-        })
-      }
     },
 
     onLoginTap() {

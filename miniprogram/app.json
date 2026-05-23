@@ -6,21 +6,11 @@
     "pages/course/detail",
     "pages/course/content",
     "pages/articles/index",
-    "pages/store/index",
-    "pages/store/detail",
-    "pages/store/search",
-    "pages/store/address",
-    "pages/store/orders",
-    "pages/store/commission",
-    "pages/store/order-detail",
-    "pages/store/shipping",
     "pages/profile/index",
-    "pages/profile/service",
     "pages/planet/index",
     "pages/planet/lobby",
     "pages/planet/mine",
     "pages/planet/refunds",
-    "pages/planet/shipping",
     "pages/planet/debug",
     "pages/planet/detail",
     "pages/planet/home",
@@ -67,10 +57,6 @@
       {
         "pagePath": "pages/articles/index",
         "text": "文章"
-      },
-      {
-        "pagePath": "pages/store/index",
-        "text": "商城"
       },
       {
         "pagePath": "pages/profile/index",

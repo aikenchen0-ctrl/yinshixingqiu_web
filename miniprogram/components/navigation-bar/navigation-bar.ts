@@ -97,7 +97,6 @@ Component({
           '/pages/index/index',
           '/pages/course/list',
           '/pages/articles/index',
-          '/pages/store/index',
           '/pages/profile/index',
         ]
 

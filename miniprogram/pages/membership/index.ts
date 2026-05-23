@@ -63,7 +63,7 @@ Page({
     })
   },
   onContinueStore() {
-    navigateAfterMallMembershipOpen(String(this.data.redirectUrl || '/pages/store/index'))
+    navigateAfterMallMembershipOpen(String(this.data.redirectUrl || '/pages/profile/index'))
   },
   onPay() {
     const session = getStoredSession()
@@ -84,7 +84,7 @@ Page({
 
     if (this.data.fromMall) {
       setTimeout(() => {
-        navigateAfterMallMembershipOpen(String(this.data.redirectUrl || '/pages/store/index'))
+        navigateAfterMallMembershipOpen(String(this.data.redirectUrl || '/pages/profile/index'))
       }, 700)
     }
   },
