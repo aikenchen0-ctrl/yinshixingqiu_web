@@ -6,6 +6,7 @@
   "scripts": {
     "db:start": "docker compose up -d postgres",
     "db:stop": "docker compose down",
+    "db:tunnel:windows": "powershell -ExecutionPolicy Bypass -File deploy/start-db-tunnel-windows.ps1",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:seed": "node scripts/seedDemoData.js",
