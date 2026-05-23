@@ -1,0 +1,5 @@
+export const WECHAT_EDITOR_HOST = 'mp.weixin.qq.com'
+export const WECHAT_EDITOR_PATH = '/cgi-bin/appmsg'
+export const SYNC_MESSAGE_TYPE = 'wechat-article-sync/extract-current-article'
+export const XUEYIN_API_BASE_URL = 'https://xueyinx.cn'
+export const WECHAT_IMPORT_API_PATH = '/api/articles/import/wechat'

@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "饮视微信文章同步",
+  "version": "0.1.0",
+  "action": {
+    "default_popup": "dist/src/popup/index.html",
+    "default_title": "提交到小程序的文章"
+  },
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://mp.weixin.qq.com/*",
+    "https://xueyinx.cn/*"
+  ],
+  "background": {
+    "service_worker": "dist/service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "dist/assets/index.ts-loader-DlIhKbR7.js"
+      ],
+      "matches": [
+        "https://mp.weixin.qq.com/*"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "https://mp.weixin.qq.com/*"
+      ],
+      "resources": [
+        "dist/assets/page-detector-Bhqu2KUz.js",
+        "dist/assets/constants-Dk4bcWLB.js",
+        "dist/assets/index.ts-CMamf8_x.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}
