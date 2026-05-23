@@ -1,5 +1,6 @@
 import type { CourseRecord } from '../../utils/course-types'
 import { fetchCourseCatalog } from '../../utils/course-api'
+const { shiftMonthKey, resolveMonthSelection, buildPickerValue } = require('./calendar-state.js') as typeof import('./calendar-state')
 
 interface CalendarCell {
   id: string
@@ -160,14 +161,14 @@ Page({
     monthKeys: [] as string[],
     currentMonthKey: todayKey.slice(0, 7),
     monthLabel: buildMonthLabel(todayKey.slice(0, 7)),
+    pickerValue: buildPickerValue(todayKey.slice(0, 7)),
     selectedDateKey: todayKey,
     selectedDateLabel: buildDateLabel(todayKey),
     selectedWeekdayLabel: buildWeekdayLabel(todayKey),
     selectedCourseCountLabel: '0 门课程',
     calendarDays: [] as CalendarCell[],
     selectedCourses: [] as CalendarCourse[],
-    hasPrevMonth: false,
-    hasNextMonth: false,
+    currentMonthHasCourses: false,
   },
 
   onLoad() {
@@ -216,8 +217,13 @@ Page({
       const dateMap = buildCourseDateMap(courses)
       const dates = Object.keys(dateMap).sort()
       const monthKeys = buildMonthKeys(dates)
-      const selectedDateKey = resolveInitialDate(dates)
-      const currentMonthKey = selectedDateKey.slice(0, 7)
+      const resolvedInitialDate = resolveInitialDate(dates)
+      const currentMonthKey = resolvedInitialDate.slice(0, 7)
+      const monthSelection = resolveMonthSelection(currentMonthKey, dateMap)
+      const selectedDateKey =
+        dates.length && resolvedInitialDate.slice(0, 7) === currentMonthKey
+          ? resolvedInitialDate
+          : monthSelection.selectedDateKey
 
       this.applyCalendarState({
         courses,
@@ -237,9 +243,9 @@ Page({
         monthKeys: [],
         calendarDays: [],
         selectedCourses: [],
+        pickerValue: buildPickerValue(todayKey.slice(0, 7)),
         selectedCourseCountLabel: '0 门课程',
-        hasPrevMonth: false,
-        hasNextMonth: false,
+        currentMonthHasCourses: false,
       })
     }
   },
@@ -254,7 +260,7 @@ Page({
     errorText?: string
   }) {
     const selectedCourses = payload.courseDateMap[payload.selectedDateKey] || []
-    const monthIndex = payload.monthKeys.indexOf(payload.monthKey)
+    const currentMonthHasCourses = payload.monthKeys.includes(payload.monthKey)
 
     this.setData({
       loading: payload.loading === true,
@@ -264,46 +270,54 @@ Page({
       monthKeys: payload.monthKeys,
       currentMonthKey: payload.monthKey,
       monthLabel: buildMonthLabel(payload.monthKey),
+      pickerValue: buildPickerValue(payload.monthKey),
       selectedDateKey: payload.selectedDateKey,
       selectedDateLabel: buildDateLabel(payload.selectedDateKey),
       selectedWeekdayLabel: buildWeekdayLabel(payload.selectedDateKey),
       selectedCourseCountLabel: `${selectedCourses.length} 门课程`,
       calendarDays: buildCalendarDays(payload.monthKey, payload.selectedDateKey, payload.courseDateMap),
       selectedCourses,
-      hasPrevMonth: monthIndex > 0,
-      hasNextMonth: monthIndex >= 0 && monthIndex < payload.monthKeys.length - 1,
+      currentMonthHasCourses,
     })
   },
 
   onPrevMonth() {
-    if (!this.data.hasPrevMonth) {
-      return
-    }
-
-    const previousMonthKey = this.data.monthKeys[this.data.monthKeys.indexOf(this.data.currentMonthKey) - 1]
-    const selectedDateKey = Object.keys(this.data.courseDateMap).find((dateKey) => dateKey.slice(0, 7) === previousMonthKey) || `${previousMonthKey}-01`
+    const previousMonthKey = shiftMonthKey(this.data.currentMonthKey, -1)
+    const monthSelection = resolveMonthSelection(previousMonthKey, this.data.courseDateMap)
     this.applyCalendarState({
       courses: this.data.courses,
       courseDateMap: this.data.courseDateMap,
       monthKeys: this.data.monthKeys,
-      monthKey: previousMonthKey,
-      selectedDateKey,
+      monthKey: monthSelection.monthKey,
+      selectedDateKey: monthSelection.selectedDateKey,
     })
   },
 
   onNextMonth() {
-    if (!this.data.hasNextMonth) {
-      return
-    }
-
-    const nextMonthKey = this.data.monthKeys[this.data.monthKeys.indexOf(this.data.currentMonthKey) + 1]
-    const selectedDateKey = Object.keys(this.data.courseDateMap).find((dateKey) => dateKey.slice(0, 7) === nextMonthKey) || `${nextMonthKey}-01`
+    const nextMonthKey = shiftMonthKey(this.data.currentMonthKey, 1)
+    const monthSelection = resolveMonthSelection(nextMonthKey, this.data.courseDateMap)
     this.applyCalendarState({
       courses: this.data.courses,
       courseDateMap: this.data.courseDateMap,
       monthKeys: this.data.monthKeys,
-      monthKey: nextMonthKey,
-      selectedDateKey,
+      monthKey: monthSelection.monthKey,
+      selectedDateKey: monthSelection.selectedDateKey,
+    })
+  },
+
+  onPickerChange(e: WechatMiniprogram.BaseEvent & { detail: { value: string } }) {
+    const nextMonthKey = String(e.detail.value || '').slice(0, 7)
+    if (!parseMonthKey(nextMonthKey)) {
+      return
+    }
+
+    const monthSelection = resolveMonthSelection(nextMonthKey, this.data.courseDateMap)
+    this.applyCalendarState({
+      courses: this.data.courses,
+      courseDateMap: this.data.courseDateMap,
+      monthKeys: this.data.monthKeys,
+      monthKey: monthSelection.monthKey,
+      selectedDateKey: monthSelection.selectedDateKey,
     })
   },
 

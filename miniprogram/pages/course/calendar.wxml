@@ -26,14 +26,16 @@
     <block wx:else>
       <view class="course-calendar-panel">
         <view class="course-calendar-panel-head">
-          <view class="course-calendar-panel-copy">
-            <text class="course-calendar-month">{{monthLabel}}</text>
-            <text class="course-calendar-month-meta">按课程更新时间聚合</text>
-          </view>
+          <picker mode="date" fields="month" value="{{pickerValue}}" bindchange="onPickerChange" class="course-calendar-month-picker">
+            <view class="course-calendar-panel-copy">
+              <text class="course-calendar-month">{{monthLabel}}</text>
+              <text class="course-calendar-month-meta">按课程更新时间聚合 · 点击切换月份</text>
+            </view>
+          </picker>
 
           <view class="course-calendar-panel-actions">
-            <view class="course-calendar-month-button {{hasPrevMonth ? '' : 'is-disabled'}}" bindtap="onPrevMonth">上月</view>
-            <view class="course-calendar-month-button {{hasNextMonth ? '' : 'is-disabled'}}" bindtap="onNextMonth">下月</view>
+            <view class="course-calendar-month-button" bindtap="onPrevMonth">上月</view>
+            <view class="course-calendar-month-button" bindtap="onNextMonth">下月</view>
           </view>
         </view>
 
@@ -84,8 +86,8 @@
       </view>
 
       <view wx:else class="course-calendar-empty">
-        <text class="course-calendar-empty-title">这一天没有课程更新</text>
-        <text class="course-calendar-empty-subtitle">切换到带圆点的日期，可以查看对应课程。</text>
+        <text class="course-calendar-empty-title">{{currentMonthHasCourses ? '这一天没有课程更新' : '这个月暂无课程更新'}}</text>
+        <text class="course-calendar-empty-subtitle">{{currentMonthHasCourses ? '切换到带圆点的日期，可以查看对应课程。' : '你可以继续切换上月、下月，或直接点月份标题选择其他月份。'}}</text>
       </view>
     </block>
 

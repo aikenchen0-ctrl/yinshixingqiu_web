@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { AdminLayout } from '../../components/AdminLayout'
 import { coursePlatformMenuGroups } from '../../data/menu'
 import {
@@ -13,6 +13,7 @@ import {
   type AdminCourseLessonType,
   type AdminCourseStatus,
 } from '../../services/adminCourseService'
+import { uploadPlanetVideo } from '../../services/planetWebService'
 
 type CourseFormState = {
   courseId: string
@@ -203,9 +204,11 @@ function CourseWorkbenchPage({ mode }: { mode: CourseWorkbenchMode }) {
   const [lessonForm, setLessonForm] = useState<LessonFormState>(createEmptyLessonForm())
   const [savingCourse, setSavingCourse] = useState(false)
   const [savingLesson, setSavingLesson] = useState(false)
+  const [uploadingLessonVideo, setUploadingLessonVideo] = useState(false)
   const [operatingCourseId, setOperatingCourseId] = useState('')
   const [operatingLessonId, setOperatingLessonId] = useState('')
   const [reloadToken, setReloadToken] = useState(0)
+  const lessonVideoInputRef = useRef<HTMLInputElement | null>(null)
   const isCourseMode = mode === 'COURSE'
   const isLessonMode = mode === 'LESSON'
 
@@ -356,8 +359,49 @@ function CourseWorkbenchPage({ mode }: { mode: CourseWorkbenchMode }) {
     openCreateCourseForm()
   }
 
+  function resetLessonVideoInput() {
+    if (lessonVideoInputRef.current) {
+      lessonVideoInputRef.current.value = ''
+    }
+  }
+
   function resetLessonForm(courseId: string) {
+    resetLessonVideoInput()
     setLessonForm(createEmptyLessonForm(courseId))
+  }
+
+  function handleLessonVideoUploadTrigger() {
+    if (!selectedCourse || uploadingLessonVideo || savingLesson || lessonForm.lessonType !== 'VIDEO') {
+      return
+    }
+
+    lessonVideoInputRef.current?.click()
+  }
+
+  async function handleLessonVideoFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) {
+      resetLessonVideoInput()
+      return
+    }
+
+    setUploadingLessonVideo(true)
+    setError('')
+    setNotice('')
+
+    try {
+      const uploaded = await uploadPlanetVideo(file)
+      setLessonForm((previous) => ({
+        ...previous,
+        videoUrl: uploaded.url,
+      }))
+      setNotice('课程视频已上传')
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : '视频上传失败')
+    } finally {
+      setUploadingLessonVideo(false)
+      resetLessonVideoInput()
+    }
   }
 
   async function handleSaveCourse() {
@@ -957,15 +1001,34 @@ function CourseWorkbenchPage({ mode }: { mode: CourseWorkbenchMode }) {
                       </label>
 
                       {lessonForm.lessonType === 'VIDEO' ? (
-                        <label className="admin-resource-field admin-resource-field-span-2">
-                          <span>视频地址</span>
+                        <div className="admin-resource-field admin-resource-field-span-2 course-admin-video-upload-field">
+                          <span>课程视频</span>
+
+                          <div className="course-admin-video-upload-row">
+                            <button
+                              className="admin-resource-secondary"
+                              disabled={!selectedCourse || uploadingLessonVideo || savingLesson}
+                              onClick={handleLessonVideoUploadTrigger}
+                              type="button"
+                            >
+                              {uploadingLessonVideo ? '上传中...' : lessonForm.videoUrl ? '重新上传视频' : '上传视频'}
+                            </button>
+                            <span className="course-admin-video-upload-hint">支持 MP4、MOV、M4V、WebM、OGG，最大 80MB</span>
+                          </div>
+
+                          <div className={`course-admin-video-upload-status ${lessonForm.videoUrl ? 'is-ready' : 'is-empty'}`}>
+                            <strong>{lessonForm.videoUrl ? '已上传视频' : '暂未上传视频'}</strong>
+                            <span>{lessonForm.videoUrl || '上传后会自动回填当前课节的视频地址'}</span>
+                          </div>
+
                           <input
-                            onChange={(event) => setLessonForm((previous) => ({ ...previous, videoUrl: event.target.value }))}
-                            placeholder="https://...mp4"
-                            type="text"
-                            value={lessonForm.videoUrl}
+                            accept="video/mp4,video/quicktime,video/x-m4v,video/webm,video/ogg,.mp4,.mov,.m4v,.webm,.ogg"
+                            hidden
+                            onChange={handleLessonVideoFileChange}
+                            ref={lessonVideoInputRef}
+                            type="file"
                           />
-                        </label>
+                        </div>
                       ) : null}
 
                       {lessonForm.lessonType === 'ARTICLE' ? (
@@ -994,7 +1057,12 @@ function CourseWorkbenchPage({ mode }: { mode: CourseWorkbenchMode }) {
                     </div>
 
                     <div className="course-admin-form-actions">
-                      <button className="admin-resource-submit" disabled={savingLesson} onClick={() => void handleSaveLesson()} type="button">
+                      <button
+                        className="admin-resource-submit"
+                        disabled={savingLesson || uploadingLessonVideo}
+                        onClick={() => void handleSaveLesson()}
+                        type="button"
+                      >
                         {savingLesson ? '保存中...' : lessonForm.lessonId ? '更新课节' : '创建课节'}
                       </button>
                       <button className="admin-resource-secondary" onClick={() => resetLessonForm(selectedCourse.id)} type="button">

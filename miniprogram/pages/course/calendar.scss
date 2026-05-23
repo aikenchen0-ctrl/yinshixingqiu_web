@@ -68,6 +68,12 @@
 }
 
 .course-calendar-panel-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.course-calendar-month-picker {
+  flex: 1;
   min-width: 0;
 }
 
@@ -100,10 +106,6 @@
   font-size: 22rpx;
   line-height: 48rpx;
   text-align: center;
-}
-
-.course-calendar-month-button.is-disabled {
-  opacity: 0.35;
 }
 
 .course-calendar-weekdays {
